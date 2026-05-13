@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "TeoricoB",
-    platforms: [.iOS("16.0")],
+    platforms: [.iOS("17.0")],
     targets: [
         .executableTarget(
             name: "TeoricoB",
