@@ -1,0 +1,14 @@
+name: Build TeoricoB
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Swift Package
+        run: |
+          cd TeoricoB.swiftpm
+          swift build
