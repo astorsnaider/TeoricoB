@@ -70,6 +70,8 @@ interface AppStore {
   isTopicCompleted: (topicId: string) => boolean;
   minutesToNextHeart: () => number;
   resetProgress: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const defaultUser: UserState = {
@@ -98,6 +100,7 @@ export const useStore = create<AppStore>()(
     (set, get) => ({
       user: defaultUser,
       isOnboardingComplete: false,
+      isDarkMode: false,
       topics: ALL_TOPICS,
       leagueStandings: [],
       dailyChallenge: null,
@@ -257,11 +260,12 @@ export const useStore = create<AppStore>()(
       isLessonCompleted: (lessonId) => get().user.completedLessons.includes(lessonId),
       isTopicCompleted: (topicId) => get().user.completedTopics.includes(topicId),
       resetProgress: () => set({ user: { ...defaultUser, friends: MOCK_FRIENDS }, isOnboardingComplete: false }),
+      toggleDarkMode: () => set(s => ({ isDarkMode: !s.isDarkMode })),
     }),
     {
       name: 'teoricob-v2',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ user: s.user, isOnboardingComplete: s.isOnboardingComplete, dailyChallenge: s.dailyChallenge }),
+      partialize: (s) => ({ user: s.user, isOnboardingComplete: s.isOnboardingComplete, dailyChallenge: s.dailyChallenge, isDarkMode: s.isDarkMode }),
       merge: (persisted: any, current) => ({
         ...current,
         ...persisted,

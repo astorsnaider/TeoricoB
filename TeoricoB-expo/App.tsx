@@ -2,23 +2,31 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
+import { useTheme } from './src/hooks/useTheme';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LearnScreen from './src/screens/LearnScreen';
+import ManualScreen from './src/screens/ManualScreen';
 import LeagueScreen from './src/screens/LeagueScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import ManualScreen from './src/screens/ManualScreen';
-import { COLORS, SHADOWS } from './src/theme';
 
 type Tab = 'home' | 'learn' | 'manual' | 'league' | 'profile';
 
-const TABS: { key: Tab; label: string; emoji: string }[] = [
-  { key: 'home',    label: 'Inicio',   emoji: '🏠' },
-  { key: 'learn',   label: 'Aprender', emoji: '📚' },
-  { key: 'manual',  label: 'Manual',   emoji: '📖' },
-  { key: 'league',  label: 'Liga',     emoji: '🏆' },
-  { key: 'profile', label: 'Perfil',   emoji: '👤' },
+interface TabDef {
+  key: Tab;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
+}
+
+const TABS: TabDef[] = [
+  { key: 'home',    label: 'Inicio',   icon: 'home-outline',          iconActive: 'home' },
+  { key: 'learn',   label: 'Aprender', icon: 'book-outline',          iconActive: 'book' },
+  { key: 'manual',  label: 'Manual',   icon: 'document-text-outline', iconActive: 'document-text' },
+  { key: 'league',  label: 'Liga',     icon: 'trophy-outline',        iconActive: 'trophy' },
+  { key: 'profile', label: 'Perfil',   icon: 'person-outline',        iconActive: 'person' },
 ];
 
 export default function App() {
@@ -28,7 +36,10 @@ export default function App() {
   const dailyChallenge = useStore(s => s.dailyChallenge);
   const newAchievement = useStore(s => s.newAchievement);
   const clearNewAchievement = useStore(s => s.clearNewAchievement);
+  const isDarkMode = useStore(s => s.isDarkMode);
+
   const [activeTab, setActiveTab] = React.useState<Tab>('home');
+  const theme = useTheme();
 
   useEffect(() => {
     if (isOnboardingComplete) {
@@ -58,41 +69,50 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
+      {/* Achievement toast */}
       {newAchievement && (
-        <View style={styles.toast}>
-          <Text style={styles.toastEmoji}>{newAchievement.emoji}</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.toastTitle}>¡Logro desbloqueado!</Text>
-            <Text style={styles.toastName}>{newAchievement.name}</Text>
+        <View style={[styles.toast, { backgroundColor: theme.card }]}>
+          <View style={[styles.toastIcon, { backgroundColor: theme.primary + '20' }]}>
+            <Ionicons name="star" size={22} color={theme.primary} />
           </View>
-          <TouchableOpacity onPress={clearNewAchievement}>
-            <Text style={{ color: '#fff', fontSize: 18 }}>✕</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.toastTitle, { color: theme.textSecondary }]}>Logro desbloqueado</Text>
+            <Text style={[styles.toastName, { color: theme.textPrimary }]}>{newAchievement.name}</Text>
+          </View>
+          <TouchableOpacity onPress={clearNewAchievement} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="close" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
         </View>
       )}
 
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: theme.bg }}>
         {renderScreen()}
       </View>
 
-      <View style={styles.tabBar}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.key}
-            style={styles.tabItem}
-            onPress={() => setActiveTab(tab.key)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabEmoji, activeTab === tab.key && styles.tabEmojiActive]}>
-              {tab.emoji}
-            </Text>
-            <Text style={[styles.tabLabel, activeTab === tab.key && { color: COLORS.primary, fontWeight: '700' }]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Tab bar */}
+      <View style={[styles.tabBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+        {TABS.map(tab => {
+          const active = activeTab === tab.key;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={styles.tabItem}
+              onPress={() => setActiveTab(tab.key)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={active ? tab.iconActive : tab.icon}
+                size={22}
+                color={active ? theme.primary : theme.textTertiary}
+              />
+              <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '400' }]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </SafeAreaProvider>
   );
@@ -100,20 +120,21 @@ export default function App() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    flexDirection: 'row', backgroundColor: COLORS.card,
-    borderTopWidth: 1, borderTopColor: COLORS.border,
-    paddingBottom: 20, paddingTop: 10, ...SHADOWS.medium,
+    flexDirection: 'row',
+    borderTopWidth: 0.5,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
-  tabItem: { flex: 1, alignItems: 'center', gap: 2 },
-  tabEmoji: { fontSize: 22, opacity: 0.4 },
-  tabEmojiActive: { opacity: 1 },
-  tabLabel: { fontSize: 10, color: COLORS.secondary },
+  tabItem: { flex: 1, alignItems: 'center', gap: 3 },
+  tabLabel: { fontSize: 10 },
   toast: {
-    position: 'absolute', top: 60, left: 16, right: 16, zIndex: 999,
-    backgroundColor: COLORS.dark, borderRadius: 16, padding: 16,
-    flexDirection: 'row', alignItems: 'center', gap: 12, ...SHADOWS.medium,
+    position: 'absolute', top: 56, left: 16, right: 16, zIndex: 999,
+    borderRadius: 16, padding: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
   },
-  toastEmoji: { fontSize: 28 },
-  toastTitle: { color: '#fff', fontSize: 11, opacity: 0.7 },
-  toastName: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  toastIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  toastTitle: { fontSize: 11 },
+  toastName: { fontSize: 14, fontWeight: '700', marginTop: 1 },
 });
