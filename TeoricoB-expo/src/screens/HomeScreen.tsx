@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Modal,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useStore, getLeagueInfo } from '../store/useStore';
-import { COLORS, SHADOWS } from '../theme';
+import { useTheme } from '../hooks/useTheme';
+import { SHADOWS } from '../theme';
+import { AvatarView } from '../components/AvatarView';
+import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
 
 export default function HomeScreen() {
@@ -15,195 +17,195 @@ export default function HomeScreen() {
   const getExamQuestions = useStore(s => s.getExamQuestions);
   const progressForTopic = useStore(s => s.progressForTopic);
   const addXP = useStore(s => s.addXP);
+  const theme = useTheme();
 
-  const [dailyQuizOpen, setDailyQuizOpen] = useState(false);
+  const [dailyOpen, setDailyOpen] = useState(false);
   const [examOpen, setExamOpen] = useState(false);
-  const [examQuestions, setExamQuestions] = useState<any[]>([]);
+  const [examQs, setExamQs] = useState<any[]>([]);
 
   const league = getLeagueInfo(user.league);
+  const level = Math.floor(user.xp / 100) + 1;
+  const xpPct = (user.xp % 100) / 100;
 
-  const motivational = () => {
-    if (user.streak === 0) return 'Empieza tu racha hoy 🔥';
-    if (user.streak < 3) return `¡Llevas ${user.streak} día${user.streak > 1 ? 's' : ''} seguido!`;
-    if (user.streak < 7) return `¡Racha de ${user.streak} días! 🔥`;
-    return `¡Increíble racha de ${user.streak} días! 🏆`;
-  };
-
-  const recentTopics = topics.slice(0, 4);
+  const streakMsg =
+    user.streak === 0 ? 'Empieza tu racha hoy' :
+    user.streak < 3   ? `${user.streak} día${user.streak > 1 ? 's' : ''} seguido` :
+    user.streak < 7   ? `Racha de ${user.streak} días` :
+                        `Racha increíble: ${user.streak} días`;
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Header */}
         <View style={s.header}>
-          <View>
-            <Text style={s.greeting}>¡Hola, {user.name}! {user.avatarEmoji}</Text>
-            <Text style={s.subGreeting}>{motivational()}</Text>
+          <AvatarView color={user.avatarEmoji} name={user.name} size={46} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={[s.greeting, { color: theme.textPrimary }]}>Hola, {user.name}</Text>
+            <View style={s.streakRow}>
+              <Ionicons name="flame" size={14} color={theme.orange} />
+              <Text style={[s.streakTxt, { color: theme.textSecondary }]}>{streakMsg}</Text>
+            </View>
           </View>
-          <View style={s.streakBadge}>
-            <Text style={s.fireEmoji}>🔥</Text>
-            <Text style={s.streakNum}>{user.streak}</Text>
+          <View style={[s.leaguePill, { backgroundColor: league.color + '18' }]}>
+            <Text style={[s.leagueTxt, { color: league.color }]}>{league.emoji} {user.league}</Text>
           </View>
+        </View>
+
+        {/* XP + Level */}
+        <View style={[s.card, { backgroundColor: theme.card }]}>
+          <View style={s.xpRow}>
+            <View style={s.xpLeft}>
+              <Ionicons name="star" size={16} color={theme.yellow} />
+              <Text style={[s.xpLbl, { color: theme.textSecondary }]}>Nivel {level}</Text>
+            </View>
+            <Text style={[s.xpVal, { color: theme.textPrimary }]}>{user.xp} XP total</Text>
+          </View>
+          <View style={[s.xpBarBg, { backgroundColor: theme.bg2 }]}>
+            <LinearGradient
+              colors={[theme.yellow, theme.orange]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={[s.xpBarFill, { width: `${xpPct * 100}%` }]}
+            />
+          </View>
+          <Text style={[s.xpSub, { color: theme.textSecondary }]}>{100 - (user.xp % 100)} XP para nivel {level + 1}</Text>
         </View>
 
         {/* Stats row */}
         <View style={s.statsRow}>
-          <StatCard icon="⭐" label="XP Total" value={`${user.xp}`} />
-          <StatCard icon="❤️" label="Vidas" value={`${user.hearts}/${user.maxHearts}`} />
-          <StatCard icon={league.emoji} label="Liga" value={user.league} color={league.color} />
-        </View>
-
-        {/* XP progress */}
-        <View style={[s.card, { padding: 16 }]}>
-          <View style={s.xpRow}>
-            <Text style={s.xpLabel}>Nivel {Math.floor(user.xp / 100) + 1}</Text>
-            <Text style={s.xpLabel}>{user.xp % 100}/100 XP</Text>
-          </View>
-          <View style={s.xpBarBg}>
-            <View style={[s.xpBarFill, { width: `${user.xp % 100}%` }]} />
-          </View>
+          {[
+            { icon: 'heart' as const, label: 'Vidas', value: `${user.hearts}/${user.maxHearts}`, color: theme.wrong },
+            { icon: 'trophy' as const, label: 'Liga', value: user.league, color: league.color },
+            { icon: 'stats-chart' as const, label: 'Acierto', value: user.totalAnswered > 0 ? `${Math.round(user.totalCorrect / user.totalAnswered * 100)}%` : '—', color: theme.correct },
+          ].map(({ icon, label, value, color }) => (
+            <View key={label} style={[s.statCard, { backgroundColor: theme.card }]}>
+              <Ionicons name={icon} size={18} color={color} />
+              <Text style={[s.statVal, { color: theme.textPrimary }]}>{value}</Text>
+              <Text style={[s.statLbl, { color: theme.textSecondary }]}>{label}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Daily challenge */}
         {dailyChallenge && (
           <TouchableOpacity
-            style={[s.card, s.dailyCard, dailyChallenge.isCompleted && s.dailyDone]}
-            onPress={() => { if (!dailyChallenge.isCompleted) setDailyQuizOpen(true); }}
+            style={[s.card, s.dailyCard, { backgroundColor: theme.card }, dailyChallenge.isCompleted && { opacity: 0.7 }]}
+            onPress={() => { if (!dailyChallenge.isCompleted) setDailyOpen(true); }}
             activeOpacity={0.85}
           >
-            <View style={[s.dailyIcon, { backgroundColor: dailyChallenge.isCompleted ? COLORS.correct : COLORS.yellow }]}>
-              <Text style={{ fontSize: 26 }}>{dailyChallenge.isCompleted ? '✅' : '⚡'}</Text>
+            <View style={[s.dailyIcon, { backgroundColor: dailyChallenge.isCompleted ? theme.correct + '25' : theme.yellow + '25' }]}>
+              <Ionicons
+                name={dailyChallenge.isCompleted ? 'checkmark-circle' : 'flash'}
+                size={28}
+                color={dailyChallenge.isCompleted ? theme.correct : theme.yellow}
+              />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.dailyTitle}>Reto Diario</Text>
-              <Text style={s.dailySub}>
+              <Text style={[s.dailyTitle, { color: theme.textPrimary }]}>Reto Diario</Text>
+              <Text style={[s.dailySub, { color: theme.textSecondary }]}>
                 {dailyChallenge.isCompleted
-                  ? `¡Completado! +${dailyChallenge.xpReward} XP`
+                  ? `Completado · +${dailyChallenge.xpReward} XP`
                   : `${dailyChallenge.questions.length} preguntas · +${dailyChallenge.xpReward} XP`}
               </Text>
             </View>
-            {!dailyChallenge.isCompleted && <Text style={s.chevron}>›</Text>}
+            {!dailyChallenge.isCompleted && (
+              <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+            )}
           </TouchableOpacity>
         )}
 
         {/* Recent topics */}
-        <Text style={s.sectionTitle}>Seguir estudiando</Text>
+        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Seguir estudiando</Text>
         <View style={s.topicsGrid}>
-          {recentTopics.map(topic => {
+          {topics.slice(0, 4).map(topic => {
             const prog = progressForTopic(topic.id);
             return (
-              <View key={topic.id} style={[s.topicMini, SHADOWS.small]}>
-                <View style={s.topicMiniTop}>
-                  <Text style={{ fontSize: 24 }}>{topic.emoji}</Text>
-                  {prog >= 1 && <Text>✅</Text>}
-                </View>
-                <Text style={s.topicMiniName} numberOfLines={2}>{topic.name}</Text>
-                <View style={s.miniBarBg}>
+              <View key={topic.id} style={[s.topicCard, { backgroundColor: theme.card }, SHADOWS.small]}>
+                <TopicIcon topicId={topic.id} size={40} />
+                <Text style={[s.topicName, { color: theme.textPrimary }]} numberOfLines={2}>{topic.name}</Text>
+                <View style={[s.miniBarBg, { backgroundColor: theme.bg2 }]}>
                   <View style={[s.miniBarFill, { width: `${prog * 100}%`, backgroundColor: topic.colorHex }]} />
                 </View>
-                <Text style={s.topicMiniPct}>{Math.round(prog * 100)}%</Text>
+                <Text style={[s.topicPct, { color: theme.textSecondary }]}>{Math.round(prog * 100)}%</Text>
               </View>
             );
           })}
         </View>
 
-        {/* Examen simulado */}
+        {/* Exam button */}
         <TouchableOpacity
-          style={[s.card, s.examCard]}
-          onPress={() => { setExamQuestions(getExamQuestions()); setExamOpen(true); }}
+          style={[s.card, s.examCard, { backgroundColor: theme.card }]}
+          onPress={() => { setExamQs(getExamQuestions()); setExamOpen(true); }}
           activeOpacity={0.85}
         >
-          <View style={s.examIcon}><Text style={{ fontSize: 26 }}>📋</Text></View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.examTitle}>Examen Simulado</Text>
-            <Text style={s.examSub}>30 preguntas · Estilo DGT real</Text>
+          <View style={[s.examIcon, { backgroundColor: theme.primary + '18' }]}>
+            <Ionicons name="clipboard-outline" size={28} color={theme.primary} />
           </View>
-          <Text style={s.chevron}>›</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.examTitle, { color: theme.textPrimary }]}>Examen Simulado</Text>
+            <Text style={[s.examSub, { color: theme.textSecondary }]}>30 preguntas · Criterios DGT reales</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
         </TouchableOpacity>
 
         <View style={{ height: 32 }} />
       </ScrollView>
 
-      {/* Daily Quiz Modal */}
       {dailyChallenge && (
         <QuizModal
-          visible={dailyQuizOpen}
+          visible={dailyOpen}
           questions={dailyChallenge.questions}
           title="Reto Diario"
-          onClose={() => setDailyQuizOpen(false)}
-          onComplete={(xp, _perfect) => { completeDailyChallenge(); setDailyQuizOpen(false); }}
+          onClose={() => setDailyOpen(false)}
+          onComplete={() => { completeDailyChallenge(); setDailyOpen(false); }}
         />
       )}
-
-      {/* Exam Modal */}
       <QuizModal
         visible={examOpen}
-        questions={examQuestions}
+        questions={examQs}
         title="Examen Simulado"
         isExam
         onClose={() => setExamOpen(false)}
-        onComplete={(xp, _perfect) => { addXP(xp); setExamOpen(false); }}
+        onComplete={(xp) => { addXP(xp); setExamOpen(false); }}
       />
     </SafeAreaView>
   );
 }
 
-function StatCard({ icon, label, value, color }: { icon: string; label: string; value: string; color?: string }) {
-  return (
-    <View style={[sc.card, SHADOWS.small]}>
-      <Text style={{ fontSize: 22 }}>{icon}</Text>
-      <Text style={[sc.value, color ? { color } : {}]}>{value}</Text>
-      <Text style={sc.label}>{label}</Text>
-    </View>
-  );
-}
-
-const sc = StyleSheet.create({
-  card: { flex: 1, backgroundColor: COLORS.card, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
-  value: { fontSize: 15, fontWeight: '700', color: COLORS.dark },
-  label: { fontSize: 11, color: COLORS.secondary },
-});
-
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
+  safe: { flex: 1 },
   content: { padding: 16, gap: 12 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
-  greeting: { fontSize: 20, fontWeight: '800', color: COLORS.dark },
-  subGreeting: { fontSize: 13, color: COLORS.secondary, marginTop: 2 },
-  streakBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: COLORS.orange + '20', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
-  },
-  fireEmoji: { fontSize: 18 },
-  streakNum: { fontSize: 18, fontWeight: '800', color: COLORS.orange },
+  header: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
+  greeting: { fontSize: 18, fontWeight: '700' },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  streakTxt: { fontSize: 12 },
+  leaguePill: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  leagueTxt: { fontSize: 12, fontWeight: '700' },
+  card: { borderRadius: 16, padding: 16, ...SHADOWS.small },
+  xpRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  xpLeft: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  xpLbl: { fontSize: 13, fontWeight: '600' },
+  xpVal: { fontSize: 13, fontWeight: '700' },
+  xpBarBg: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  xpBarFill: { height: 8, borderRadius: 4 },
+  xpSub: { fontSize: 11, marginTop: 5 },
   statsRow: { flexDirection: 'row', gap: 10 },
-  card: { backgroundColor: COLORS.card, borderRadius: 16, ...SHADOWS.small },
-  xpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  xpLabel: { fontSize: 13, fontWeight: '600', color: COLORS.secondary },
-  xpBarBg: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
-  xpBarFill: { height: 8, backgroundColor: COLORS.yellow, borderRadius: 4 },
-  dailyCard: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 14 },
-  dailyDone: { opacity: 0.7 },
-  dailyIcon: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  dailyTitle: { fontSize: 15, fontWeight: '700', color: COLORS.dark },
-  dailySub: { fontSize: 13, color: COLORS.secondary, marginTop: 2 },
-  chevron: { fontSize: 22, color: COLORS.secondary },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: COLORS.dark, marginTop: 4 },
+  statCard: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4, ...SHADOWS.small },
+  statVal: { fontSize: 14, fontWeight: '800' },
+  statLbl: { fontSize: 10 },
+  dailyCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  dailyIcon: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  dailyTitle: { fontSize: 15, fontWeight: '700' },
+  dailySub: { fontSize: 12, marginTop: 2 },
+  sectionTitle: { fontSize: 16, fontWeight: '700' },
   topicsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  topicMini: {
-    width: '47%', backgroundColor: COLORS.card, borderRadius: 14, padding: 14, gap: 6,
-  },
-  topicMiniTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  topicMiniName: { fontSize: 13, fontWeight: '700', color: COLORS.dark, lineHeight: 18 },
-  miniBarBg: { height: 5, backgroundColor: COLORS.border, borderRadius: 3, overflow: 'hidden' },
+  topicCard: { width: '47%', borderRadius: 14, padding: 14, gap: 6 },
+  topicName: { fontSize: 12, fontWeight: '700', lineHeight: 17 },
+  miniBarBg: { height: 5, borderRadius: 3, overflow: 'hidden' },
   miniBarFill: { height: 5, borderRadius: 3 },
-  topicMiniPct: { fontSize: 11, color: COLORS.secondary },
-  examCard: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 14 },
-  examIcon: {
-    width: 52, height: 52, borderRadius: 12, backgroundColor: COLORS.primary + '15',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  examTitle: { fontSize: 15, fontWeight: '700', color: COLORS.dark },
-  examSub: { fontSize: 13, color: COLORS.secondary, marginTop: 2 },
+  topicPct: { fontSize: 11 },
+  examCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  examIcon: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  examTitle: { fontSize: 15, fontWeight: '700' },
+  examSub: { fontSize: 12, marginTop: 2 },
 });

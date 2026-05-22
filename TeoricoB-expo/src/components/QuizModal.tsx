@@ -4,12 +4,13 @@ import {
   SafeAreaView, ScrollView, Animated, Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg from 'react-native-svg';
 import { Question } from '../types';
-import { COLORS, SHADOWS } from '../theme';
 import { useStore } from '../store/useStore';
-import { TrafficSign, SignId } from './TrafficSign';
+import { useTheme } from '../hooks/useTheme';
+import { SHADOWS } from '../theme';
+import { TrafficSign } from './TrafficSign';
 
 interface Props {
   visible: boolean;
@@ -31,21 +32,19 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const [wrongCount, setWrongCount] = useState(0);
   const [done, setDone] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [currentHearts, setCurrentHearts] = useState(5);
 
   const user = useStore(s => s.user);
   const recordAnswer = useStore(s => s.recordAnswer);
   const loseHeart = useStore(s => s.loseHeart);
   const buyHeartWithGems = useStore(s => s.buyHeartWithGems);
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
+  const theme = useTheme();
 
   const progressAnim = useRef(new Animated.Value(0)).current;
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<any>(null);
-
-  // Runtime hearts count (starts from user.hearts at quiz start)
-  const [currentHearts, setCurrentHearts] = useState(user.hearts);
-  const [showNoHearts, setShowNoHearts] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
@@ -53,7 +52,6 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setCorrect(false); setCorrectCount(0); setWrongCount(0);
     setDone(false); setElapsed(0);
     setCurrentHearts(user.hearts);
-    setShowNoHearts(false);
     timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
     return () => clearInterval(timerRef.current);
   }, [visible]);
@@ -62,43 +60,46 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     if (!questions.length) return;
     Animated.spring(progressAnim, {
       toValue: (index + 1) / questions.length,
-      useNativeDriver: false,
-      tension: 50,
+      useNativeDriver: false, tension: 50,
     }).start();
   }, [index, questions.length]);
 
   if (!questions.length) return null;
 
-  // No hearts screen (shown at quiz start if hearts = 0)
-  if (visible && currentHearts <= 0 && !done && index === 0 && selected === null) {
+  // No hearts screen
+  if (visible && currentHearts <= 0 && !done && index === 0 && selected === null && !isExam) {
     const mins = minutesToNextHeart();
     return (
       <Modal visible={visible} animationType="slide">
-        <SafeAreaView style={nh.safe}>
+        <SafeAreaView style={[nh.safe, { backgroundColor: theme.bg }]}>
           <View style={nh.content}>
-            <Text style={nh.emoji}>💔</Text>
-            <Text style={nh.title}>Sin vidas</Text>
-            <Text style={nh.sub}>
-              Necesitas al menos una vida para estudiar.{'\n'}
-              Las vidas se recuperan automáticamente.
-            </Text>
-
-            <View style={nh.card}>
-              <Text style={nh.cardTitle}>⏱️ Próxima vida en</Text>
-              <Text style={nh.timer}>{mins} min</Text>
+            <View style={[nh.iconCircle, { backgroundColor: theme.wrong + '18' }]}>
+              <Ionicons name="heart-dislike" size={48} color={theme.wrong} />
             </View>
-
+            <Text style={[nh.title, { color: theme.textPrimary }]}>Sin vidas</Text>
+            <Text style={[nh.sub, { color: theme.textSecondary }]}>
+              Necesitas al menos una vida para estudiar.{'\n'}
+              Las vidas se recuperan automáticamente cada 30 minutos.
+            </Text>
+            <View style={[nh.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Ionicons name="time-outline" size={20} color={theme.textSecondary} />
+              <Text style={[nh.cardLabel, { color: theme.textSecondary }]}>Próxima vida en</Text>
+              <Text style={[nh.timer, { color: theme.primary }]}>{mins} min</Text>
+            </View>
             {user.gems >= 10 && (
               <TouchableOpacity
-                style={nh.gemBtn}
-                onPress={() => { buyHeartWithGems(); setCurrentHearts(v => v + 1); setShowNoHearts(false); }}
+                style={[nh.gemBtn, { backgroundColor: '#7B1FA2' }]}
+                onPress={() => { if (buyHeartWithGems()) setCurrentHearts(v => v + 1); }}
               >
-                <Text style={nh.gemBtnTxt}>💎 Usar 10 gemas para 1 vida</Text>
+                <Ionicons name="diamond" size={16} color="#fff" />
+                <Text style={nh.gemBtnTxt}>Usar 10 gemas · +1 vida</Text>
               </TouchableOpacity>
             )}
-
-            <TouchableOpacity style={nh.closeBtn} onPress={onClose}>
-              <Text style={nh.closeBtnTxt}>Volver</Text>
+            <TouchableOpacity
+              style={[nh.closeBtn, { borderColor: theme.border }]}
+              onPress={onClose}
+            >
+              <Text style={[nh.closeBtnTxt, { color: theme.textSecondary }]}>Volver</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -110,10 +111,10 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
 
   const shake = () => {
     Animated.sequence([
-      Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 8, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 10, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -10, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 8, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 55, useNativeDriver: true }),
     ]).start();
   };
 
@@ -123,47 +124,36 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     const isCorrect = idx === q.correctIndex;
     setCorrect(isCorrect);
     recordAnswer(isCorrect);
-
     if (isCorrect) {
       setCorrectCount(c => c + 1);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       setWrongCount(w => w + 1);
-      const newHearts = currentHearts - 1;
-      setCurrentHearts(newHearts);
+      setCurrentHearts(h => Math.max(0, h - 1));
       loseHeart();
       shake();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
     setShowFeedback(true);
+    feedbackAnim.setValue(0);
     Animated.spring(feedbackAnim, { toValue: 1, useNativeDriver: true, tension: 80 }).start();
   };
 
   const next = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     feedbackAnim.setValue(0);
-
-    // Block if no hearts (except in exam mode where we allow 3 errors)
-    if (!isExam && currentHearts <= 0) {
-      clearInterval(timerRef.current);
-      setDone(true);
-      return;
-    }
-
+    if (!isExam && currentHearts <= 0) { clearInterval(timerRef.current); setDone(true); return; }
     if (index < questions.length - 1) {
-      setIndex(i => i + 1);
-      setSelected(null);
-      setShowFeedback(false);
-      setCorrect(false);
+      setIndex(i => i + 1); setSelected(null); setShowFeedback(false); setCorrect(false);
     } else {
-      clearInterval(timerRef.current);
-      setDone(true);
+      clearInterval(timerRef.current); setDone(true);
     }
   };
 
   const xpEarned = correctCount * 10 + (wrongCount === 0 ? 20 : 0) + (elapsed < questions.length * 8 ? 10 : 0);
   const perfect = wrongCount === 0 && index === questions.length - 1;
   const examPassed = isExam ? wrongCount <= 3 : null;
+  const noHeartsEarly = !isExam && currentHearts <= 0 && index < questions.length - 1;
 
   const answerState = (idx: number): AnswerState => {
     if (selected === null) return 'idle';
@@ -174,47 +164,50 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
 
   const LETTERS = ['A', 'B', 'C', 'D'];
 
-  // ── Result screen ──────────────────────────────────────────
+  // ── Result screen ──────────────────────────────────────────────
   if (done) {
     const answered = correctCount + wrongCount;
     const pct = answered > 0 ? Math.round((correctCount / answered) * 100) : 0;
     const grade = pct >= 90 ? 'Sobresaliente' : pct >= 70 ? 'Notable' : pct >= 50 ? 'Aprobado' : 'Necesitas repasar';
-    const gradeEmoji = pct >= 90 ? '🌟' : pct >= 70 ? '⭐' : pct >= 50 ? '👍' : '📚';
-    const noHeartsEarly = !isExam && currentHearts <= 0 && index < questions.length - 1;
+    const gradeIcon = pct >= 90 ? 'ribbon' : pct >= 70 ? 'star' : pct >= 50 ? 'thumbs-up' : 'book';
+    const resultIcon = noHeartsEarly ? 'heart-dislike' : perfect ? 'trophy' : examPassed === false ? 'close-circle' : 'checkmark-circle';
+    const resultColor = noHeartsEarly ? theme.wrong : perfect ? theme.yellow : examPassed === false ? theme.wrong : theme.correct;
 
     return (
       <Modal visible={visible} animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.bg }}>
+        <SafeAreaView style={[rs.safe, { backgroundColor: theme.bg }]}>
           <ScrollView contentContainerStyle={rs.content}>
-            <LinearGradient
-              colors={noHeartsEarly ? ['#EF476F22', '#EF476F00'] : perfect ? ['#06D6A022', '#06D6A000'] : ['#FFD16622', '#FFD16600']}
-              style={rs.gradientTop}
-            />
-            <Text style={rs.bigEmoji}>{noHeartsEarly ? '💔' : gradeEmoji}</Text>
-            <Text style={rs.resultTitle}>
-              {noHeartsEarly ? 'Se acabaron las vidas' : isExam ? (examPassed ? '¡Examen Superado!' : 'Examen No Superado') : (perfect ? '¡Lección Perfecta!' : '¡Completado!')}
+            <View style={[rs.iconCircle, { backgroundColor: resultColor + '18' }]}>
+              <Ionicons name={resultIcon} size={52} color={resultColor} />
+            </View>
+            <Text style={[rs.resultTitle, { color: theme.textPrimary }]}>
+              {noHeartsEarly ? 'Sin vidas' :
+                isExam ? (examPassed ? 'Examen Superado' : 'Examen No Superado') :
+                perfect ? 'Lección Perfecta' : 'Completado'}
             </Text>
-
-            {noHeartsEarly && (
-              <Text style={rs.noHeartsMsg}>Has respondido {answered} preguntas antes de quedarte sin vidas.</Text>
-            )}
             {isExam && (
-              <Text style={[rs.examResult, { color: examPassed ? COLORS.correct : COLORS.wrong }]}>
-                {examPassed ? '✅ Habrías aprobado el teórico real' : `❌ ${wrongCount} errores (máx. 3 permitidos)`}
+              <Text style={[rs.examResult, { color: examPassed ? theme.correct : theme.wrong }]}>
+                {examPassed ? 'Habrías aprobado el teórico real' : `${wrongCount} errores — máx. 3 permitidos`}
               </Text>
             )}
-
-            <View style={rs.statsBox}>
-              <StatRow label="✅ Correctas"  value={`${correctCount}/${answered}`}     color={COLORS.correct} />
-              <StatRow label="❌ Fallos"      value={`${wrongCount}`}                   color={wrongCount > 0 ? COLORS.wrong : COLORS.secondary} />
-              <StatRow label="📊 Porcentaje" value={`${pct}%`} />
-              {!noHeartsEarly && <StatRow label="🏅 Nota" value={`${grade} ${gradeEmoji}`} />}
-              <StatRow label="⭐ XP ganados" value={`+${xpEarned} XP`}                color={COLORS.yellow} />
+            <View style={[rs.statsBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              {[
+                { label: 'Correctas', value: `${correctCount}/${answered}`, color: theme.correct },
+                { label: 'Fallos', value: `${wrongCount}`, color: wrongCount > 0 ? theme.wrong : theme.textSecondary },
+                { label: 'Porcentaje', value: `${pct}%`, color: theme.textPrimary },
+                { label: 'Calificación', value: grade, color: theme.textPrimary },
+                { label: 'XP ganados', value: `+${xpEarned} XP`, color: theme.yellow },
+              ].map(({ label, value, color }) => (
+                <View key={label} style={[rs.statRow, { borderBottomColor: theme.border }]}>
+                  <Text style={[rs.statLabel, { color: theme.textSecondary }]}>{label}</Text>
+                  <Text style={[rs.statValue, { color }]}>{value}</Text>
+                </View>
+              ))}
             </View>
-
-            <TouchableOpacity style={rs.btn} onPress={() => onComplete(xpEarned, perfect)} activeOpacity={0.85}>
-              <LinearGradient colors={[COLORS.primary, '#C62828']} style={rs.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                <Text style={rs.btnText}>Continuar</Text>
+            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect)}>
+              <LinearGradient colors={[theme.primary, theme.primary + 'CC']} style={rs.btn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                <Text style={rs.btnTxt}>Continuar</Text>
+                <Ionicons name="arrow-forward" size={18} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
@@ -223,66 +216,81 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     );
   }
 
-  // ── Quiz screen ─────────────────────────────────────────────
+  // ── Quiz screen ────────────────────────────────────────────────
   return (
     <Modal visible={visible} animationType="slide">
-      <SafeAreaView style={qs.safe}>
+      <SafeAreaView style={[qs.safe, { backgroundColor: theme.bg }]}>
         {/* Header */}
-        <View style={qs.header}>
-          <TouchableOpacity onPress={onClose} style={qs.closeBtn}>
-            <Text style={{ fontSize: 16, color: COLORS.secondary, fontWeight: '700' }}>✕</Text>
+        <View style={[qs.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <TouchableOpacity onPress={onClose} style={[qs.closeBtn, { backgroundColor: theme.bg2 }]}>
+            <Ionicons name="close" size={18} color={theme.textSecondary} />
           </TouchableOpacity>
-
           {/* Hearts */}
           <View style={qs.hearts}>
             {Array.from({ length: user.maxHearts }).map((_, i) => (
-              <Text key={i} style={[qs.heart, i >= currentHearts && qs.heartEmpty]}>❤️</Text>
+              <Ionicons
+                key={i}
+                name={i < currentHearts ? 'heart' : 'heart-outline'}
+                size={18}
+                color={i < currentHearts ? theme.wrong : theme.textTertiary}
+              />
             ))}
           </View>
-
-          <Text style={qs.counter}>{index + 1}/{questions.length}</Text>
+          <Text style={[qs.counter, { color: theme.textSecondary }]}>{index + 1}/{questions.length}</Text>
         </View>
 
-        {/* Progress */}
-        <View style={qs.progressBg}>
+        {/* Progress bar */}
+        <View style={[qs.progressBg, { backgroundColor: theme.bg2 }]}>
           <Animated.View style={[qs.progressFill, {
-            width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] })
+            backgroundColor: theme.primary,
+            width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
           }]} />
         </View>
 
         <ScrollView contentContainerStyle={qs.body} showsVerticalScrollIndicator={false}>
-          {/* Question */}
-          {/* Traffic sign image if applicable */}
+          {/* Traffic sign image */}
           {q.signId && (
-            <View style={qs.signContainer}>
-              <Svg width={110} height={110} viewBox="0 0 100 100">
-                <TrafficSign signId={q.signId as SignId} size={100} />
-              </Svg>
+            <View style={[qs.signContainer, { backgroundColor: theme.bg2 }]}>
+              <TrafficSign signId={q.signId} size={120} />
+              {q.legalRef && (
+                <Text style={[qs.legalRef, { color: theme.textTertiary }]}>{q.legalRef}</Text>
+              )}
             </View>
           )}
 
+          {/* Question */}
           <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
-            <Text style={[qs.question, q.signId && { fontSize: 16, marginTop: 4 }]}>{q.text}</Text>
+            <Text style={[qs.question, { color: theme.textPrimary }, q.signId && { fontSize: 16 }]}>{q.text}</Text>
           </Animated.View>
 
-          {/* Options */}
+          {/* Answer options */}
           <View style={qs.options}>
             {q.options.map((opt, idx) => {
               const state = answerState(idx);
+              const borderColor = state === 'correct' ? theme.correct : state === 'wrong' ? theme.wrong : theme.border;
+              const bgColor = state === 'correct' ? theme.correct + '12' : state === 'wrong' ? theme.wrong + '12' : state === 'dimmed' ? theme.bg2 : theme.card;
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={[qs.option, optStyle(state)]}
+                  style={[qs.option, { backgroundColor: bgColor, borderColor, borderWidth: state === 'idle' ? 1 : 2.5 }]}
                   onPress={() => selectAnswer(idx)}
                   disabled={selected !== null}
                   activeOpacity={0.8}
                 >
-                  <View style={[qs.optLetter, optLetterStyle(state)]}>
-                    <Text style={[qs.optLetterTxt, state === 'correct' && { color: COLORS.correct }, state === 'wrong' && { color: COLORS.wrong }]}>
-                      {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : LETTERS[idx]}
-                    </Text>
+                  <View style={[qs.optBadge, {
+                    backgroundColor: state === 'correct' ? theme.correct + '20' : state === 'wrong' ? theme.wrong + '20' : theme.bg2,
+                    borderColor,
+                    borderWidth: 1,
+                  }]}>
+                    {state === 'correct' && <Ionicons name="checkmark" size={14} color={theme.correct} />}
+                    {state === 'wrong' && <Ionicons name="close" size={14} color={theme.wrong} />}
+                    {(state === 'idle' || state === 'dimmed') && (
+                      <Text style={[qs.optLetter, { color: theme.textSecondary, opacity: state === 'dimmed' ? 0.4 : 1 }]}>{LETTERS[idx]}</Text>
+                    )}
                   </View>
-                  <Text style={[qs.optText, state === 'dimmed' && { opacity: 0.4 }]} numberOfLines={4}>{opt}</Text>
+                  <Text style={[qs.optText, { color: theme.textPrimary, opacity: state === 'dimmed' ? 0.35 : 1 }]} numberOfLines={4}>
+                    {opt}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
@@ -290,15 +298,20 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
 
           {/* Feedback */}
           {showFeedback && (
-            <Animated.View style={[qs.feedback, { backgroundColor: correct ? COLORS.correct + '14' : COLORS.wrong + '14' }, { opacity: feedbackAnim, transform: [{ scale: feedbackAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
-              <View style={[qs.feedbackBar, { backgroundColor: correct ? COLORS.correct : COLORS.wrong }]} />
+            <Animated.View style={[
+              qs.feedback,
+              { backgroundColor: correct ? theme.correct + '12' : theme.wrong + '12', opacity: feedbackAnim },
+            ]}>
+              <View style={[qs.feedbackBar, { backgroundColor: correct ? theme.correct : theme.wrong }]} />
               <View style={{ flex: 1 }}>
-                <Text style={[qs.feedbackTitle, { color: correct ? COLORS.correct : COLORS.wrong }]}>
-                  {correct ? `¡Correcto! +10 XP` : `Incorrecto ${!isExam && currentHearts <= 0 ? '· Sin vidas' : ''}`}
+                <Text style={[qs.feedbackTitle, { color: correct ? theme.correct : theme.wrong }]}>
+                  {correct ? `Correcto  +10 XP` : `Incorrecto${!isExam && currentHearts <= 0 ? ' · Sin vidas' : ''}`}
                 </Text>
-                <Text style={qs.feedbackExp}>{q.explanation}</Text>
+                <Text style={[qs.feedbackExp, { color: theme.textSecondary }]}>{q.explanation}</Text>
                 {!correct && (
-                  <Text style={qs.feedbackCorrect}>Respuesta: <Text style={{ color: COLORS.correct, fontWeight: '700' }}>{q.correctAnswer}</Text></Text>
+                  <Text style={[qs.feedbackCorrect, { color: theme.textSecondary }]}>
+                    Correcta: <Text style={{ color: theme.correct, fontWeight: '700' }}>{q.correctAnswer}</Text>
+                  </Text>
                 )}
               </View>
             </Animated.View>
@@ -308,17 +321,17 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
 
         {/* Continue button */}
         {showFeedback && (
-          <View style={qs.footer}>
-            <TouchableOpacity onPress={next} activeOpacity={0.85}>
+          <View style={[qs.footer, { backgroundColor: theme.bg, borderTopColor: theme.border }]}>
+            <TouchableOpacity onPress={next} activeOpacity={0.85} style={{ borderRadius: 16, overflow: 'hidden' }}>
               <LinearGradient
-                colors={correct ? [COLORS.correct, '#00897B'] : [COLORS.wrong, '#C62828']}
+                colors={correct ? [theme.correct, '#00897B'] : [theme.wrong, '#C62828']}
                 style={qs.continueBtn}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               >
                 <Text style={qs.continueTxt}>
-                  {!isExam && currentHearts <= 0 ? 'Ver resultado' :
-                    index === questions.length - 1 ? 'Ver resultado' : 'Continuar →'}
+                  {(!isExam && currentHearts <= 0) || index === questions.length - 1 ? 'Ver resultado' : 'Continuar'}
                 </Text>
+                <Ionicons name="arrow-forward" size={18} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -328,83 +341,58 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   );
 }
 
-function StatRow({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderColor: COLORS.border }}>
-      <Text style={{ color: COLORS.secondary, fontSize: 14 }}>{label}</Text>
-      <Text style={{ fontWeight: '700', fontSize: 14, color: color ?? COLORS.dark }}>{value}</Text>
-    </View>
-  );
-}
-
-const optStyle = (s: AnswerState) => ({
-  borderColor: s === 'correct' ? COLORS.correct : s === 'wrong' ? COLORS.wrong : COLORS.border,
-  borderWidth: s === 'idle' ? 1.5 : 2.5,
-  backgroundColor: s === 'correct' ? COLORS.correct + '12' : s === 'wrong' ? COLORS.wrong + '12' : s === 'dimmed' ? '#F8F8F8' : COLORS.card,
-  shadowColor: s === 'idle' ? '#000' : 'transparent',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: s === 'idle' ? 0.05 : 0,
-  shadowRadius: 4,
-  elevation: s === 'idle' ? 2 : 0,
-});
-const optLetterStyle = (s: AnswerState) => ({
-  borderColor: s === 'correct' ? COLORS.correct : s === 'wrong' ? COLORS.wrong : COLORS.border,
-  backgroundColor: s === 'idle' ? COLORS.bg : s === 'correct' ? COLORS.correct + '20' : s === 'wrong' ? COLORS.wrong + '20' : 'transparent',
-  borderWidth: 1.5,
-});
-
 const nh = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
+  safe: { flex: 1 },
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 },
-  emoji: { fontSize: 72 },
-  title: { fontSize: 28, fontWeight: '800', color: COLORS.dark },
-  sub: { fontSize: 15, color: COLORS.secondary, textAlign: 'center', lineHeight: 22 },
-  card: { backgroundColor: COLORS.card, borderRadius: 16, padding: 20, alignItems: 'center', width: '100%', ...SHADOWS.small },
-  cardTitle: { fontSize: 14, color: COLORS.secondary, marginBottom: 4 },
-  timer: { fontSize: 36, fontWeight: '800', color: COLORS.primary },
-  gemBtn: { backgroundColor: '#7B1FA2', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center' },
-  gemBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  closeBtn: { borderRadius: 14, borderWidth: 1.5, borderColor: COLORS.border, padding: 14, width: '100%', alignItems: 'center' },
-  closeBtnTxt: { color: COLORS.secondary, fontSize: 15, fontWeight: '600' },
+  iconCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 26, fontWeight: '800', textAlign: 'center' },
+  sub: { fontSize: 14, textAlign: 'center', lineHeight: 21 },
+  card: { width: '100%', borderRadius: 16, padding: 20, alignItems: 'center', gap: 6, borderWidth: 1 },
+  cardLabel: { fontSize: 13 },
+  timer: { fontSize: 38, fontWeight: '800' },
+  gemBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, padding: 15, width: '100%', justifyContent: 'center' },
+  gemBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  closeBtn: { borderRadius: 14, borderWidth: 1, padding: 14, width: '100%', alignItems: 'center' },
+  closeBtnTxt: { fontSize: 15, fontWeight: '600' },
 });
 
 const rs = StyleSheet.create({
-  content: { flexGrow: 1, padding: 24, paddingTop: 40, alignItems: 'center', gap: 12 },
-  gradientTop: { position: 'absolute', top: 0, left: 0, right: 0, height: 200 },
-  bigEmoji: { fontSize: 80, marginBottom: 8 },
-  resultTitle: { fontSize: 26, fontWeight: '800', color: COLORS.dark, textAlign: 'center' },
-  noHeartsMsg: { fontSize: 14, color: COLORS.secondary, textAlign: 'center' },
-  examResult: { fontSize: 15, fontWeight: '600', textAlign: 'center' },
-  statsBox: { width: '100%', backgroundColor: COLORS.card, borderRadius: 18, padding: 16, ...SHADOWS.small },
-  btn: { width: '100%', borderRadius: 16, overflow: 'hidden', marginTop: 8 },
-  btnGrad: { padding: 18, alignItems: 'center', borderRadius: 16 },
-  btnText: { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.5 },
+  safe: { flex: 1 },
+  content: { flexGrow: 1, padding: 24, paddingTop: 40, alignItems: 'center', gap: 14 },
+  iconCircle: { width: 90, height: 90, borderRadius: 45, alignItems: 'center', justifyContent: 'center' },
+  resultTitle: { fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  examResult: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  statsBox: { width: '100%', borderRadius: 18, padding: 16, borderWidth: 1, gap: 0 },
+  statRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 0.5 },
+  statLabel: { fontSize: 14 },
+  statValue: { fontSize: 14, fontWeight: '700' },
+  btn: { padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  btnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });
 
 const qs = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, backgroundColor: COLORS.card, borderBottomWidth: 1, borderColor: COLORS.border },
-  closeBtn: { padding: 8, backgroundColor: COLORS.bg, borderRadius: 20, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  hearts: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 4 },
-  heart: { fontSize: 18 },
-  heartEmpty: { opacity: 0.2 },
-  counter: { fontSize: 13, fontWeight: '700', color: COLORS.secondary, minWidth: 36, textAlign: 'right' },
-  signContainer: { alignItems: 'center', paddingVertical: 12, backgroundColor: COLORS.bg, borderRadius: 16, marginTop: 8 },
-  progressBg: { height: 6, backgroundColor: COLORS.border, overflow: 'hidden' },
-  progressFill: { height: 6, backgroundColor: COLORS.primary, borderRadius: 3 },
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 0.5 },
+  closeBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  hearts: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 5 },
+  counter: { fontSize: 13, fontWeight: '700', minWidth: 36, textAlign: 'right' },
+  progressBg: { height: 5, overflow: 'hidden' },
+  progressFill: { height: 5 },
   body: { padding: 20, gap: 14 },
-  question: { fontSize: 20, fontWeight: '700', color: COLORS.dark, textAlign: 'center', lineHeight: 30, marginVertical: 12, paddingHorizontal: 4 },
+  signContainer: { borderRadius: 16, padding: 20, alignItems: 'center', gap: 6 },
+  legalRef: { fontSize: 10, fontWeight: '600' },
+  question: { fontSize: 20, fontWeight: '700', textAlign: 'center', lineHeight: 28, marginVertical: 4, paddingHorizontal: 4 },
   options: { gap: 10 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: COLORS.card },
-  optLetter: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  optLetterTxt: { fontSize: 14, fontWeight: '800', color: COLORS.secondary },
-  optText: { flex: 1, fontSize: 15, color: COLORS.dark, lineHeight: 21 },
-  feedback: { flexDirection: 'row', borderRadius: 14, padding: 14, gap: 10, marginTop: 4 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16 },
+  optBadge: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  optLetter: { fontSize: 14, fontWeight: '800' },
+  optText: { flex: 1, fontSize: 15, lineHeight: 21 },
+  feedback: { flexDirection: 'row', borderRadius: 14, padding: 14, gap: 10 },
   feedbackBar: { width: 4, borderRadius: 2, alignSelf: 'stretch' },
   feedbackTitle: { fontSize: 15, fontWeight: '800', marginBottom: 4 },
-  feedbackExp: { fontSize: 13, color: COLORS.secondary, lineHeight: 20 },
-  feedbackCorrect: { fontSize: 13, color: COLORS.secondary, marginTop: 6 },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, paddingBottom: Platform.OS === 'ios' ? 32 : 16, backgroundColor: COLORS.bg, borderTopWidth: 1, borderColor: COLORS.border },
-  continueBtn: { borderRadius: 16, padding: 17, alignItems: 'center' },
-  continueTxt: { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
+  feedbackExp: { fontSize: 13, lineHeight: 20 },
+  feedbackCorrect: { fontSize: 13, marginTop: 6 },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, paddingBottom: Platform.OS === 'ios' ? 32 : 16, borderTopWidth: 0.5 },
+  continueBtn: { borderRadius: 16, padding: 17, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  continueTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });
