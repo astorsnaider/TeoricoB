@@ -2,7 +2,7 @@
 > App para estudiar el permiso de conducción B en España
 
 **Última actualización:** Mayo 2026  
-**Versión app:** 0.3.0  
+**Versión app:** 0.4.0  
 **Repositorio:** https://github.com/astorsnaider/TeoricoB  
 **Autor:** Astor Snaider
 
@@ -389,19 +389,21 @@ interface Question {
 
 ### Distribución de preguntas por tema (v0.3.0)
 
-| Tema | Lecciones | Preguntas |
-|------|-----------|-----------|
-| Señales de Tráfico | 3 | 21 |
-| Velocidades | 2 | 14 |
-| Preferencia de Paso | 2 | 12 |
-| Alcohol y Drogas | 2 | 13 |
-| Distancias y Adelantamiento | 1 | 7 |
-| Primeros Auxilios | 1 | 8 |
-| El Vehículo | 2 | 12 |
-| Conducción Eficiente | 1 | 7 |
-| Infracciones y Sanciones *(nuevo v0.3)* | 2 | 14 |
-| La Vía y el Entorno *(nuevo v0.3)* | 2 | 14 |
-| **TOTAL** | **18** | **~122** |
+| Tema | Lecciones | Preguntas | Con imagen |
+|------|-----------|-----------|-----------|
+| Señales de Tráfico | 5 | 49 | 22 (con SVG de señal) |
+| Velocidades | 2 | 14 | — |
+| Preferencia de Paso | 2 | 12 | — |
+| Alcohol y Drogas | 2 | 13 | — |
+| Distancias y Adelantamiento | 1 | 7 | — |
+| Primeros Auxilios | 1 | 8 | — |
+| El Vehículo | 2 | 12 | — |
+| Conducción Eficiente | 1 | 7 | — |
+| Infracciones y Sanciones | 2 | 14 | — |
+| La Vía y el Entorno | 2 | 14 | — |
+| **TOTAL** | **20** | **~150** | **22** |
+
+> Las preguntas con imagen muestran la señal SVG correspondiente durante el quiz. Las señales están referenciadas por su código oficial DGT (ej. "Señal R-2" para STOP).
 
 > El examen simulado toma 30 preguntas aleatorias del pool completo, igual que el examen real de la DGT.
 
@@ -679,7 +681,27 @@ No hay variables de entorno. La app no requiere claves de API ni configuración 
 
 ## 14. Registro de cambios
 
-### v0.3.0 — Mayo 2026 (actual)
+### v0.4.0 — Mayo 2026 (actual)
+
+**Nuevas funcionalidades:**
+- **Biblioteca de señales SVG**: 50+ señales de tráfico dibujadas como SVG vectoriales siguiendo el RGC (señales de peligro, prohibición, obligación, indicación, semáforos, marcas viales)
+- **Preguntas con imagen**: 22 preguntas nuevas con señal SVG real mostrada durante el quiz (lecciones "Identifica la Señal" y "Señales de Obligación y Especiales")
+- **Campo `legalRef`** en preguntas: referencia al artículo legal exacto (ej. "Art. 132 RGC")
+- **Tab "Manual"** en la navegación (5 tabs en total)
+- **Manual del Conductor completo**: 11 capítulos con señales ilustradas, normativa, consejos y alertas, basado en el manual oficial DGT
+- Links a recursos oficiales: manual DGT (PDF), BOE (RGC, LSV), cuadro de sanciones, etiquetas medioambientales
+- Aclaración legal: las preguntas son de elaboración propia (no reproducción del banco DGT, que está protegido por copyright)
+
+**Cambios técnicos:**
+- Nuevo archivo `src/components/TrafficSign.tsx`: componente `TrafficSign` con mapa de 50+ señales
+- Nuevo archivo `src/screens/ManualScreen.tsx`: manual interactivo con capítulos y señales incrustadas
+- `Question` interface ampliada con `signId?: string` y `legalRef?: string`
+- `QuizModal` muestra el SVG de la señal cuando `question.signId` está definido
+- `App.tsx` actualizado para incluir el tab Manual y tipo `Tab` ampliado
+
+---
+
+### v0.3.0 — Mayo 2026
 
 **Nuevas funcionalidades:**
 - Iconos SVG vectoriales por tema (señales de tráfico reales)
