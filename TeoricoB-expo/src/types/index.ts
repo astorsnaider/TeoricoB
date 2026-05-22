@@ -4,7 +4,9 @@ export interface Question {
   options: string[];
   correctIndex: number;
   explanation: string;
+  legalRef?: string;   // e.g. "Art. 132 RGC"
   category: string;
+  signId?: string;     // ID de señal SVG a mostrar (de TrafficSign.tsx)
 }
 
 export interface Lesson {

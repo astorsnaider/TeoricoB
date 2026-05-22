@@ -5,9 +5,11 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg from 'react-native-svg';
 import { Question } from '../types';
 import { COLORS, SHADOWS } from '../theme';
 import { useStore } from '../store/useStore';
+import { TrafficSign, SignId } from './TrafficSign';
 
 interface Props {
   visible: boolean;
@@ -250,8 +252,17 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
 
         <ScrollView contentContainerStyle={qs.body} showsVerticalScrollIndicator={false}>
           {/* Question */}
+          {/* Traffic sign image if applicable */}
+          {q.signId && (
+            <View style={qs.signContainer}>
+              <Svg width={110} height={110} viewBox="0 0 100 100">
+                <TrafficSign signId={q.signId as SignId} size={100} />
+              </Svg>
+            </View>
+          )}
+
           <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
-            <Text style={qs.question}>{q.text}</Text>
+            <Text style={[qs.question, q.signId && { fontSize: 16, marginTop: 4 }]}>{q.text}</Text>
           </Animated.View>
 
           {/* Options */}
@@ -378,6 +389,7 @@ const qs = StyleSheet.create({
   heart: { fontSize: 18 },
   heartEmpty: { opacity: 0.2 },
   counter: { fontSize: 13, fontWeight: '700', color: COLORS.secondary, minWidth: 36, textAlign: 'right' },
+  signContainer: { alignItems: 'center', paddingVertical: 12, backgroundColor: COLORS.bg, borderRadius: 16, marginTop: 8 },
   progressBg: { height: 6, backgroundColor: COLORS.border, overflow: 'hidden' },
   progressFill: { height: 6, backgroundColor: COLORS.primary, borderRadius: 3 },
   body: { padding: 20, gap: 14 },

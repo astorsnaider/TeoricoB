@@ -8,13 +8,15 @@ import HomeScreen from './src/screens/HomeScreen';
 import LearnScreen from './src/screens/LearnScreen';
 import LeagueScreen from './src/screens/LeagueScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import ManualScreen from './src/screens/ManualScreen';
 import { COLORS, SHADOWS } from './src/theme';
 
-type Tab = 'home' | 'learn' | 'league' | 'profile';
+type Tab = 'home' | 'learn' | 'manual' | 'league' | 'profile';
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: 'home',    label: 'Inicio',   emoji: '🏠' },
   { key: 'learn',   label: 'Aprender', emoji: '📚' },
+  { key: 'manual',  label: 'Manual',   emoji: '📖' },
   { key: 'league',  label: 'Liga',     emoji: '🏆' },
   { key: 'profile', label: 'Perfil',   emoji: '👤' },
 ];
@@ -48,6 +50,7 @@ export default function App() {
     switch (activeTab) {
       case 'home':    return <HomeScreen />;
       case 'learn':   return <LearnScreen />;
+      case 'manual':  return <ManualScreen />;
       case 'league':  return <LeagueScreen />;
       case 'profile': return <ProfileScreen />;
     }
