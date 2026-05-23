@@ -220,13 +220,20 @@ MATERIAL EDUCATIVO DE REFERENCIA
 
 DISEÑO DE SEÑALES DE TRÁFICO
 
-Los diseños técnicos de las señales viales están definidos por ley en el Anexo I
-del Reglamento General de Circulación y se consideran dominio público
-(Art. 13 Ley de Propiedad Intelectual). Las implementaciones SVG utilizadas
-proceden de:
-• Wikimedia Commons (categoría Road_signs_of_Spain), bajo licencia de
-  dominio público o Creative Commons. Atribución completa disponible en
-  la sección "Créditos detallados".
+Los diseños técnicos de las señales viales (forma, colores, símbolos, proporciones)
+están definidos por ley en el Anexo I del Reglamento General de Circulación
+(RD 1428/2003). Como disposición reglamentaria, estos diseños son DOMINIO PÚBLICO
+conforme al Art. 13 de la Ley de Propiedad Intelectual.
+
+Las representaciones SVG utilizadas en esta aplicación son implementaciones
+ORIGINALES del autor, dibujadas siguiendo las especificaciones técnicas oficiales
+del Anexo I del RGC. No reproducen artwork de terceros con copyright propio.
+
+Para una comparación visual con representaciones oficiales, el usuario puede
+consultar:
+• Wikimedia Commons → categorías "Road signs in Spain" y "Diagrams of road
+  signs of Spain" (mayoría en dominio público o CC BY-SA).
+• Catálogo oficial DGT y publicaciones del BOE.
 
 TECNOLOGÍAS
 
