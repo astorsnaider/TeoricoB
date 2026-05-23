@@ -10,8 +10,9 @@
 import React from 'react';
 import Svg, {
   Polygon, Circle, Rect, Path, Text as SvgText,
-  G, Line, Ellipse,
+  G, Line, Ellipse, SvgXml,
 } from 'react-native-svg';
+import { WIKIMEDIA_SIGNS } from '../data/signSvgsWikimedia';
 
 interface SProps { size?: number }
 
@@ -651,8 +652,18 @@ export type SignId =
 /**
  * Renderiza una señal de tráfico por su ID.
  * Retorna un componente Svg standalone — úsalo directamente, sin envolverlo en otro Svg.
+ *
+ * Prioridad de fuentes:
+ *   1. Versión original de Wikimedia Commons (si existe en signSvgsWikimedia.ts)
+ *   2. Versión hecha a mano (fallback en este archivo)
  */
 export function TrafficSign({ signId, size = 100 }: { signId: string; size?: number }) {
+  // Si hay versión Wikimedia disponible, úsala (mejor fidelidad visual)
+  const wikimedia = WIKIMEDIA_SIGNS[signId];
+  if (wikimedia) {
+    return <SvgXml xml={wikimedia.xml} width={size} height={size} />;
+  }
+
   const s = size;
   const map: Record<string, React.ReactElement> = {
     // Peligro

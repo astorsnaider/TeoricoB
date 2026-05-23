@@ -225,15 +225,20 @@ están definidos por ley en el Anexo I del Reglamento General de Circulación
 (RD 1428/2003). Como disposición reglamentaria, estos diseños son DOMINIO PÚBLICO
 conforme al Art. 13 de la Ley de Propiedad Intelectual.
 
-Las representaciones SVG utilizadas en esta aplicación son implementaciones
-ORIGINALES del autor, dibujadas siguiendo las especificaciones técnicas oficiales
-del Anexo I del RGC. No reproducen artwork de terceros con copyright propio.
+Las representaciones SVG utilizadas en esta aplicación provienen de dos fuentes:
 
-Para una comparación visual con representaciones oficiales, el usuario puede
-consultar:
-• Wikimedia Commons → categorías "Road signs in Spain" y "Diagrams of road
-  signs of Spain" (mayoría en dominio público o CC BY-SA).
-• Catálogo oficial DGT y publicaciones del BOE.
+(a) Wikimedia Commons (cuando está disponible).
+    Archivos en dominio público o Creative Commons. Atribución por archivo:
+    • Spain_traffic_signal_r2.svg  → STOP (dominio público)
+    • Spain_traffic_signal_s1a.svg → Autopista (dominio público)
+    Fuente: https://commons.wikimedia.org/wiki/Road_signs_of_Spain
+
+(b) Implementaciones ORIGINALES del autor (resto del catálogo).
+    Dibujadas siguiendo las especificaciones técnicas oficiales del Anexo I
+    del RGC. No reproducen artwork de terceros con copyright propio.
+
+A medida que se vayan añadiendo más señales del catálogo Wikimedia, esta
+lista se actualizará con la atribución correspondiente.
 
 TECNOLOGÍAS
 
