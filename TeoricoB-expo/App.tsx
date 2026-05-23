@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
 import { useTheme } from './src/hooks/useTheme';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import DisclaimerScreen from './src/screens/DisclaimerScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LearnScreen from './src/screens/LearnScreen';
 import ManualScreen from './src/screens/ManualScreen';
@@ -31,6 +32,7 @@ const TABS: TabDef[] = [
 
 export default function App() {
   const isOnboardingComplete = useStore(s => s.isOnboardingComplete);
+  const disclaimerAccepted = useStore(s => s.disclaimerAccepted);
   const generateLeagueStandings = useStore(s => s.generateLeagueStandings);
   const generateDailyChallenge = useStore(s => s.generateDailyChallenge);
   const dailyChallenge = useStore(s => s.dailyChallenge);
@@ -42,16 +44,26 @@ export default function App() {
   const theme = useTheme();
 
   useEffect(() => {
-    if (isOnboardingComplete) {
+    if (isOnboardingComplete && disclaimerAccepted) {
       generateLeagueStandings();
       if (!dailyChallenge) generateDailyChallenge();
     }
-  }, [isOnboardingComplete]);
+  }, [isOnboardingComplete, disclaimerAccepted]);
+
+  // Disclaimer first — legally required acceptance before any use
+  if (!disclaimerAccepted) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+        <DisclaimerScreen />
+      </SafeAreaProvider>
+    );
+  }
 
   if (!isOnboardingComplete) {
     return (
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <OnboardingScreen />
       </SafeAreaProvider>
     );

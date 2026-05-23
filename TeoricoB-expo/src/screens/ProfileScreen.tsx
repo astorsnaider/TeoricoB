@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore, getAllAchievements, getLeagueInfo } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
+import LegalScreen from './LegalScreen';
 
 export default function ProfileScreen() {
+  const [showLegal, setShowLegal] = useState(false);
+  if (showLegal) {
+    return <LegalScreen onBack={() => setShowLegal(false)} />;
+  }
+  return <ProfileMain onShowLegal={() => setShowLegal(true)} />;
+}
+
+function ProfileMain({ onShowLegal }: { onShowLegal: () => void }) {
   const user = useStore(s => s.user);
   const topics = useStore(s => s.topics);
   const resetProgress = useStore(s => s.resetProgress);
@@ -114,6 +123,12 @@ export default function ProfileScreen() {
               thumbColor={isDarkMode ? theme.primary : theme.textTertiary}
             />
           </View>
+          <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+          <TouchableOpacity style={s.settingRow} onPress={onShowLegal} activeOpacity={0.7}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={theme.textSecondary} />
+            <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Información legal</Text>
+            <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+          </TouchableOpacity>
         </View>
 
         {/* Reset */}
@@ -158,6 +173,7 @@ const s = StyleSheet.create({
   achievementName: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
   settingsCard: { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
   settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
+  settingDivider: { height: 0.5, marginHorizontal: 16 },
   settingLabel: { flex: 1, fontSize: 15, fontWeight: '500' },
   resetBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, borderWidth: 1.5, padding: 14 },
   resetTxt: { fontSize: 15, fontWeight: '600' },

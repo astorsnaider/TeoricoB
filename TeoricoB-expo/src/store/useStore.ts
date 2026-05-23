@@ -72,6 +72,8 @@ interface AppStore {
   resetProgress: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  disclaimerAccepted: boolean;
+  acceptDisclaimer: () => void;
 }
 
 const defaultUser: UserState = {
@@ -101,6 +103,8 @@ export const useStore = create<AppStore>()(
       user: defaultUser,
       isOnboardingComplete: false,
       isDarkMode: false,
+      disclaimerAccepted: false,
+      acceptDisclaimer: () => set({ disclaimerAccepted: true }),
       topics: ALL_TOPICS,
       leagueStandings: [],
       dailyChallenge: null,
@@ -265,7 +269,7 @@ export const useStore = create<AppStore>()(
     {
       name: 'teoricob-v2',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ user: s.user, isOnboardingComplete: s.isOnboardingComplete, dailyChallenge: s.dailyChallenge, isDarkMode: s.isDarkMode }),
+      partialize: (s) => ({ user: s.user, isOnboardingComplete: s.isOnboardingComplete, dailyChallenge: s.dailyChallenge, isDarkMode: s.isDarkMode, disclaimerAccepted: s.disclaimerAccepted }),
       merge: (persisted: any, current) => ({
         ...current,
         ...persisted,
