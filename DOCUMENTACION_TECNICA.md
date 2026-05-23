@@ -2,7 +2,7 @@
 > App para estudiar el permiso de conducción B en España
 
 **Última actualización:** Mayo 2026  
-**Versión app:** 0.4.0  
+**Versión app:** 0.5.0  
 **Repositorio:** https://github.com/astorsnaider/TeoricoB  
 **Autor:** Astor Snaider
 
