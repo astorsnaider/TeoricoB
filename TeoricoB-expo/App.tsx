@@ -42,6 +42,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = React.useState<Tab>('home');
   const theme = useTheme();
+  const requestedManualChapter = useStore(s => s.requestedManualChapter);
 
   useEffect(() => {
     if (isOnboardingComplete && disclaimerAccepted) {
@@ -49,6 +50,11 @@ export default function App() {
       if (!dailyChallenge) generateDailyChallenge();
     }
   }, [isOnboardingComplete, disclaimerAccepted]);
+
+  // Si una pantalla solicita abrir un capítulo del manual, cambia al tab Manual
+  useEffect(() => {
+    if (requestedManualChapter) setActiveTab('manual');
+  }, [requestedManualChapter]);
 
   // Disclaimer first — legally required acceptance before any use
   if (!disclaimerAccepted) {

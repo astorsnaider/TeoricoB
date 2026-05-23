@@ -6,7 +6,7 @@
  *  - ChapterView: renderiza un capítulo con bloques de contenido variados
  *  - SignCatalogView: renderiza un grupo de señales (existente)
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   SafeAreaView, Linking, Alert,
@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
+import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
 import { MANUAL_CHAPTERS, ManualChapter, ContentBlock } from '../data/manualContent';
@@ -305,6 +306,16 @@ type ManualView =
 export default function ManualScreen() {
   const [view, setView] = useState<ManualView>({ type: 'home' });
   const theme = useTheme();
+  const requestedChapter = useStore(s => s.requestedManualChapter);
+  const clearRequestedChapter = useStore(s => s.clearRequestedManualChapter);
+
+  // Si otra pantalla pide abrir un capítulo concreto, navegar a él
+  useEffect(() => {
+    if (requestedChapter) {
+      setView({ type: 'chapter', chapterId: requestedChapter });
+      clearRequestedChapter();
+    }
+  }, [requestedChapter]);
 
   const openUrl = (url: string) => Linking.openURL(url).catch(() =>
     Alert.alert('Error', 'No se pudo abrir el enlace. Comprueba tu conexión.')

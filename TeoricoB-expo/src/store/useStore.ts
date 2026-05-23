@@ -74,6 +74,11 @@ interface AppStore {
   toggleDarkMode: () => void;
   disclaimerAccepted: boolean;
   acceptDisclaimer: () => void;
+  setProfilePhoto: (uri: string | undefined) => void;
+  setAvatarColor: (color: string) => void;
+  requestedManualChapter: string | null;
+  requestManualChapter: (chapterId: string) => void;
+  clearRequestedManualChapter: () => void;
 }
 
 const defaultUser: UserState = {
@@ -105,6 +110,11 @@ export const useStore = create<AppStore>()(
       isDarkMode: false,
       disclaimerAccepted: false,
       acceptDisclaimer: () => set({ disclaimerAccepted: true }),
+      setProfilePhoto: (uri) => set(s => ({ user: { ...s.user, profilePhotoUri: uri } })),
+      setAvatarColor: (color) => set(s => ({ user: { ...s.user, avatarEmoji: color, profilePhotoUri: undefined } })),
+      requestedManualChapter: null,
+      requestManualChapter: (chapterId) => set({ requestedManualChapter: chapterId }),
+      clearRequestedManualChapter: () => set({ requestedManualChapter: null }),
       topics: ALL_TOPICS,
       leagueStandings: [],
       dailyChallenge: null,

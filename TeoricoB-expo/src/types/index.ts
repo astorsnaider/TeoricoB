@@ -40,7 +40,8 @@ export interface Friend {
 
 export interface UserState {
   name: string;
-  avatarEmoji: string;
+  avatarEmoji: string;     // hex color (legacy field name)
+  profilePhotoUri?: string; // optional photo URI (overrides color)
   xp: number;
   streak: number;
   hearts: number;

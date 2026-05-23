@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Modal,
-  SafeAreaView, ScrollView, Animated, Platform, Linking,
+  SafeAreaView, ScrollView, Animated, Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { useStore } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { TrafficSign } from './TrafficSign';
-import { getBoeUrl, getBoeLabel, getEffectiveLegalRef } from '../legal/boeLinks';
+import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
 
 interface Props {
   visible: boolean;
@@ -40,6 +40,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const loseHeart = useStore(s => s.loseHeart);
   const buyHeartWithGems = useStore(s => s.buyHeartWithGems);
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
+  const requestManualChapter = useStore(s => s.requestManualChapter);
   const theme = useTheme();
 
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -315,20 +316,23 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                   </Text>
                 )}
                 {(() => {
-                  const ref = getEffectiveLegalRef(q.legalRef, q.category);
-                  if (!ref) return null;
+                  const chapterId = getChapterIdForCategory(q.category);
+                  if (!chapterId) return null;
                   return (
                     <TouchableOpacity
                       style={[qs.boeBtn, { backgroundColor: theme.blue + '15', borderColor: theme.blue + '40' }]}
-                      onPress={() => Linking.openURL(getBoeUrl(ref)).catch(() => {})}
+                      onPress={() => {
+                        requestManualChapter(chapterId);
+                        onClose();
+                      }}
                       activeOpacity={0.7}
                     >
-                      <Ionicons name="document-text-outline" size={13} color={theme.blue} />
+                      <Ionicons name="book-outline" size={14} color={theme.blue} />
                       <View style={{ flex: 1 }}>
-                        <Text style={[qs.boeLabel, { color: theme.blue }]}>{ref}</Text>
-                        <Text style={[qs.boeSub, { color: theme.textTertiary }]}>{getBoeLabel(ref)}</Text>
+                        <Text style={[qs.boeLabel, { color: theme.blue }]}>Ampliar en el Manual</Text>
+                        <Text style={[qs.boeSub, { color: theme.textTertiary }]}>{getChapterLabel(chapterId)}</Text>
                       </View>
-                      <Ionicons name="open-outline" size={13} color={theme.blue} />
+                      <Ionicons name="chevron-forward" size={14} color={theme.blue} />
                     </TouchableOpacity>
                   );
                 })()}

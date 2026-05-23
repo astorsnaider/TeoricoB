@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, Switch, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useStore, getAllAchievements, getLeagueInfo } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
+import { AvatarView, AVATAR_COLORS } from '../components/AvatarView';
 import LegalScreen from './LegalScreen';
 
 export default function ProfileScreen() {
@@ -20,7 +22,10 @@ function ProfileMain({ onShowLegal }: { onShowLegal: () => void }) {
   const resetProgress = useStore(s => s.resetProgress);
   const isDarkMode = useStore(s => s.isDarkMode);
   const toggleDarkMode = useStore(s => s.toggleDarkMode);
+  const setProfilePhoto = useStore(s => s.setProfilePhoto);
+  const setAvatarColor = useStore(s => s.setAvatarColor);
   const theme = useTheme();
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   const league = getLeagueInfo(user.league);
   const achievements = getAllAchievements().map(a => ({ ...a, isUnlocked: user.achievements.includes(a.id) }));
@@ -34,21 +39,100 @@ function ProfileMain({ onShowLegal }: { onShowLegal: () => void }) {
     ]);
   };
 
+  const pickPhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Permiso necesario', 'Para elegir foto necesitamos acceso a tu galería.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.6,
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setProfilePhoto(result.assets[0].uri);
+    }
+  };
+
+  const removePhoto = () => {
+    Alert.alert('Quitar foto', '¿Volver al avatar de color?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Quitar', onPress: () => setProfilePhoto(undefined) },
+    ]);
+  };
+
+  const onAvatarPress = () => {
+    if (user.profilePhotoUri) {
+      Alert.alert('Foto de perfil', undefined, [
+        { text: 'Cambiar foto', onPress: pickPhoto },
+        { text: 'Quitar foto', style: 'destructive', onPress: removePhoto },
+        { text: 'Cancelar', style: 'cancel' },
+      ]);
+    } else {
+      Alert.alert('Avatar', undefined, [
+        { text: 'Elegir foto', onPress: pickPhoto },
+        { text: 'Cambiar color', onPress: () => setColorPickerOpen(true) },
+        { text: 'Cancelar', style: 'cancel' },
+      ]);
+    }
+  };
+
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Avatar */}
         <View style={s.profileHeader}>
-          <View style={[s.avatarCircle, { borderColor: league.color, backgroundColor: theme.card }]}>
-            <Text style={s.avatarEmoji}>{user.avatarEmoji}</Text>
-          </View>
+          <TouchableOpacity onPress={onAvatarPress} activeOpacity={0.8}>
+            <View style={s.avatarWrapper}>
+              <AvatarView
+                color={user.avatarEmoji}
+                name={user.name}
+                photoUri={user.profilePhotoUri}
+                size={94}
+                borderColor={league.color}
+                borderWidth={3}
+              />
+              <View style={[s.editBadge, { backgroundColor: theme.primary, borderColor: theme.bg }]}>
+                <Ionicons name={user.profilePhotoUri ? 'camera' : 'create'} size={13} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
           <Text style={[s.profileName, { color: theme.textPrimary }]}>{user.name}</Text>
           <View style={[s.leagueBadge, { backgroundColor: league.color + '18' }]}>
             <Text style={{ fontSize: 14 }}>{league.emoji}</Text>
             <Text style={[s.leagueTxt, { color: league.color }]}>Liga {user.league}</Text>
           </View>
         </View>
+
+        {/* Color picker modal */}
+        <Modal visible={colorPickerOpen} transparent animationType="fade" onRequestClose={() => setColorPickerOpen(false)}>
+          <View style={s.modalBackdrop}>
+            <View style={[s.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Text style={[s.modalTitle, { color: theme.textPrimary }]}>Elige tu color</Text>
+              <View style={s.colorGrid}>
+                {AVATAR_COLORS.map(c => (
+                  <TouchableOpacity
+                    key={c}
+                    style={[
+                      s.colorOption, { backgroundColor: c },
+                      c === user.avatarEmoji && { borderWidth: 3, borderColor: theme.textPrimary }
+                    ]}
+                    onPress={() => { setAvatarColor(c); setColorPickerOpen(false); }}
+                  />
+                ))}
+              </View>
+              <TouchableOpacity
+                style={[s.modalClose, { borderColor: theme.border }]}
+                onPress={() => setColorPickerOpen(false)}
+              >
+                <Text style={[s.modalCloseTxt, { color: theme.textSecondary }]}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         {/* Stats grid */}
         <View style={s.statsGrid}>
@@ -150,9 +234,21 @@ const s = StyleSheet.create({
   safe: { flex: 1 },
   content: { padding: 16, gap: 12 },
   profileHeader: { alignItems: 'center', gap: 8, paddingVertical: 8 },
-  avatarCircle: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 3, ...SHADOWS.medium },
-  avatarEmoji: { fontSize: 44 },
+  avatarWrapper: { position: 'relative', ...SHADOWS.medium },
+  editBadge: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2.5,
+  },
   profileName: { fontSize: 22, fontWeight: '800' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  modalCard: { width: '100%', maxWidth: 360, borderRadius: 20, padding: 24, borderWidth: 1, gap: 16 },
+  modalTitle: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
+  colorOption: { width: 50, height: 50, borderRadius: 25 },
+  modalClose: { borderWidth: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
+  modalCloseTxt: { fontSize: 14, fontWeight: '600' },
   leagueBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 6 },
   leagueTxt: { fontSize: 14, fontWeight: '700' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
