@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Modal,
-  SafeAreaView, ScrollView, Animated, Platform,
+  SafeAreaView, ScrollView, Animated, Platform, Linking,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { useStore } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { TrafficSign } from './TrafficSign';
+import { getBoeUrl, getBoeLabel, getEffectiveLegalRef } from '../legal/boeLinks';
 
 interface Props {
   visible: boolean;
@@ -313,6 +314,24 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                     Correcta: <Text style={{ color: theme.correct, fontWeight: '700' }}>{q.correctAnswer}</Text>
                   </Text>
                 )}
+                {(() => {
+                  const ref = getEffectiveLegalRef(q.legalRef, q.category);
+                  if (!ref) return null;
+                  return (
+                    <TouchableOpacity
+                      style={[qs.boeBtn, { backgroundColor: theme.blue + '15', borderColor: theme.blue + '40' }]}
+                      onPress={() => Linking.openURL(getBoeUrl(ref)).catch(() => {})}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="document-text-outline" size={13} color={theme.blue} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[qs.boeLabel, { color: theme.blue }]}>{ref}</Text>
+                        <Text style={[qs.boeSub, { color: theme.textTertiary }]}>{getBoeLabel(ref)}</Text>
+                      </View>
+                      <Ionicons name="open-outline" size={13} color={theme.blue} />
+                    </TouchableOpacity>
+                  );
+                })()}
               </View>
             </Animated.View>
           )}
@@ -392,6 +411,12 @@ const qs = StyleSheet.create({
   feedbackTitle: { fontSize: 15, fontWeight: '800', marginBottom: 4 },
   feedbackExp: { fontSize: 13, lineHeight: 20 },
   feedbackCorrect: { fontSize: 13, marginTop: 6 },
+  boeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginTop: 10, padding: 10, borderRadius: 10, borderWidth: 1,
+  },
+  boeLabel: { fontSize: 12, fontWeight: '800' },
+  boeSub: { fontSize: 10, marginTop: 1 },
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, paddingBottom: Platform.OS === 'ios' ? 32 : 16, borderTopWidth: 0.5 },
   continueBtn: { borderRadius: 16, padding: 17, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   continueTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
