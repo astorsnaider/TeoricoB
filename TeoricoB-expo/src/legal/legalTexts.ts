@@ -228,10 +228,17 @@ conforme al Art. 13 de la Ley de Propiedad Intelectual.
 Las representaciones SVG utilizadas en esta aplicación provienen de dos fuentes:
 
 (a) Wikimedia Commons (cuando está disponible).
-    Archivos en dominio público o Creative Commons. Atribución por archivo:
-    • Spain_traffic_signal_r2.svg  → STOP (dominio público)
-    • Spain_traffic_signal_s1a.svg → Autopista (dominio público)
+    Archivos en dominio público o Creative Commons. Señales actualmente usadas:
+    • R-2 STOP, R-1 Ceda el Paso, R-101 Entrada prohibida
+    • R-301 Velocidad máxima (30, 50, 90, 120 km/h)
+    • R-305 Prohibido adelantar
+    • P-1a/b Curva peligrosa (derecha/izquierda)
+    • P-5 Pavimento deslizante, P-7 Intersección
+    • P-17 Paso de peatones, P-18 Niños (2023)
+    • P-20 Obras (2023), P-22a Animales sueltos (2023)
+    • S-1a Autopista, S-17a Estacionamiento
     Fuente: https://commons.wikimedia.org/wiki/Road_signs_of_Spain
+    Atribución completa de cada archivo dentro de signSvgsWikimedia.ts
 
 (b) Implementaciones ORIGINALES del autor (resto del catálogo).
     Dibujadas siguiendo las especificaciones técnicas oficiales del Anexo I
