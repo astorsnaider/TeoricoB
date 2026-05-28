@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TeoricoB - App icon source (1024x1024)
+  Design: rounded square red background + white circular badge with "B" letter
+  Colors: #E63946 (primary red), #FFFFFF (white)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Rounded square background -->
+  <rect width="1024" height="1024" rx="224" ry="224" fill="#E63946"/>
+
+  <!-- Subtle inner gradient for depth -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FF6B7A" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#E63946" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#glow)"/>
+
+  <!-- Decorative road lines (subtle, top and bottom) -->
+  <g opacity="0.13" fill="#FFFFFF">
+    <rect x="180" y="170" width="44" height="14" rx="7"/>
+    <rect x="260" y="170" width="44" height="14" rx="7"/>
+    <rect x="340" y="170" width="44" height="14" rx="7"/>
+    <rect x="420" y="170" width="44" height="14" rx="7"/>
+    <rect x="500" y="170" width="44" height="14" rx="7"/>
+    <rect x="580" y="170" width="44" height="14" rx="7"/>
+    <rect x="660" y="170" width="44" height="14" rx="7"/>
+    <rect x="740" y="170" width="44" height="14" rx="7"/>
+    <rect x="820" y="170" width="44" height="14" rx="7"/>
+
+    <rect x="180" y="840" width="44" height="14" rx="7"/>
+    <rect x="260" y="840" width="44" height="14" rx="7"/>
+    <rect x="340" y="840" width="44" height="14" rx="7"/>
+    <rect x="420" y="840" width="44" height="14" rx="7"/>
+    <rect x="500" y="840" width="44" height="14" rx="7"/>
+    <rect x="580" y="840" width="44" height="14" rx="7"/>
+    <rect x="660" y="840" width="44" height="14" rx="7"/>
+    <rect x="740" y="840" width="44" height="14" rx="7"/>
+    <rect x="820" y="840" width="44" height="14" rx="7"/>
+  </g>
+
+  <!-- White circle badge -->
+  <circle cx="512" cy="512" r="320" fill="#FFFFFF"/>
+
+  <!-- Inner ring -->
+  <circle cx="512" cy="512" r="320" fill="none" stroke="#E63946" stroke-width="14" opacity="0.18"/>
+
+  <!-- Letter "B" -->
+  <text
+    x="512" y="650"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif"
+    font-weight="900"
+    font-size="460"
+    fill="#E63946"
+    text-anchor="middle"
+    letter-spacing="-12">B</text>
+</svg>
