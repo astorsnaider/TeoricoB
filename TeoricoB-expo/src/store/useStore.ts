@@ -57,7 +57,7 @@ interface AppStore {
   restoreHeart: () => void;
   buyHeartWithGems: () => boolean;
   tickHeartRegen: () => void;
-  recordAnswer: (correct: boolean) => void;
+  recordAnswer: (correct: boolean, category?: string) => void;
   completeLesson: (lessonId: string, topicId: string, xpEarned: number, perfect: boolean) => void;
   completeDailyChallenge: () => void;
   updateStreak: () => void;
@@ -79,6 +79,7 @@ interface AppStore {
   requestedManualChapter: string | null;
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
+  saveExamResult: (result: import('../types').ExamResult) => void;
 }
 
 const defaultUser: UserState = {
@@ -100,6 +101,8 @@ const defaultUser: UserState = {
   weeklyXP: 0,
   gems: 50,
   friends: MOCK_FRIENDS,
+  topicStats: {},
+  examHistory: [],
 };
 
 export const useStore = create<AppStore>()(
@@ -185,9 +188,30 @@ export const useStore = create<AppStore>()(
         return Math.max(0, Math.ceil(HEART_REGEN_MINUTES - (elapsed % HEART_REGEN_MINUTES)));
       },
 
-      recordAnswer: (correct) => set(s => ({
-        user: { ...s.user, totalAnswered: s.user.totalAnswered + 1, totalCorrect: s.user.totalCorrect + (correct ? 1 : 0) }
-      })),
+      recordAnswer: (correct, category) => set(s => {
+        const stats = { ...(s.user.topicStats ?? {}) };
+        if (category) {
+          const prev = stats[category] ?? { correct: 0, total: 0 };
+          stats[category] = { correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 };
+        }
+        return {
+          user: {
+            ...s.user,
+            totalAnswered: s.user.totalAnswered + 1,
+            totalCorrect: s.user.totalCorrect + (correct ? 1 : 0),
+            topicStats: stats,
+          }
+        };
+      }),
+
+      saveExamResult: (result) => set(s => {
+        const history = [result, ...(s.user.examHistory ?? [])].slice(0, 50); // máximo 50 examenes
+        const newAchievements = [...s.user.achievements];
+        if (result.passed && !newAchievements.includes('exam_pass')) newAchievements.push('exam_pass');
+        const addedId = newAchievements.find(id => !s.user.achievements.includes(id));
+        const newAchievement = addedId ? ACHIEVEMENTS.find(a => a.id === addedId) ?? null : s.newAchievement;
+        return { user: { ...s.user, examHistory: history, achievements: newAchievements }, newAchievement };
+      }),
 
       completeLesson: (lessonId, topicId, xpEarned, perfect) => {
         set(s => {

@@ -47,7 +47,9 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const buyHeartWithGems = useStore(s => s.buyHeartWithGems);
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
   const requestManualChapter = useStore(s => s.requestManualChapter);
+  const saveExamResult = useStore(s => s.saveExamResult);
   const theme = useTheme();
+  const savedExamRef = useRef(false);
 
   const progressAnim = useRef(new Animated.Value(0)).current;
   const feedbackAnim = useRef(new Animated.Value(0)).current;
@@ -60,6 +62,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setCorrect(false); setCorrectCount(0); setWrongCount(0);
     setDone(false); setElapsed(0); setAnswers([]); setShowReview(false);
     setCurrentHearts(user.hearts);
+    savedExamRef.current = false;
     timerRef.current = setInterval(() => {
       setElapsed(e => {
         const next = e + 1;
@@ -142,7 +145,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setSelected(idx);
     const isCorrect = idx === q.correctIndex;
     setCorrect(isCorrect);
-    recordAnswer(isCorrect);
+    recordAnswer(isCorrect, q.category);
     // Track de respuesta para la pantalla de repaso
     setAnswers(prev => [...prev, { qIndex: index, selectedIndex: idx, isCorrect }]);
     if (isCorrect) {
@@ -202,6 +205,19 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     const examTooManyErrors = isExam && wrongCount > EXAM_MAX_ERRORS;
     const mmExam = Math.floor(elapsed / 60);
     const ssExam = elapsed % 60;
+
+    // Guardar examen en historial una sola vez
+    if (isExam && !savedExamRef.current) {
+      savedExamRef.current = true;
+      saveExamResult({
+        date: new Date().toISOString(),
+        totalQuestions: questions.length,
+        correctCount,
+        wrongCount,
+        timeElapsed: elapsed,
+        passed: !!examPassed,
+      });
+    }
 
     // Pantalla de REPASO de fallos
     if (showReview) {

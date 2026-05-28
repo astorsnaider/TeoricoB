@@ -7,16 +7,17 @@ import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { AvatarView, AVATAR_COLORS } from '../components/AvatarView';
 import LegalScreen from './LegalScreen';
+import StatsScreen from './StatsScreen';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
-  if (showLegal) {
-    return <LegalScreen onBack={() => setShowLegal(false)} />;
-  }
-  return <ProfileMain onShowLegal={() => setShowLegal(true)} />;
+  const [showStats, setShowStats] = useState(false);
+  if (showLegal) return <LegalScreen onBack={() => setShowLegal(false)} />;
+  if (showStats) return <StatsScreen onBack={() => setShowStats(false)} />;
+  return <ProfileMain onShowLegal={() => setShowLegal(true)} onShowStats={() => setShowStats(true)} />;
 }
 
-function ProfileMain({ onShowLegal }: { onShowLegal: () => void }) {
+function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; onShowStats: () => void }) {
   const user = useStore(s => s.user);
   const topics = useStore(s => s.topics);
   const resetProgress = useStore(s => s.resetProgress);
@@ -207,6 +208,12 @@ function ProfileMain({ onShowLegal }: { onShowLegal: () => void }) {
               thumbColor={isDarkMode ? theme.primary : theme.textTertiary}
             />
           </View>
+          <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+          <TouchableOpacity style={s.settingRow} onPress={onShowStats} activeOpacity={0.7}>
+            <Ionicons name="stats-chart-outline" size={20} color={theme.textSecondary} />
+            <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Estadísticas detalladas</Text>
+            <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+          </TouchableOpacity>
           <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
           <TouchableOpacity style={s.settingRow} onPress={onShowLegal} activeOpacity={0.7}>
             <Ionicons name="shield-checkmark-outline" size={20} color={theme.textSecondary} />

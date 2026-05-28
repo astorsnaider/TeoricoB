@@ -38,6 +38,20 @@ export interface Friend {
   league: LeagueType;
 }
 
+export interface TopicStat {
+  correct: number;
+  total: number;
+}
+
+export interface ExamResult {
+  date: string;           // ISO timestamp
+  totalQuestions: number; // siempre 30
+  correctCount: number;
+  wrongCount: number;
+  timeElapsed: number;    // segundos
+  passed: boolean;        // true si <= 3 fallos y termino a tiempo
+}
+
 export interface UserState {
   name: string;
   avatarEmoji: string;     // hex color (legacy field name)
@@ -58,6 +72,8 @@ export interface UserState {
   weeklyXP: number;
   gems: number;
   friends: Friend[];
+  topicStats: Record<string, TopicStat>;  // accuracy por categoria de pregunta
+  examHistory: ExamResult[];               // ultimos 50 examenes
 }
 
 export interface Achievement {
