@@ -24,6 +24,10 @@ interface Props {
 
 type AnswerState = 'idle' | 'correct' | 'wrong' | 'dimmed';
 
+const EXAM_TIME_LIMIT_SEC = 30 * 60; // 30 minutos (formato DGT)
+const EXAM_MAX_ERRORS = 3;
+type AnswerRecord = { qIndex: number; selectedIndex: number; isCorrect: boolean };
+
 export default function QuizModal({ visible, questions, title, isExam, onClose, onComplete }: Props) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -34,6 +38,8 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const [done, setDone] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [currentHearts, setCurrentHearts] = useState(5);
+  const [answers, setAnswers] = useState<AnswerRecord[]>([]);
+  const [showReview, setShowReview] = useState(false);
 
   const user = useStore(s => s.user);
   const recordAnswer = useStore(s => s.recordAnswer);
@@ -52,11 +58,22 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     if (!visible) return;
     setIndex(0); setSelected(null); setShowFeedback(false);
     setCorrect(false); setCorrectCount(0); setWrongCount(0);
-    setDone(false); setElapsed(0);
+    setDone(false); setElapsed(0); setAnswers([]); setShowReview(false);
     setCurrentHearts(user.hearts);
-    timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    timerRef.current = setInterval(() => {
+      setElapsed(e => {
+        const next = e + 1;
+        // En examen: auto-end al llegar al tiempo limite
+        if (isExam && next >= EXAM_TIME_LIMIT_SEC) {
+          clearInterval(timerRef.current);
+          setDone(true);
+          return EXAM_TIME_LIMIT_SEC;
+        }
+        return next;
+      });
+    }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [visible]);
+  }, [visible, isExam]);
 
   useEffect(() => {
     if (!questions.length) return;
@@ -126,13 +143,18 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     const isCorrect = idx === q.correctIndex;
     setCorrect(isCorrect);
     recordAnswer(isCorrect);
+    // Track de respuesta para la pantalla de repaso
+    setAnswers(prev => [...prev, { qIndex: index, selectedIndex: idx, isCorrect }]);
     if (isCorrect) {
       setCorrectCount(c => c + 1);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       setWrongCount(w => w + 1);
-      setCurrentHearts(h => Math.max(0, h - 1));
-      loseHeart();
+      // En examen NO se pierden vidas (es solo un test)
+      if (!isExam) {
+        setCurrentHearts(h => Math.max(0, h - 1));
+        loseHeart();
+      }
       shake();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
@@ -145,6 +167,8 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     feedbackAnim.setValue(0);
     if (!isExam && currentHearts <= 0) { clearInterval(timerRef.current); setDone(true); return; }
+    // En examen: si ya he superado el máximo de errores, termino aquí
+    if (isExam && wrongCount > EXAM_MAX_ERRORS) { clearInterval(timerRef.current); setDone(true); return; }
     if (index < questions.length - 1) {
       setIndex(i => i + 1); setSelected(null); setShowFeedback(false); setCorrect(false);
     } else {
@@ -171,9 +195,67 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     const answered = correctCount + wrongCount;
     const pct = answered > 0 ? Math.round((correctCount / answered) * 100) : 0;
     const grade = pct >= 90 ? 'Sobresaliente' : pct >= 70 ? 'Notable' : pct >= 50 ? 'Aprobado' : 'Necesitas repasar';
-    const gradeIcon = pct >= 90 ? 'ribbon' : pct >= 70 ? 'star' : pct >= 50 ? 'thumbs-up' : 'book';
     const resultIcon = noHeartsEarly ? 'heart-dislike' : perfect ? 'trophy' : examPassed === false ? 'close-circle' : 'checkmark-circle';
     const resultColor = noHeartsEarly ? theme.wrong : perfect ? theme.yellow : examPassed === false ? theme.wrong : theme.correct;
+    const wrongAnswers = answers.filter(a => !a.isCorrect);
+    const examTimeOut = isExam && elapsed >= EXAM_TIME_LIMIT_SEC && wrongCount <= EXAM_MAX_ERRORS;
+    const examTooManyErrors = isExam && wrongCount > EXAM_MAX_ERRORS;
+    const mmExam = Math.floor(elapsed / 60);
+    const ssExam = elapsed % 60;
+
+    // Pantalla de REPASO de fallos
+    if (showReview) {
+      return (
+        <Modal visible={visible} animationType="slide">
+          <SafeAreaView style={[rs.safe, { backgroundColor: theme.bg }]}>
+            <View style={[qs.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+              <TouchableOpacity onPress={() => setShowReview(false)} style={[qs.closeBtn, { backgroundColor: theme.bg2 }]}>
+                <Ionicons name="arrow-back" size={18} color={theme.textSecondary} />
+              </TouchableOpacity>
+              <Text style={[qs.examCenter, { fontSize: 15, fontWeight: '700', color: theme.textPrimary, textAlign: 'center' }]}>
+                Repaso de fallos
+              </Text>
+              <Text style={[qs.counter, { color: theme.textSecondary }]}>{wrongAnswers.length}</Text>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+              {wrongAnswers.length === 0 ? (
+                <View style={{ padding: 32, alignItems: 'center' }}>
+                  <Ionicons name="checkmark-circle" size={48} color={theme.correct} />
+                  <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '700', color: theme.textPrimary }}>¡Sin fallos!</Text>
+                </View>
+              ) : wrongAnswers.map((a, i) => {
+                const q = questions[a.qIndex];
+                return (
+                  <View key={i} style={{ backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border, gap: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <View style={{ backgroundColor: theme.wrong, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                        <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Pregunta {a.qIndex + 1}</Text>
+                      </View>
+                      {q.legalRef && (
+                        <Text style={{ fontSize: 11, color: theme.textTertiary, fontWeight: '600' }}>{q.legalRef}</Text>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: theme.textPrimary, lineHeight: 19 }}>{q.text}</Text>
+                    <View style={{ borderLeftWidth: 3, borderLeftColor: theme.wrong, paddingLeft: 10, gap: 2 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: theme.wrong }}>TU RESPUESTA</Text>
+                      <Text style={{ fontSize: 13, color: theme.textSecondary, textDecorationLine: 'line-through' }}>{q.options[a.selectedIndex]}</Text>
+                    </View>
+                    <View style={{ borderLeftWidth: 3, borderLeftColor: theme.correct, paddingLeft: 10, gap: 2 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: theme.correct }}>RESPUESTA CORRECTA</Text>
+                      <Text style={{ fontSize: 13, color: theme.textPrimary, fontWeight: '700' }}>{q.options[q.correctIndex]}</Text>
+                    </View>
+                    <View style={{ backgroundColor: theme.bg2, borderRadius: 8, padding: 10 }}>
+                      <Text style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>{q.explanation}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+      );
+    }
 
     return (
       <Modal visible={visible} animationType="slide">
@@ -189,23 +271,42 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
             </Text>
             {isExam && (
               <Text style={[rs.examResult, { color: examPassed ? theme.correct : theme.wrong }]}>
-                {examPassed ? 'Habrías aprobado el teórico real' : `${wrongCount} errores — máx. 3 permitidos`}
+                {examTimeOut ? `Se acabó el tiempo · ${wrongCount} errores` :
+                 examTooManyErrors ? `${wrongCount} errores — máx. ${EXAM_MAX_ERRORS} permitidos` :
+                 examPassed ? 'Habrías aprobado el teórico real' :
+                 `${wrongCount} errores — máx. ${EXAM_MAX_ERRORS} permitidos`}
               </Text>
             )}
             <View style={[rs.statsBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
               {[
-                { label: 'Correctas', value: `${correctCount}/${answered}`, color: theme.correct },
-                { label: 'Fallos', value: `${wrongCount}`, color: wrongCount > 0 ? theme.wrong : theme.textSecondary },
-                { label: 'Porcentaje', value: `${pct}%`, color: theme.textPrimary },
-                { label: 'Calificación', value: grade, color: theme.textPrimary },
-                { label: 'XP ganados', value: `+${xpEarned} XP`, color: theme.yellow },
-              ].map(({ label, value, color }) => (
+                { label: 'Correctas', value: `${correctCount}/${answered}`, color: theme.correct, show: true },
+                { label: 'Fallos', value: `${wrongCount}${isExam ? `/${EXAM_MAX_ERRORS}` : ''}`, color: wrongCount > 0 ? theme.wrong : theme.textSecondary, show: true },
+                { label: 'Porcentaje', value: `${pct}%`, color: theme.textPrimary, show: true },
+                { label: 'Tiempo', value: `${mmExam}:${ssExam.toString().padStart(2, '0')}`, color: theme.textPrimary, show: isExam },
+                { label: 'Calificación', value: grade, color: theme.textPrimary, show: !isExam },
+                { label: 'XP ganados', value: `+${xpEarned} XP`, color: theme.yellow, show: !isExam },
+              ].filter(s => s.show).map(({ label, value, color }) => (
                 <View key={label} style={[rs.statRow, { borderBottomColor: theme.border }]}>
                   <Text style={[rs.statLabel, { color: theme.textSecondary }]}>{label}</Text>
                   <Text style={[rs.statValue, { color }]}>{value}</Text>
                 </View>
               ))}
             </View>
+
+            {/* Boton de repaso solo si hay fallos */}
+            {wrongAnswers.length > 0 && (
+              <TouchableOpacity
+                style={{ width: '100%', borderRadius: 14, borderWidth: 1.5, borderColor: theme.blue, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onPress={() => setShowReview(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="book-outline" size={18} color={theme.blue} />
+                <Text style={{ color: theme.blue, fontSize: 15, fontWeight: '700' }}>
+                  Repasar {wrongAnswers.length} fallo{wrongAnswers.length === 1 ? '' : 's'}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect)}>
               <LinearGradient colors={[theme.primary, theme.primary + 'CC']} style={rs.btn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <Text style={rs.btnTxt}>Continuar</Text>
@@ -227,17 +328,48 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
           <TouchableOpacity onPress={onClose} style={[qs.closeBtn, { backgroundColor: theme.bg2 }]}>
             <Ionicons name="close" size={18} color={theme.textSecondary} />
           </TouchableOpacity>
-          {/* Hearts */}
-          <View style={qs.hearts}>
-            {Array.from({ length: user.maxHearts }).map((_, i) => (
-              <Ionicons
-                key={i}
-                name={i < currentHearts ? 'heart' : 'heart-outline'}
-                size={18}
-                color={i < currentHearts ? theme.wrong : theme.textTertiary}
-              />
-            ))}
-          </View>
+
+          {isExam ? (
+            <>
+              {/* Timer cuenta atrás en modo examen */}
+              <View style={qs.examCenter}>
+                {(() => {
+                  const remaining = Math.max(0, EXAM_TIME_LIMIT_SEC - elapsed);
+                  const mm = Math.floor(remaining / 60);
+                  const ss = remaining % 60;
+                  const lowTime = remaining < 5 * 60;
+                  return (
+                    <View style={[qs.timerPill, { backgroundColor: lowTime ? theme.wrong + '20' : theme.bg2 }]}>
+                      <Ionicons name="time" size={14} color={lowTime ? theme.wrong : theme.textPrimary} />
+                      <Text style={[qs.timerTxt, { color: lowTime ? theme.wrong : theme.textPrimary }]}>
+                        {mm}:{ss.toString().padStart(2, '0')}
+                      </Text>
+                    </View>
+                  );
+                })()}
+                {/* Contador de errores */}
+                <View style={[qs.errorsPill, { backgroundColor: wrongCount >= EXAM_MAX_ERRORS ? theme.wrong + '20' : theme.bg2 }]}>
+                  <Ionicons name="close-circle" size={14} color={wrongCount >= EXAM_MAX_ERRORS ? theme.wrong : theme.textPrimary} />
+                  <Text style={[qs.timerTxt, { color: wrongCount >= EXAM_MAX_ERRORS ? theme.wrong : theme.textPrimary }]}>
+                    {wrongCount}/{EXAM_MAX_ERRORS}
+                  </Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            /* Hearts en modo normal */
+            <View style={qs.hearts}>
+              {Array.from({ length: user.maxHearts }).map((_, i) => (
+                <Ionicons
+                  key={i}
+                  name={i < currentHearts ? 'heart' : 'heart-outline'}
+                  size={18}
+                  color={i < currentHearts ? theme.wrong : theme.textTertiary}
+                />
+              ))}
+            </View>
+          )}
+
           <Text style={[qs.counter, { color: theme.textSecondary }]}>{index + 1}/{questions.length}</Text>
         </View>
 
@@ -399,6 +531,10 @@ const qs = StyleSheet.create({
   closeBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   hearts: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 5 },
   counter: { fontSize: 13, fontWeight: '700', minWidth: 36, textAlign: 'right' },
+  examCenter: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  timerPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  errorsPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  timerTxt: { fontSize: 13, fontWeight: '800', fontVariant: ['tabular-nums'] },
   progressBg: { height: 5, overflow: 'hidden' },
   progressFill: { height: 5 },
   body: { padding: 20, gap: 14 },
