@@ -392,16 +392,16 @@ interface Question {
 | Tema | Lecciones | Preguntas | Con imagen |
 |------|-----------|-----------|-----------|
 | Señales de Tráfico | 5 | 46 | ~32 (con SVG Wikimedia) |
-| Velocidades | 3 | 27 | 8 (con SVG de velocidad) |
-| Preferencia de Paso | 3 | 26 | 3 (con SVG) |
+| Velocidades | 3 | 31 | 11 (con SVG de velocidad) |
+| Preferencia de Paso | 3 | 28 | 3 (con SVG) |
 | Alcohol y Drogas | 3 | 26 | — |
-| Distancias y Adelantamiento | 2 | 21 | 3 (con SVG) |
-| Primeros Auxilios | 2 | 22 | — |
-| El Vehículo | 3 | 26 | — |
-| Conducción Eficiente | 2 | 17 | — |
+| Distancias y Adelantamiento | 2 | 24 | 3 (con SVG) |
+| Primeros Auxilios | 2 | 25 | — |
+| El Vehículo | 4 | 38 | — |
+| Conducción Eficiente | 2 | 21 | — |
 | Infracciones y Sanciones | 2 | 19 | — |
-| La Vía y el Entorno | 3 | 28 | — |
-| **TOTAL** | **28** | **258** | **~46** |
+| La Vía y el Entorno | 4 | 42 | — |
+| **TOTAL** | **30** | **300** | **~50** |
 
 > Las preguntas con imagen muestran la señal SVG correspondiente durante el quiz. Las señales están referenciadas por su código oficial DGT (ej. "Señal R-2" para STOP).
 
@@ -714,7 +714,19 @@ Tras detectar que muchas preguntas eran demasiado simples (definiciones puras ti
 - Infracciones inf_l2: +5 sobre SRI menores, neumático en mal estado, carné caducado, móvil vs cinturón, descuento por pronto pago.
 - Vías via_l3: +4 sobre cambio de sentido prohibido, BUS-VAO, kamikaze en autopista, lado de estacionamiento.
 
-**Estado final:** 258 preguntas (subió de 220, neto +38). El target era 300; resta una sesión adicional para llegar al objetivo final.
+**Estado final tras Fase C extendida:** **300 preguntas exactas** (subió de 220, neto +80). Objetivo alcanzado.
+
+**Lecciones nuevas añadidas:**
+- `veh_l4` "Pasajeros y Carga" (12 preguntas): SRI infantil, airbag con sillita, portabicis y matrícula V-20, carga sobresaliente, transporte de animales, baca/cofre, exceso de plazas.
+- `via_l4` "Maniobras" (12 preguntas): marcha atrás, estacionamiento en batería y línea, orientación de ruedas en pendiente, giro a la izquierda multicarril, cambio de carril (espejos + punto ciego), abrir puerta sin mirar (dooring), giro en U prohibido, atasco con warning.
+
+**Ampliaciones en lecciones existentes:**
+- `eco_l2` Etiquetas DGT y ZBE (+4): etiqueta para motos, modo ECO, residentes en ZBE, ventilación interior recirculada.
+- `vel_l1` Límites Generales (+3): plataforma única (20 km/h), furgoneta hasta 3.500 kg, remolque ligero ≤750 kg.
+- `dist_l1` Distancia de Seguridad (+3): bus saliendo de parada, separación lateral con tractor agrícola, regla de 2 segundos a 100 km/h.
+- `via_l1` Tipos de Vías (+3): carril de deceleración, travesía vs vía urbana, vías rápidas.
+- `aux_l1` Protocolo PAS (+3): no dar de beber a heridos, V-16 conectado obligatorio desde 2026, desmayo/síncope.
+- `pref_l2` Casos Especiales (+2): estrechamiento autobús vs turismo, tren aproximándose a paso a nivel.
 
 **Archivo nuevo:** [`AUDITORIA_PREGUNTAS.md`](AUDITORIA_PREGUNTAS.md) — informe completo de la auditoría con tabla de calidad por tema y listado de problemas detectados.
 

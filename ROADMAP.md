@@ -22,14 +22,14 @@
 
   El catálogo final cubre **toda señalización oficial relevante** para el examen DGT.
 
-- [~] **2. Auditoría completa + reescritura del banco — 258/300 (~86%)** 🔄
-  **Sesión 2026-05-31:** Auditoría exhaustiva una a una de las 220 preguntas originales (informe en [`AUDITORIA_PREGUNTAS.md`](AUDITORIA_PREGUNTAS.md)). Detectados 3 errores fácticos, 5 duplicados/trivias y 26 preguntas del Tema Señales con calidad insuficiente.
+- [x] **2. Auditoría completa + reescritura del banco — 300/300 (100%)** ✅
+  **Sesión 2026-05-31 (cerrada):** Auditoría exhaustiva una a una de las 220 preguntas originales (informe en [`AUDITORIA_PREGUNTAS.md`](AUDITORIA_PREGUNTAS.md)).
 
-  **Fase B aplicada:** corrección de los 3 errores, eliminación de 5 preguntas, reescritura completa del Tema Señales (27 preguntas) con patrón DGT real, y 8 ajustes menores en otros temas.
+  **Fase B aplicada:** 3 errores fácticos corregidos, 5 preguntas eliminadas (trivias/duplicadas), 27 preguntas del Tema Señales reescritas con patrón DGT real, y 8 ajustes menores en otros temas.
 
-  **Fase C aplicada:** +43 preguntas nuevas distribuidas en 9 lecciones avanzadas, aprovechando signIds Wikimedia disponibles.
+  **Fase C aplicada (+83 nuevas):** 2 lecciones nuevas (`veh_l4` Pasajeros y Carga, `via_l4` Maniobras), ampliaciones en lecciones existentes (Señales, Velocidades, Preferencia, Alcohol, Distancias, Auxilios, Vehículo, Medioambiente, Infracciones, Vías), aprovechando signIds Wikimedia.
 
-  **Pendiente:** llegar al objetivo de 300 preguntas (+42 más), idealmente con preguntas de Pasajeros/Carga (área débil del banco) y Maniobras (giros, marcha atrás, estacionamiento). Una sesión adicional cerraría esta tarea.
+  **Resultado:** banco final de **300 preguntas exactas** en **30 lecciones**, distribuidas en 10 temas. Calidad DGT consistente: escenarios prácticos, distractores plausibles, referencias legales explícitas.
 
 - [ ] **3. Onboarding tutorial primer uso**
   3-4 pantallas guía tras el nombre/color: cómo funciona la app, qué es el examen, dónde está el manual. Marca `tutorialSeen` en store para que no aparezca dos veces.
@@ -102,6 +102,11 @@
 ## Historial completado
 
 ### 2026-05-31
+- [x] **Tarea #2 — Auditoría y reescritura banco preguntas (220 → 300)** | commit `9b97e00` + cierre Fase C extendida
+  - Auditoría exhaustiva una a una documentada en AUDITORIA_PREGUNTAS.md
+  - Fase B: 3 errores fácticos, 5 eliminaciones, 27 reescrituras Tema Señales, 8 ajustes menores
+  - Fase C: 2 lecciones nuevas (`veh_l4` Pasajeros y Carga, `via_l4` Maniobras) + ampliaciones en 8 lecciones existentes
+  - Resultado: 300 preguntas exactas en 30 lecciones, calidad DGT consistente
 - [x] **Tarea #1 — Señales Wikimedia (42/~50)** | commits `302a515` (sesión 30) + cierre sesión 31
   - +16 señales nuevas integradas en 2 sesiones, catálogo cerrado al límite práctico de disponibilidad en Wikimedia
 
