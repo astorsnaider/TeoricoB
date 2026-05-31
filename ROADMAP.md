@@ -8,9 +8,19 @@
 
 ## Tier 1 — Quick wins (1 sesión cada uno)
 
-- [~] **1. Resto de señales Wikimedia (parcial — 35/~50)**
-  Progreso 2026-05-30: añadidos **+9 señales**: vel_max 20/60/70/80/110 · dirección prohibida (R-200) · cadenas (R-409) · peligro genérico (P-50) · calzada irregular (P-15).
-  Pendientes todavía: línea continua/discontinua (marcas pintadas) · semáforos en colores aislados (R/A/V) · sentido obligatorio recto e izquierda · paso obligatorio izquierda · vel mínima 60 · autovía (S-2) · zona peatonal · carril bici · doble curva · estrechamiento · ciclistas · paso a nivel con/sin barreras · desprendimientos · fin prohibido adelantar · prohibido girar derecha · prohibido adelantar camiones · paso peatones señal vertical.
+- [x] **1. Señales Wikimedia completado (42/~50)** ✅
+  Progreso final 2026-05-31: catálogo Wikimedia cerrado al límite práctico de disponibilidad. **+16 señales** añadidas en dos sesiones consecutivas (26 → 42).
+
+  **Sesión 2026-05-30**: vel_max 20/60/70/80/110 · dirección prohibida (R-200) · cadenas (R-409) · peligro genérico (P-50) · calzada irregular (P-15).
+  **Sesión 2026-05-31**: prohibido girar derecha (R-302) · prohibido adelantar camiones (R-307) · sentido obligatorio izquierda (R-400b) · paso obligatorio izquierda (R-401b) · doble curva (P-2) · zona peatonal (S-28) · carril bici (S-29).
+
+  Las **~8 señales que faltan** NO existen como SVG independientes en Wikimedia y se quedan con mis fallbacks dibujados a mano:
+  - **Semáforos en colores aislados** (rojo, ámbar, verde) — no son señales sino estados luminosos
+  - **Marcas viales** (línea continua/discontinua, ceda en suelo, stop en suelo) — son pintura sobre asfalto, no señales
+  - **Sentido obligatorio recto** (R-400a) — Wikimedia usa esto como flecha derecha, no recto
+  - **Vel. mínima 60** (R-411) — existe como variante con paréntesis, formato Adobe roto al renderizar
+
+  El catálogo final cubre **toda señalización oficial relevante** para el examen DGT.
 
 - [ ] **2. Más preguntas — objetivo 400-500**
   Añadir 80-100 preguntas extra. Especial foco en preguntas que **muestran la señal Wikimedia como pista visual** (q.signId).
@@ -84,6 +94,10 @@
 ---
 
 ## Historial completado
+
+### 2026-05-31
+- [x] **Tarea #1 — Señales Wikimedia (42/~50)** | commits `302a515` (sesión 30) + cierre sesión 31
+  - +16 señales nuevas integradas en 2 sesiones, catálogo cerrado al límite práctico de disponibilidad en Wikimedia
 
 ### Anteriores a 2026-05-30 (fundamentos del proyecto)
 
