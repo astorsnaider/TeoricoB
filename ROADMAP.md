@@ -2,7 +2,7 @@
 
 > Documento vivo. Las tareas se trabajan **una a una en orden**. Conforme se completan se marcan `[x]` y se mueven a la sección de "Historial completado" al final, conservando fecha y commit asociado.
 
-**Última actualización:** 2026-05-30
+**Última actualización:** 2026-05-31
 
 ---
 
@@ -22,8 +22,14 @@
 
   El catálogo final cubre **toda señalización oficial relevante** para el examen DGT.
 
-- [ ] **2. Más preguntas — objetivo 400-500**
-  Añadir 80-100 preguntas extra. Especial foco en preguntas que **muestran la señal Wikimedia como pista visual** (q.signId).
+- [~] **2. Auditoría completa + reescritura del banco — 258/300 (~86%)** 🔄
+  **Sesión 2026-05-31:** Auditoría exhaustiva una a una de las 220 preguntas originales (informe en [`AUDITORIA_PREGUNTAS.md`](AUDITORIA_PREGUNTAS.md)). Detectados 3 errores fácticos, 5 duplicados/trivias y 26 preguntas del Tema Señales con calidad insuficiente.
+
+  **Fase B aplicada:** corrección de los 3 errores, eliminación de 5 preguntas, reescritura completa del Tema Señales (27 preguntas) con patrón DGT real, y 8 ajustes menores en otros temas.
+
+  **Fase C aplicada:** +43 preguntas nuevas distribuidas en 9 lecciones avanzadas, aprovechando signIds Wikimedia disponibles.
+
+  **Pendiente:** llegar al objetivo de 300 preguntas (+42 más), idealmente con preguntas de Pasajeros/Carga (área débil del banco) y Maniobras (giros, marcha atrás, estacionamiento). Una sesión adicional cerraría esta tarea.
 
 - [ ] **3. Onboarding tutorial primer uso**
   3-4 pantallas guía tras el nombre/color: cómo funciona la app, qué es el examen, dónde está el manual. Marca `tutorialSeen` en store para que no aparezca dos veces.

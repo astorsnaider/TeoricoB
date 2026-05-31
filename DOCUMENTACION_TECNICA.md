@@ -1,8 +1,8 @@
 # Documentación Técnica — TeoricoB
 > App para estudiar el permiso de conducción B en España
 
-**Última actualización:** Mayo 2026  
-**Versión app:** 0.5.0  
+**Última actualización:** 31 mayo 2026  
+**Versión app:** 0.6.0  
 **Repositorio:** https://github.com/astorsnaider/TeoricoB  
 **Autor:** Astor Snaider
 
@@ -387,21 +387,21 @@ interface Question {
 }
 ```
 
-### Distribución de preguntas por tema (v0.3.0)
+### Distribución de preguntas por tema (v0.6.0)
 
 | Tema | Lecciones | Preguntas | Con imagen |
 |------|-----------|-----------|-----------|
-| Señales de Tráfico | 5 | 49 | 22 (con SVG de señal) |
-| Velocidades | 2 | 14 | — |
-| Preferencia de Paso | 2 | 12 | — |
-| Alcohol y Drogas | 2 | 13 | — |
-| Distancias y Adelantamiento | 1 | 7 | — |
-| Primeros Auxilios | 1 | 8 | — |
-| El Vehículo | 2 | 12 | — |
-| Conducción Eficiente | 1 | 7 | — |
-| Infracciones y Sanciones | 2 | 14 | — |
-| La Vía y el Entorno | 2 | 14 | — |
-| **TOTAL** | **20** | **~150** | **22** |
+| Señales de Tráfico | 5 | 46 | ~32 (con SVG Wikimedia) |
+| Velocidades | 3 | 27 | 8 (con SVG de velocidad) |
+| Preferencia de Paso | 3 | 26 | 3 (con SVG) |
+| Alcohol y Drogas | 3 | 26 | — |
+| Distancias y Adelantamiento | 2 | 21 | 3 (con SVG) |
+| Primeros Auxilios | 2 | 22 | — |
+| El Vehículo | 3 | 26 | — |
+| Conducción Eficiente | 2 | 17 | — |
+| Infracciones y Sanciones | 2 | 19 | — |
+| La Vía y el Entorno | 3 | 28 | — |
+| **TOTAL** | **28** | **258** | **~46** |
 
 > Las preguntas con imagen muestran la señal SVG correspondiente durante el quiz. Las señales están referenciadas por su código oficial DGT (ej. "Señal R-2" para STOP).
 
@@ -681,7 +681,46 @@ No hay variables de entorno. La app no requiere claves de API ni configuración 
 
 ## 14. Registro de cambios
 
-### v0.4.0 — Mayo 2026 (actual)
+### v0.6.0 — Mayo 2026 (actual)
+
+**Auditoría completa y reescritura del banco de preguntas:**
+
+Tras detectar que muchas preguntas eran demasiado simples (definiciones puras tipo "¿qué forma tiene una señal de peligro?") o tenían distractores absurdos comparados con el examen real DGT, se hizo una auditoría exhaustiva una a una de las 220 preguntas existentes y se documentó el resultado en `AUDITORIA_PREGUNTAS.md`.
+
+**Fase A — Auditoría:** Clasificación pregunta a pregunta. Resultado: 80% buenas (177), 16% mejorables (36) y 3% erróneas (7). El cuello de botella era el Tema 1 (Señales) con 67% de problemas.
+
+**Fase B — Corrección y reescritura (43 cambios):**
+
+3 errores fácticos corregidos:
+- `v3q1` — Velocidad noveles: el límite específico de 100 km/h para conductores noveles está derogado desde 2014. Cambiada respuesta y explicación.
+- `inf2q5` — Conducir sin seguro NO descuenta puntos (está regulado por la LRCSCVM, no por la LSV). Cambiada respuesta y explicación.
+- `s4q12` — Explicación de la R-500 corregida: cancela TODAS las prohibiciones, incluida la de adelantar (antes decía lo contrario).
+
+5 preguntas eliminadas por trivia/duplicidad: `s1q7`, `s2q7`, `v3q4`, `v3q5`, `p3q10`.
+
+27 preguntas del Tema Señales reescritas con patrón DGT real: escenarios prácticos en lugar de definiciones, distractores plausibles (señales visualmente similares en vez de conceptos absurdos), referencias legales explícitas.
+
+8 ajustes menores en preguntas con imprecisiones (`v2q6`, `p2q5`, `a2q4`, `a3q5`, `vh1q3`, `inf1q3`, `inf2q2`, `va1q1`).
+
+**Fase C — Ampliación (+43 nuevas):**
+
+- Señales sen_l5: +9 preguntas usando signIds Wikimedia disponibles (cadenas, doble curva, zona peatonal, carril bici, prohibido girar derecha, prohibido adelantar camiones, calzada irregular, peligro genérico, jerarquía completa de señalización).
+- Velocidades vel_l3: +5 preguntas sobre radares (margen oficial 7%, radar de tramo, vehículo prioritario y velocidad, señales temporales).
+- Preferencia pref_l3: +5 preguntas sobre rotondas multicarril, vehículos prioritarios en túnel, regla de la derecha, incorporación a autopista.
+- Alcohol alc_l3: +3 sobre conducción por amigo no bebido, tramos sancionadores, denuncia a taxista.
+- Distancias dist_l2: +4 sobre peatón en arcén durante adelantamiento, formar cola y facilitar adelantamiento, 50m mínimo en autopista, frenado en cadena.
+- Vehículo veh_l3: +4 sobre ABS en frenada, testigo check engine, frenos asimétricos, fading.
+- Auxilios aux_l2: +4 sobre lesión vertebral, fractura abierta, conmoción cerebral, protocolo PAS nocturno.
+- Infracciones inf_l2: +5 sobre SRI menores, neumático en mal estado, carné caducado, móvil vs cinturón, descuento por pronto pago.
+- Vías via_l3: +4 sobre cambio de sentido prohibido, BUS-VAO, kamikaze en autopista, lado de estacionamiento.
+
+**Estado final:** 258 preguntas (subió de 220, neto +38). El target era 300; resta una sesión adicional para llegar al objetivo final.
+
+**Archivo nuevo:** [`AUDITORIA_PREGUNTAS.md`](AUDITORIA_PREGUNTAS.md) — informe completo de la auditoría con tabla de calidad por tema y listado de problemas detectados.
+
+---
+
+### v0.4.0 — Mayo 2026
 
 **Nuevas funcionalidades:**
 - **Biblioteca de señales SVG**: 50+ señales de tráfico dibujadas como SVG vectoriales siguiendo el RGC (señales de peligro, prohibición, obligación, indicación, semáforos, marcas viales)
