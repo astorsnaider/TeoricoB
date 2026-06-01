@@ -114,10 +114,22 @@ export const SIGNS_PELIGRO: CatalogSign[] = [
     legalRef: 'Señal P-20 · Art. 132 RGC',
   },
   {
+    code: 'P-21', name: 'Niños (zona escolar)', signId: 'ninos', type: 'peligro',
+    description: 'Lugar frecuentado por niños (colegio, parque). Riesgo de cruce imprevisto.',
+    action: 'Reduce mucho la velocidad. Atento a niños que puedan aparecer por detrás de vehículos aparcados.',
+    legalRef: 'Señal P-21 · Art. 132 RGC',
+  },
+  {
     code: 'P-22', name: 'Ciclistas', signId: 'ciclistas', type: 'peligro',
     description: 'Lugar por donde pasan o cruzan ciclistas con frecuencia. Recuerda la separación lateral mínima de 1,5 m al adelantar.',
     action: 'Reduce velocidad. Al adelantar deja al menos 1,5 m de separación lateral.',
     legalRef: 'Señal P-22 · Art. 132 RGC',
+  },
+  {
+    code: 'P-26', name: 'Desprendimientos', signId: 'desprendimientos', type: 'peligro',
+    description: 'Zona donde pueden haber piedras u otros obstáculos sobre la calzada (típico bajo montaña).',
+    action: 'Reduce velocidad. Atento al firme. Evita parar en la zona.',
+    legalRef: 'Señal P-26 · Art. 132 RGC',
   },
   {
     code: 'P-29', name: 'Viento lateral fuerte', signId: 'viento_lateral', type: 'peligro',
@@ -168,6 +180,12 @@ export const SIGNS_PROHIBICION: CatalogSign[] = [
     code: 'R-301', name: 'Velocidad máxima 40 km/h', signId: 'vel_max_40', type: 'prohibicion',
     description: 'Velocidad máxima 40 km/h.',
     action: 'No superes los 40 km/h.',
+    legalRef: 'Señal R-301 · Art. 48 RGC',
+  },
+  {
+    code: 'R-301', name: 'Velocidad máxima 50 km/h', signId: 'vel_max_50', type: 'prohibicion',
+    description: 'Velocidad máxima 50 km/h. Genérico en vías urbanas con dos o más carriles por sentido.',
+    action: 'No superes los 50 km/h.',
     legalRef: 'Señal R-301 · Art. 48 RGC',
   },
   {

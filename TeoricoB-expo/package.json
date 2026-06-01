@@ -24,10 +24,12 @@
     "react-native-screens": "~4.16.0",
     "react-native-svg": "^15.12.1",
     "react-native-web": "^0.21.0",
-    "zustand": "^5.0.13"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "babel-plugin-transform-import-meta": "^2.3.3",
+    "babel-preset-expo": "~54.0.10",
     "sharp": "^0.34.5",
     "typescript": "~5.9.2"
   },
