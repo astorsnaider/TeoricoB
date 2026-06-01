@@ -6,22 +6,24 @@
  * estar definidos en el Anexo I del Reglamento General de Circulación
  * (RD 1428/2003), conforme al Art. 13 de la Ley de Propiedad Intelectual.
  *
+ * Auditado contra Catálogo Oficial DGT (TeoricaAbreviada.txt — Tema 8).
+ * Generado automáticamente por scripts/regenerate-signs.js.
+ *
  * ───────────────────────────────────────────────────────────────────
  * CÓMO AÑADIR UNA NUEVA SEÑAL DE WIKIMEDIA
  * ───────────────────────────────────────────────────────────────────
  *
- * 1. Visita https://commons.wikimedia.org/wiki/Road_signs_of_Spain
- *    y localiza la señal que quieres añadir.
+ * 1. Descarga el SVG oficial de Wikimedia Commons a
+ *    assets/signs-wikimedia/<codigo>.svg
  *
- * 2. Descarga el archivo SVG manualmente o pide a Claude que lo
- *    descargue vía WebFetch (que no está rate-limited por Wikimedia).
+ * 2. Añade una entrada al array FINAL_SIGNS en
+ *    scripts/regenerate-signs.js con el código DGT real.
  *
- * 3. Añade una entrada en el objeto `WIKIMEDIA_SIGNS` con:
- *      <signId>: { xml: `...`, attribution: '...', license: 'PD' }
+ * 3. Ejecuta: node scripts/regenerate-signs.js
  *
- *    Donde <signId> es uno de los IDs definidos en TrafficSign.tsx
- *
- * 4. Listo: la app usará automáticamente la versión de Wikimedia.
+ *    Verificará que el código DGT coincide con el contenido visual
+ *    del SVG. No hay fallbacks dibujados a mano — si no hay SVG
+ *    oficial, no aparece la señal.
  */
 
 export interface WikimediaSvgEntry {
@@ -30,14 +32,888 @@ export interface WikimediaSvgEntry {
   license: 'PD' | 'CC-BY-SA';
 }
 
-// ─── SEÑALES DISPONIBLES ────────────────────────────────────────
-
 export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 
-  // ─── R-2 STOP ─────────────────────────────────────────────────
+  // ─── P-2 Cruce con prioridad de paso a quien viene por la derecha ─────────
+  cruce_prioridad_derecha: {
+    license: 'PD',
+    attribution: 'P-2 Cruce con prioridad de paso a quien viene por la derecha — fuente: p2.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.2"
+   width="217.834"
+   height="192.414"
+   id="svg2">
+  <metadata
+     id="metadata3087">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3085" />
+  <g
+     id="Capa_1">
+    <path
+       d="M 14.125,192.414 C 6.32,192.414 0,186.086 0,178.293 c 0,-2.551 0.672,-4.93 1.84,-6.988 L 96.668,7.088 C 99.104,2.848 103.676,0 108.916,0 c 5.238,0 9.813,2.848 12.254,7.088 l 94.82,164.217 c 1.172,2.059 1.844,4.438 1.844,6.988 0,7.793 -6.32,14.121 -14.125,14.121 H 14.125"
+       id="path3077"
+       style="fill:#e41408" />
+    <path
+       d="m 21.881,173.875 87.035,-150.707 87.035,150.707 -174.07,0"
+       id="polyline3079"
+       style="fill:#ffffff" />
+    <path
+       d="m 85.561,163.988 -14.86,-14.855 23.279,-23.36 -23.279,-23.335 14.86,-14.854 23.355,23.404 23.355,-23.404 14.86,14.854 -23.281,23.335 23.281,23.36 -14.86,14.855 -23.355,-23.281 -23.355,23.281"
+       id="polyline3081"
+       style="fill:#1c1d20" />
+  </g>
+</svg>`,
+  },
+
+  // ─── P-3 Semáforos próximos ─────────
+  semaforos: {
+    license: 'PD',
+    attribution: 'P-3 Semáforos próximos — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.414">
+<path fill="#e41408" d="M 14.121,192.414 C 6.324,192.414 0,186.086 0,178.293 c 0,-2.551 0.668,-4.93 1.846,-6.988 L 96.664,7.088 C 99.105,2.848 103.678,0 108.916,0 c 5.238,0 9.813,2.848 12.246,7.088 l 94.828,164.217 c 1.172,2.059 1.844,4.438 1.844,6.988 0,7.793 -6.324,14.121 -14.121,14.121 H 14.121"/>
+<path fill="#ffffff" d="m 21.881,173.875 87.035,-150.707 87.035,150.707 -174.07,0"/>
+<circle fill="#13926c" cx="108.916" cy="150.93" r="13.236"/>
+<circle fill="#f4b70d" cx="108.916" cy="111.211" r="13.236"/>
+<circle fill="#e41408" cx="108.916" cy="71.488" r="13.236"/>
+</svg>`,
+  },
+
+  // ─── P-6 Cruce de tranvía ─────────
+  cruce_tranvia: {
+    license: 'PD',
+    attribution: 'P-6 Cruce de tranvía — fuente: p6.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.2"
+   width="217.832"
+   height="192.414"
+   id="svg2">
+  <metadata
+     id="metadata3147">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3145" />
+  <g
+     id="Capa_1">
+    <path
+       d="M 14.121,192.414 C 6.32,192.414 0,186.086 0,178.293 c 0,-2.551 0.668,-4.93 1.84,-6.988 L 96.664,7.088 C 99.105,2.848 103.676,0 108.914,0 c 5.238,0 9.813,2.848 12.25,7.088 l 94.828,164.217 c 1.168,2.059 1.84,4.438 1.84,6.988 0,7.793 -6.324,14.121 -14.125,14.121 H 14.121"
+       id="path3107"
+       style="fill:#e41408" />
+    <path
+       d="m 21.875,173.875 87.039,-150.707 87.035,150.707 -174.074,0"
+       id="polyline3109"
+       style="fill:#ffffff" />
+    <path
+       d="m 46.25,158.871 m 123.566,0 H 46.25 v -3.535 h 123.566 v 3.535 z"
+       id="path3111"
+       style="fill:#1c1d20" />
+    <path
+       d="m 70.961,150.93 c 0,-2.93 2.371,-5.293 5.297,-5.293 2.926,0 5.297,2.363 5.297,5.293 0,2.918 -2.371,5.289 -5.297,5.289 -2.926,0 -5.297,-2.371 -5.297,-5.289"
+       id="path3113"
+       style="fill:#1c1d20" />
+    <path
+       d="m 82.438,150.93 c 0,-2.93 2.371,-5.293 5.297,-5.293 2.922,0 5.289,2.363 5.289,5.293 0,2.918 -2.367,5.289 -5.289,5.289 -2.926,0 -5.297,-2.371 -5.297,-5.289"
+       id="path3115"
+       style="fill:#1c1d20" />
+    <path
+       d="m 136.277,150.93 c 0,-2.93 2.371,-5.293 5.297,-5.293 2.922,0 5.289,2.363 5.289,5.293 0,2.918 -2.367,5.289 -5.289,5.289 -2.926,0 -5.297,-2.371 -5.297,-5.289"
+       id="path3117"
+       style="fill:#1c1d20" />
+    <path
+       d="m 124.801,150.93 c 0,-2.93 2.371,-5.293 5.297,-5.293 2.926,0 5.301,2.363 5.301,5.293 0,2.918 -2.375,5.289 -5.301,5.289 -2.926,0 -5.297,-2.371 -5.297,-5.289"
+       id="path3119"
+       style="fill:#1c1d20" />
+    <path
+       d="m 63.02,150.93 0,-4.422 5.293,0 0,-24.711 2.648,-2.641 4.41,0 1.77,-1.765 64.433,0 1.762,1.765 3.527,0 2.653,2.641 0,24.711 5.297,0 0,4.422 -91.793,0"
+       id="polyline3121"
+       style="fill:#1c1d20" />
+    <path
+       d="m 85.969,118.273 v -1.77 l -10.598,-7.059 c 0,0 -0.879,-0.883 0,-1.766 l 12.363,-7.059 v -3.535 h 7.938 v 2.648 h -0.879 v 0.887 l 12.355,7.059 c 0.883,0.883 0,1.766 0,1.766 l -10.59,7.059 v 1.77 H 85.969"
+       id="path3123"
+       style="fill:#1c1d20" />
+    <path
+       d="m 73.164001,135.922 0,-12.359"
+       id="line3125"
+       style="fill:none;stroke:#ffffff;stroke-width:4.41200018;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 80.671997,146.51199 0,-25.58999"
+       id="line3127"
+       style="fill:none;stroke:#ffffff;stroke-width:5.296;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 90.82,135.92999 0,-15.00799"
+       id="line3129"
+       style="fill:none;stroke:#ffffff;stroke-width:7.94000006;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 103.621,135.92999 0,-15.00799"
+       id="line3131"
+       style="fill:none;stroke:#ffffff;stroke-width:10.59200001;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 143.78101,135.922 0,-12.359"
+       id="line3133"
+       style="fill:none;stroke:#ffffff;stroke-width:4.41200018;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 136.27699,146.51199 0,-25.58999"
+       id="line3135"
+       style="fill:none;stroke:#ffffff;stroke-width:3.52800012;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 117.738,135.92999 0,-15.00799"
+       id="line3137"
+       style="fill:none;stroke:#ffffff;stroke-width:10.59200001;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 129.211,146.51199 0,-25.58999"
+       id="line3139"
+       style="fill:none;stroke:#ffffff;stroke-width:3.52800012;stroke-miterlimit:3.86400008" />
+    <path
+       d="m 89.496,114.742 -9.707,-6.179 11.473,-6.188 11.476,6.188 -9.715,6.179 -3.527,0"
+       id="polyline3141"
+       style="fill:#ffffff" />
+  </g>
+</svg>`,
+  },
+
+  // ─── P-7 Paso a nivel con barreras cercano ─────────
+  paso_nivel_con_barreras: {
+    license: 'PD',
+    attribution: 'P-7 Paso a nivel con barreras cercano — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.418">
+<path d="M 14.125,192.418 C 6.32,192.418 0,186.09 0,178.293 c 0,-2.539 0.672,-4.922 1.84,-6.98 L 96.668,7.084 C 99.104,2.855 103.676,0 108.916,0 c 5.238,0 9.813,2.855 12.254,7.084 l 94.82,164.229 c 1.172,2.059 1.844,4.441 1.844,6.98 0,7.797 -6.32,14.125 -14.125,14.125 H 14.125" fill="#e41408"/>
+<path d="m 21.881,173.879 87.035,-150.707 87.035,150.707 -174.07,0" fill="#ffffff"/>
+<path d="m 102.297,164.168 0,-63.996 6.619,-6.621 6.617,6.629 0,63.988 -13.236,0" fill="#1c1d20"/>
+<path d="m 79.789,164.168 0,-63.996 6.619,-6.621 6.619,6.629 0,63.988 -13.238,0" fill="#1c1d20"/>
+<path d="m 138.041,164.168 0,-63.996 -6.621,-6.621 -6.617,6.629 0,63.988 13.238,0" fill="#1c1d20"/>
+<path d="m 69.285,159.762 m 79.26,0 h -79.26 v -11.836 h 79.26 v 11.836 z" fill="#1c1d20"/>
+<path d="m 69.285,117.746 m 79.26,0 h -79.26 v -11.828 h 79.26 v 11.828 z" fill="#1c1d20"/>
+</svg>`,
+  },
+
+  // ─── P-9a Paso a nivel cercano (señalización a 300 m) ─────────
+  paso_nivel_proximo_300: {
+    license: 'PD',
+    attribution: 'P-9a Paso a nivel cercano (señalización a 300 m) — fuente: p9a.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.2"
+   width="41.0625"
+   height="192.03125"
+   id="svg2">
+  <metadata
+     id="metadata3274">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3272" />
+  <g
+     id="g3308">
+    <path
+       d="M 40.662,191.63 H 0.4 V 5.431 C 0.4,2.656 2.654,0.4 5.435,0.4 H 35.63 c 2.777,0 5.031,2.256 5.031,5.031 V 191.63"
+       id="path3252"
+       style="fill:#ffffff" />
+    <g
+       id="g3254">
+      <defs
+         id="defs3256">
+        <path
+           d="M 40.662,191.63 H 0.4 V 5.431 C 0.4,2.656 2.654,0.4 5.435,0.4 H 35.63 c 2.777,0 5.031,2.256 5.031,5.031 V 191.63"
+           id="XMLID_1_" />
+      </defs>
+      <clipPath
+         id="XMLID_3_">
+        <use
+           id="use3260"
+           x="0"
+           y="0"
+           width="450"
+           height="450"
+           xlink:href="#XMLID_1_" />
+      </clipPath>
+      <path
+         d="m 0.4,55.755 40.262,-23.144 0,-16.104 -40.262,23.149 0,16.099"
+         clip-path="url(#XMLID_3_)"
+         id="polyline3262"
+         style="fill:#e41408" />
+      <path
+         d="m 0.4,87.957 40.262,-23.141 0,-16.1 -40.262,23.135 0,16.106"
+         clip-path="url(#XMLID_3_)"
+         id="polyline3264"
+         style="fill:#e41408" />
+      <path
+         d="m 0.4,120.169 40.262,-23.156 0,-16.101 -40.262,23.152 0,16.105"
+         clip-path="url(#XMLID_3_)"
+         id="polyline3266"
+         style="fill:#e41408" />
+    </g>
+    <path
+       d="M 40.662,191.63 H 0.4 V 5.431 C 0.4,2.656 2.654,0.4 5.435,0.4 H 35.63 c 2.777,0 5.031,2.256 5.031,5.031 V 191.63 z"
+       id="path3268"
+       style="fill:none;stroke:#1c1d20;stroke-width:0.80000001;stroke-miterlimit:3.86400008" />
+  </g>
+</svg>`,
+  },
+
+  // ─── P-9b Paso a nivel cercano (señalización a 200 m) ─────────
+  paso_nivel_proximo_200: {
+    license: 'PD',
+    attribution: 'P-9b Paso a nivel cercano (señalización a 200 m) — fuente: p9b.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="278.1431 514.811" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="41.062" height="192.035" viewBox="0 0 41.062 192.035" overflow="visible" enable-background="new 0 0 41.062 192.035"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="278.143" y="322.776" width="41.062" height="192.035" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T08:52:43Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T08:52:43Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>56</xapGImg:width>
+     <xapGImg:height>256</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgBAAA4AwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A7L5V8q6f5y0+383ebrdd&#xA;Vk1VfrWl6XdfvbKzspfit0S3b900jRcWkkZS3I9gMVT/AP5Vj+Wv/Up6N/3D7X/qnirv+VY/lr/1&#xA;Kejf9w+1/wCqeKu/5Vj+Wv8A1Kejf9w+1/6p4q7/AJVj+Wv/AFKejf8AcPtf+qeKu/5Vj+Wv/Up6&#xA;N/3D7X/qniqSXei2/kXW9JvdA5W2g6rexabquiBma2SS6qlvdWyEkQusvFHVPhZT0qtcVTv8sf8A&#xA;yWvlP/tjaf8A9QseKslxV2KuxV2KuxViX5k/7waH/wBt/Sf+oyPFUR+WP/ktfKf/AGxtP/6hY8VZ&#xA;LirsVdirsVdirBvzO1fTIm8u6ZJdRrqFxrulvDa8gZGVLtCzcRuFHicgckeIRvdujp8hgZgHgHM9&#xA;E0/LH/yWvlP/ALY2n/8AULHk2lkuKuxV2KoLWNb0nRbF77VbuOztE6yytQE/yqOrMewG+QyZIwFy&#xA;NBv0+myZp8GOJlLyeG+ef+ciLu49Sy8pxG2h3VtTnUGVh4xRmoT5tU+wOafUdpE7Q2He932X7IRj&#xA;U9QeI/zRy+J6/D7XmXlW8u7z8wfLt1dzPcXMusWLSzSsXdiblNyxqTlPZ5JzAnzdh7T44w0BjEAR&#xA;BjsPe+p/yx/8lr5T/wC2Np//AFCx50L5ayXFVskscUbSSuI40BZ3YgKANyST0wEgblMYkmhzeS+e&#xA;f+cgdF0v1LLy2i6pfCoN21RaofYijS/7Gg/yjms1HaQjtDc9/R6/sv2Sy5aln/dx7v4j+r7/ACeD&#xA;eYvNGveYr43us3kl3N0QMaIgP7MaCioPkM0+TLKZuRt77R6HDpocOKIiPv8AeeqVZBy048lf8px5&#xA;Z/7a9h/1Epmb2d/ej4vN+1f+JS/rR+99W/lj/wCS18p/9sbT/wDqFjzonypK/PH5weVfKoe3Mn6Q&#xA;1VagWNuwPFv+LZN1T5bn2zC1Guhj25yd92Z7PajV1KuDH/OP6B1+7zfPfnX8zvNXm2Rkv7j0NPrW&#xA;PToKpCKdOW9XPu30UzS59VPJzO3c+idm9iafSC4C5/zjz/Z8GJZju3diq6ON5HWONS7uQqIoqSTs&#xA;AAMUEgCy9H8tflb5n0q78veZNXjFjCus6YkNpJ/fv6l2gqy/sAf5W/tm20GlnGXHLYPB+0vbmDLi&#xA;ODGeI2LPTb7/ALkql/OLzTdeTdF8v6c/6LsLLTrW0keBj683pQJGxaTYqrca8Vp7k5VrNZMyMRsA&#xA;ac/sL2d08ccM0/XOURLfkLF8v1sMJJNTuT1Oa565rFXYqzfyP+UfmrzYUnji+oaU251C4BCsP+Kk&#xA;2aT6Ph98ysGknk5bDvdH2n7QafSbE8eT+aP0np9/k+hPJP5W+VPKSLJZwfWdSp8eo3ADS79eH7MY&#xA;/wBX6Sc3Wn0cMe/M97512l25qNWakeGH80cvj3/Fd+ZP+8Gh/wDbf0n/AKjI8y3TvjrTv+Ofa/8A&#xA;GGP/AIiM5bU/3kv6x+99q7K/xTF/wuH+5CIylz088reS/Mnmi7+raNZtOFIE1wfhhjr/ADyH4R8u&#xA;p7DLMWGWQ1EW4Ou7SwaWPFllXl1PuD37yL+Q3l3Q/TvNa46xqY3Cuv8AosZ/yYz9s+7/APAjNzp+&#xA;zox3l6j9j592p7VZs9xxfu4f7I/Hp8Pm9QAAAAFANgBmyeVdirEvzJ/3g0P/ALb+k/8AUZHir5D8&#xA;uaZqOpx2Nlp1tJd3csUYjhiUux+Edh2Hc5y+eJOWQHPiP3vsugzwxaLFKZEYjHDc/wBUPdvI3/OO&#xA;wHp3vm6Wp2YaXbtt8pZR+pP+CzP0/ZvWfyeW7U9r+cNMP84/oH6/k9r07TbDTbOOysLeO1tIhSOG&#xA;JQigfIZt4QERQFB4fNmnkkZTJlI9SiMk1uxVifnX8zvKvlKJlv7j19QIrHp0FGmNehbeiL7t9Fcx&#xA;c+rhj57nudv2b2JqNWfQKh/OPL9vweIXP5s+Y/OHnjy1azcbLSBrNg8dhFvUrcpxMshHJyPoHtmF&#xA;ptXPLlAOw32ei7W7AwaPRGQ9WSx6j7+g6ff5vZfyd8vaLpX5d+Xp7CzjguL7TLK4vJ1FZJJJbdHY&#xA;s5qxHJjQVoO2bOGKMSSBuXjs+ry5RETkSIgADoANmbZY47sVSvzD5o0Hy7Ym91i8jtId+AY1dyP2&#xA;UQVZj8hlWXNHGLkXL0mhzaifDiiZH8cz0eDeev8AnIHWdT9Sy8tK2l2JqpvGp9acf5NKiL6Kt7jN&#xA;NqO0ZS2j6R9r33ZfslixVLP65d38I/X93k8lllllkaWV2klclndiWZmO5JJ3JOa56+MQBQ2Ca+Sv&#xA;+U48s/8AbXsP+olMzezv70fF5z2r/wASl/Wj976t/LH/AMlr5T/7Y2n/APULHnRPlTILu7tbO2ku&#xA;ruZLe2iHKWaVgiKPFmagGCUgBZ5M8eOU5CMQTI9A8a88/wDOQ9nbepY+U4hdTiqtqc4IiXtWKM0L&#xA;/NqD2IzU6jtPpD5vadl+yEpVPUHhH80c/ien45PDdZ1zV9avnvtVu5Ly6frLK1aDwUdFX2G2amcz&#xA;I2TZe702lx4IcGOIjHyQORb3Yqnnke3nk86eXZUjZoodW08yyAEqga6QDke1Ttmd2cP3oeZ9rJga&#xA;MgncyD2PTfzs8t+Wfy48s2Nn/uU1mPR7BHt4jSKJxaxgiWTfcHqq1PY0zZanXxx2BvJ5Dsr2az6o&#xA;CcvRjPU8z7h+n73kXm/z/wCZ/Nlz6urXZaBTWGyiqlvH/qpXc7/aap980ubUTyG5F9D7P7JwaSNY&#xA;479ZHmfj+gbMdyl2TsVVbW1ubu4jtrWJ57iVgsUMal3Zj0CqtSTiBewYznGETKRoDqXsXkX/AJx5&#xA;1C79O+81SGytjRhp0JBnYdR6j7rH8hU/6pzZ6fs2Ut57D7XjO1Pa6ELhpxxS/nHl8B1+73vR/N+g&#xA;6PoehaDY6TaR2dqmv6RSOIUqfrkY5Mx+Jm92Nc3GPFGAqIp4PU6rJnmZ5JGUvN8k6d/xz7X/AIwx&#xA;/wDERnNan+8l/WP3vsXZX+KYv+Fw/wByERlLnuxV6J5F/JTzR5l9O7u1OlaS1GFxOp9SRf8AiqI0&#xA;J/1moPCuZmn0M8m/KLznantLg01xj+8ydw5D3l9BeT/y98r+U7fhpVqPrLCk19LR53+b0+Ef5K0G&#xA;bvBpYYuQ373zztHtfPqzeQ+n+aOQ/HmyTMh1jEvzJ/3g0P8A7b+k/wDUZHir4607/jn2v/GGP/iI&#xA;zltT/eS/rH732rsr/FMX/C4f7kMt8n/l55p82T8dKtT9VVuMt/NVLdPGr0PIj+VQTjh088h9Ia+0&#xA;e19PpB+8l6v5o5/j3voPyL+Snlfy16d1dKNV1Zd/rM6j042/4qiNQKfzNU+FM3Wn0EIbn1F877U9&#xA;pdRqbjH93j7hzPvP4D0LM9512KuxViX5k/7waH/239J/6jI8Vea/lF+ROjTeXdG17zBL9fF5Z291&#xA;b6fHVIVSWJXT1W2Z2owqBQf62a4dngzMp72Ts9Vl9qcscEMOEcHDCMTLrsK27vv9z3O2tra1gS3t&#xA;okgt4hxihjUIiqOyqtABmwjEAUHl5zlImUjZPUqmFi7FXYq7FWJfmT/vBof/AG39J/6jI8VRH5Y/&#xA;+S18p/8AbG0//qFjxVkuKuxV2KuxV2KsS/Mn/eDQ/wDtv6T/ANRkeKoj8sf/ACWvlP8A7Y2n/wDU&#xA;LHirJcVdirsVdirsVYl+ZP8AvBof/bf0n/qMjxVEflj/AOS18p/9sbT/APqFjxVkuKuxV2KuxV2K&#xA;sS/Mn/eDQ/8Atv6T/wBRkeKoj8sf/Ja+U/8Atjaf/wBQseKslxV2KuxV2KuxViX5k/7waH/239J/&#xA;6jI8VRH5Y/8AktfKf/bG0/8A6hY8VZLirsVdirsVdirEvzJ/3g0P/tv6T/1GR4qiPyx/8lr5T/7Y&#xA;2n/9QseKslxV2KuxV2KuxViX5k/7waH/ANt/Sf8AqMjxVEflj/5LXyn/ANsbT/8AqFjxVkuKuxV2&#xA;KuxV2KsS/Mn/AHg0P/tv6T/1GR4qiPyx/wDJa+U/+2Np/wD1Cx4qyXFXYq7FXYq7FWJfmT/vBof/&#xA;AG39J/6jI8VRH5Y/+S18p/8AbG0//qFjxVkuKuxV2KuxV2KsS/Mn/eDQ/wDtv6T/ANRkeKoj8sf/&#xA;ACWvlP8A7Y2n/wDULHirJcVdirsVdirsVYl+ZP8AvBof/bf0n/qMjxVEflj/AOS18p/9sbT/APqF&#xA;jxVkuKuxV2KuxV2KsS/Mn/eDQ/8Atv6T/wBRkeKoj8sf/Ja+U/8Atjaf/wBQseKslxV2KuxV2Kux&#xA;ViX5k/7waH/239J/6jI8VRH5Y/8AktfKf/bG0/8A6hY8VZLirsVdirsVdirEvzJ/3g0P/tv6T/1G&#xA;R4qiPyx/8lr5T/7Y2n/9QseKslxV2KuxV2KuxViX5k/7waH/ANt/Sf8AqMjxVEflj/5LXyn/ANsb&#xA;T/8AqFjxVkuKuxV2KuxV2KsS/Mn/AHg0P/tv6T/1GR4qiPyx/wDJa+U/+2Np/wD1Cx4qyXFXYq7F&#xA;XYq7FWJfmT/vBof/AG39J/6jI8VSb8uvzF/L60/L7yxa3XmfSbe6t9JsYp4Jb62SSORLZFZHVnBV&#xA;lIoQcVZD/wArO/LX/qbNG/7iFr/1UxV3/Kzvy1/6mzRv+4ha/wDVTFXf8rO/LX/qbNG/7iFr/wBV&#xA;MVd/ys78tf8AqbNG/wC4ha/9VMVd/wArO/LX/qbNG/7iFr/1UxVjnnXzv5L1ZNBstK1/TdQvH13S&#xA;mW2tbuCaUhbxCxCRuzbDrtir/9k=</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#FFFFFF" d="M40.662,191.634H0.4V5.433C0.4,2.654,2.65,0.4,5.431,0.4h30.195
+				c2.777,0,5.035,2.254,5.035,5.033V191.634"/>
+			<g>
+				<defs>
+					<path id="XMLID_1_" d="M40.662,191.634H0.4V5.433C0.4,2.654,2.65,0.4,5.431,0.4h30.195c2.777,0,5.035,2.254,5.035,5.033
+						V191.634"/>
+				</defs>
+				<clipPath id="XMLID_3_">
+					<use xlink:href="#XMLID_1_" />
+				</clipPath>
+				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,55.753 40.662,32.605 40.662,16.505 
+					0.4,39.648 0.4,55.753 "/>
+				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,87.964 40.662,64.804 40.662,48.701 
+					0.4,71.857 0.4,87.964 "/>
+			</g>
+			<path i:knockout="Off" fill="none" stroke="#1C1D20" stroke-width="0.8" stroke-miterlimit="3.864" d="M40.662,191.634H0.4V5.433
+				C0.4,2.654,2.65,0.4,5.431,0.4h30.195c2.777,0,5.035,2.254,5.035,5.033V191.634z"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-13a Curva peligrosa hacia la derecha ─────────
+  curva_peligrosa_derecha: {
+    license: 'PD',
+    attribution: 'P-13a Curva peligrosa hacia la derecha — fuente: p13a.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.9238 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="217.834" height="192.41" viewBox="0 0 217.834 192.41" overflow="visible" enable-background="new 0 0 217.834 192.41"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="189.924" y="323.208" width="217.834" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T08:57:22Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T08:57:22Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>256</xapGImg:width>
+     <xapGImg:height>228</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgA5AEAAwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A9U4q7FXYq7FXYq7FXYq7&#xA;FXYq7FXYq7FXYq7FXlP5u/nE3lmQ6JofCTWioa4uHAZLYMKqOJ2aQjeh2A8c1mt13AeGP1fc9Z7P&#xA;+zv5oeLl/uug/nfsfPWr6/res3BuNVvp72UmvKZ2cD2UE0UewzSzmZGybfRdPpMWEVjiIjyDtI1/&#xA;W9GuBcaVfT2UoNeULsgPswBow9jjCZibBpdRpMWYVkiJDzD6F/KL84m8zSDRNc4R60FLW9wgCpch&#xA;RVhxGyyAb0GxHhm60Wu4zwy+r73zr2g9nfyo8XF/ddR/N/Y9WzZvJuxV2KuxV2KuxV2KuxV2KuxV&#xA;2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KpF53812nlby1eaxcUZoV420JNPUnfaNPHc&#xA;7mnapyjUZhjgZOf2ZoJarPHFHrzPcOp/HV8dahf3eoX1xfXkhmurqRpZ5W6s7mpOcxKRJsvs2HFH&#xA;HAQiKjEUEPgbHYqiNPv7vT763v7OQxXVrIssEg6q6GoOGMiDYa82KOSBhIXGQovsXyR5rtPNPlqz&#xA;1i3orTLxuYQa+nOm0ieOx3Fe1DnT6fMMkBJ8Z7T0EtLnlil05HvHQ/jqnuXuA7FXYq7FXYq7FXYq&#xA;7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXzF+evnr9P+ZP0TZyctL0hmjBU1WS&#xA;46SPt1C/YX6T3zntfqPEnQ+mL6j7Ldl/l8HiSH7zJ9keg/T8u55lmC9Q7FXYq7FXp35E+ev0B5k/&#xA;RN5Jx0vVysZLGix3I2jffoG+wfoJ6ZnaDUcE6P0yeX9qey/zGDxIj95j+2PUfp+fe+nM6F8udirs&#xA;VdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVYL+cPnkeVfKsn1aTjq2o&#xA;8rexA+0u37yX/YKdv8ojMLXajw4bfUXfez3Zf5vUDiH7uG8v0D4/db5QJJNTuT1Oc6+ttYqnnkzy&#xA;teeaPMdno9tUeu1Z5QK+nCu8jn5Dp70GWYcRySEQ4PaWujpcEssunLzPQNec/K935Y8x3mjXNW9B&#xA;6wSkU9SFt43+levvtjmxHHIxPRezddHVYI5Y9efkeoSTK3ObBINRsR0OKvq/8n/PI81eVY/rD8tW&#xA;07jb3wJ+Jtv3c3/PRRv/AJQOdFodR4kN/qD5J7Q9l/lNQeEfu57x/SPh91M6zNdC7FXYq7FXYq7F&#xA;XYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYqtmlihieaVxHFGpeSRjRVVRUkk9ABgJAFl&#xA;MYmRocy+Q/zN86y+bfNVxfqzfo+H9xp0R2pCh2an8zn4j93bOZ1OfxJk9Oj7D2J2aNJpxD+M7y9/&#xA;7OTE8x3buxV9NfkN5F/Qfl39NXkfHU9YVXQHrHa9Y19i/wBs/wCx8M3vZ2n4Y8R5y+58w9qu1PHz&#xA;eFE+jH9suvy5fN358+Rf055d/TVnHy1PR1Z3A6yWvWRfcp9sf7Lxx7R0/FHiHOP3L7K9qeBm8KR9&#xA;GT7JdPny+T5lzRPp7sVZZ+WXnWXyl5qt79mb9HzfuNRiG9YXO7U/mQ/EPu75kabP4cwenV1HbfZo&#xA;1enMP4xvH3/t5PryKWOWJJYmDxSKGR1NVZWFQQR2IzpgbFh8elEg0ea7Ch2KuxV2KuxV2KuxV2Ku&#xA;xV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KvIf+cgvPX6N0dPLNlJS91NeV6VO6WoNOP/AD1YU/1Q&#xA;fHNX2lqKHAOZ5vY+yXZfi5fHkPTDl5y/Z99PnPNI+kOxVm/5R+Rz5s81RR3CctKsONxqBI2ZQfgi&#xA;/wCejCn+rXMrSYPEnXQc3R+0Haf5TTkj+8ntH9J+H30+swAAABQDYAZ0r5E4gEEEVB2IOKvkz83P&#xA;I58p+apY7dOOlX/K408gbKpPxxf882NP9Wmc1q8HhzroeT677P8Aaf5vTgn+8htL9B+P32wjMV3j&#xA;sVfRn/OPvnoalo7+Wb2St7pi8rIsd3tSacR/xiY0/wBUjwzd9m6ixwHmOT5t7W9l+Fl8eI9M+flL&#xA;9v329ezaPHuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KoHXdasdE0e71a+fh&#xA;a2cZlkPc06Kv+UxoB75XlyCETI9G/S6aefJHHD6pGnxv5m8wX3mHXbzWL41nu5C/GtQijZEWvZFA&#xA;Azl8mQzkZHmX2jRaSGnxRxQ5RH4PxSvIOUujjkkkWONS8jkKiKKkkmgAGKCQBZ5Prr8rvJSeUvKt&#xA;vZSKP0jcUuNRcb/vWH2K+CD4fvPfOk0en8OG/M83x/tztI6vUGQ+gbR937ebLsy3TuxViP5o+Sk8&#xA;2+VbiyjUfpG3rcac52/eqPsV8HHw/ce2Yms0/iQ25jk7jsPtI6TUCR+g7S937Ob5FkjkjkaORSki&#xA;Eq6MKEEGhBGc2+wAgixyW4pTTyz5gvvL2u2esWRpPaSB+NaB0Ozo3sykg5PHkMJCQ5hxdbpIajFL&#xA;FLlIf2H4PsjQtasdb0e01axfna3kYljPcV6q3+UpqD751GLIJxEh1fF9Vpp4Mksc/qiaR2WNDsVd&#xA;irsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVfPv/ADkN56+t30flSxlrb2ZE2pMp2acj&#xA;4IjT/famp9z4rmj7S1HEeAchz976H7I9l8EDqJjeW0fd1Px+73vF81j2zsVet/8AOP8A5F/Sutt5&#xA;kvI62OlMBagjZ7qlQf8AnkDy+ZXNj2dp+KXEeUfveQ9rO1PCxeBE+vJz8o/t5e630fm+fNXYq7FX&#xA;Yq+cP+cgPIx0rW18x2cdLDVWpdBRsl3SpP8Az1A5fMNmh7R0/DLiHKX3vpXsn2p4uLwJH14+XnH9&#xA;nL3U8kzXPXuxV7R/zjx56+q30vlS+kpb3hM2msx2WYCrxj2dRUe48WzZ9m6jhlwHkeXveJ9ruy+O&#xA;A1EBvHaXu6H4fd7n0Fm8fPHYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FWN/mF5wt/&#xA;Kfle61V6Nc09KxhP7c7g8B8h9pvYZj6rP4UCevR2fZHZ0tXnjjH085eQ6/qfH11dXF3cy3VzI0tx&#xA;O7STSsaszueTMT4knOYJvcvskIRhERiKA2CliyRui6Rfazq1ppdinqXd5IsUS9qt3PgqjcnwyUIG&#xA;RAHMtGp1EMOOWSf0xFvsjyt5dsfLmgWejWQ/c2iBS56u53eRvdmJOdRhxDHERD4xrtZPU5pZZc5H&#xA;5dw+Ca5a4jsVdirsVSrzT5dsfMegXmjXo/c3aFQ46o43SRfdWAOVZsQyRMS5eh1k9Nmjljzifn3j&#xA;4vjfWtIvtG1a70u+T07uzkaKVe1V7jxVhuD4Zy84GJIPMPs+m1EM2OOSH0yFoLIt6ra3VxaXMV1b&#xA;SNFcQOskMqmjK6HkrA+IIxBrcMZwjOJjIWDsX2D+X3nC382eV7XVUIW5p6V9CP2J0A5j5H7S+xzp&#xA;9Ln8SAPXq+Ndrdny0meWM/Tzie8dP1MkzIda7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq&#xA;7FXyz+dfnr/EvmhrS0k5aTpRaC3Kn4ZJK0ll+kjivsK985zXajxJ7fSH1b2a7L/LYOKQ/eZNz5Do&#xA;HneYb0bsVe//APOPHkX6vaSebL6P99chodMDDdYgaSSj/XI4j2B8c3HZun/jPwfPfa/tTikNPA7R&#xA;3l7+g+HP+x7Xm3eIdirsVdirsVdirxT/AJyH8jfWLSLzZZR/vrYLDqYUbtETSOU0/kPwn2I8M1Ha&#xA;en/jHxe39kO1OGR08ztLePv6j48/7XgGad9Cdir0T8lPPX+GvNC2l3Jx0nVSsFwWPwxyVpFL9BPF&#xA;vY17ZmaHUeHPf6S857S9l/mcHFEfvMe48x1D6mzo3yl2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2Ku&#xA;xV2KuxV55+dfnr/DXldrS0k46vqoaC24n4o4qfvZfagPFfc17Zga/UcEKH1Sej9muy/zOfikP3eP&#xA;c+Z6D8dHyxnPvqzsVZF5B8oXPmzzPa6TFVYGPq3sw/3XAhHNvmfsr7kZdgwnJMRDre1u0I6TBLIe&#xA;fIDvPT9fufYdnaW1naQ2lrGIra3RYoYl6KiDiqj5AZ1EYiIocg+N5MkpyMpG5E2VXCwdirsVdirs&#xA;VdiqleWlteWk1pdRiW2uEaKaJujI44sp+YOCURIUeRZ48koSEompA2Hx55+8oXPlPzPdaTLVoFPq&#xA;2Ux/3ZA5PBvmPst7g5y+fCcczEvsnZPaEdXgjkHPkR3Hr+v3Mdyl2TsVfU/5Keef8S+V1tbuTlq2&#xA;lBYLkn7UkdP3UvvUDi3uK986DQajjhR5xfKfaXsv8tqOKI/d5Nx5HqPx0eh5nvOOxV2KuxV2KuxV&#xA;2KuxV2KuxV2KuxV2KuxV2KqV1dW9pbTXVzIIreBGkmlbYKiCrMfkBglIAWeTPHAzkIxFk7B8f/mF&#xA;5wuPNnmi61V6rbV9KxiP7FuhPAU7Ft2b3Jzl9RmOSZk+x9kdnDSYI4x9XOXmfxt7mNZS7N2KvqP8&#xA;kPIv+HPLC393Hx1bVws03IfFHDSsUW/Q0PJvc07Zv+z9PwQ4jzl9z5X7Tdqfmc/BE/u8ew8z1P6B&#xA;+16PmweadirsVdirsVdirsVdirzj87/Iv+I/LDX9pHy1bSA00PEfFJDSssW3U0HJfcU75r+0NPxw&#xA;4hzj9z0vsz2p+Wz8Ej+7ybHyPQ/oP7Hy5mgfVHYqyX8vfOFx5T80WuqpVravpX0Q/bt3I5incrsy&#xA;+4GXafMccxJ1na/Zw1eCWM/Vzj5H8be59gWt1b3dtDdW0glt50WSGVdwyOKqw+YOdRGQIscnxzJA&#xA;wkYyFEbFVwsHYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq8Y/5yG89fVLGLypZSUuLwCbUWXqsIPwR&#xA;/N2FT7D3zU9pajbgHxe19key+OZ1ExtHaPv6n4ff7nz5mmfRHYq9B/JfyL/ifzSk91Hy0nSys93X&#xA;7LvX91F/siKn2BzL0Wn8Se/0jm897SdqfldPUT+8nsPLvP46vqnOkfJ3Yq7FXYq7FXYqsnuILeFp&#xA;riRIYUFXlkYKqjxLGgGKsavvzR/Lex2ufNGlowPEot3C7g79VRmYdPDFVfyx+YfkrzTcXFv5f1eD&#xA;ULi1UPPFGSHCE05BWCkrXao26eIxVkOKvlb86PIv+GPNLz2sfHSdULT2lPso9f3sX+xJqPYjOb1u&#xA;n8Oe30nk+sezfan5rT1I/vIbHz7j+Orz7MR6F2KvoP8A5x589fW7GXypeyVuLMGbTmbq0JPxx/NG&#xA;NR7H2zc9m6jbgPwfO/a7svgmNRAbS2l7+h+P3+97Pm2eKdirsVdirsVdirsVdirsVdirsVdirsVS&#xA;zzN5gsfL2hXmsXxpBaRl+NaF36JGvu7EKMqzZRjiZHo5Wi0k9Rljihzkfwfg+N9d1m+1vWLvVr5+&#xA;d1eSGWQ70FeirX9lRRQPDOXnMyJJ5l9o0umhgxxxw+mIpAZFvVLe3nubiK3t42lnmdY4olFWZ3NF&#xA;UDxJOIFsZzEQZE0A+wPy68mweUvK1tpihTdsPWv5V/bncDlv4LQKvsM6bS4PChXXq+OdsdonV6g5&#xA;P4eUfd+N2TZkurdirsVdirAPzD/O7yJ5HDwX119d1cA8dKs6STA029U1CRDp9o1p0BxV88ecv+cp&#xA;/wAwNZaSHRVi0CxaoX0QJrkqf5ppBQfNEU4aW3lGseYNe1q4+saxqNzqM/8Avy6meZh8i5amFCX4&#xA;qmXl3zFrHl3WLbWNHuWtNQtG5wzJ9xVgdmVhsynYjFX21+UH5v6P+YWj8l42mv2ij9JabXp29aGu&#xA;7RMfpU7HsTFKd/mL5Ng82+VrnTDxW7X99YTN+xOgPHfwbdW9jmNqsHiwrr0dp2P2idJqBk/h5S93&#xA;43fH9xbz21xLb3EbRTwu0csTCjK6GjKR4gjOZIp9jhMSAkDYKniyR+ha1faJrFpq1g/C7s5BLGex&#xA;psVan7LCqn2yUJmJBHMNGq00M+OWOf0yFPsjy15gsfMOhWesWR/cXkYcLWpRujo3ujAqc6jDlGSI&#xA;kOr4vrdJPT5ZYp84n+w/FM8tcV2KuxV2KuxV2KuxV2KuxV2KuxV2KvnP/nILz1+ktYTyzZSVstMb&#xA;lekdHuiKcflEpp/rE+GaHtHUcUuEco/e+keyXZfhY/HkPVPl/V/b91PIc1z2LsVey/8AOPXkX67q&#xA;Unmm+jra2JMWnhhs1wR8Um/URqdv8o+K5s+zdPxS4zyH3vF+13anBAaeB9Ut5e7u+P3e99C5vHzp&#xA;2KuxVSurq2tLaW6upUgtoEaSeeRgiIiCrMzHYADqcVfLP5vf85Oahqck+i+R5XstNBMc2sUKXE46&#xA;fuK7xIf5vtn/ACcNK+fnd3dndizsSWYmpJO5JJwoaxV2KuxV2Kvpf/nGv8lNTtru1896401kFUto&#xA;9grNHJIsilfWmpQ+mVPwp+11Pw05ApfS2BXz1/zkL5F+palH5psY6Wt8RFqAUbLcAfDJt0Eijf8A&#xA;yh4tmj7S0/DLjHI/e+i+yPanHA6eZ9Ud4+7u+H3e541mse0dir17/nH3z1+jdYfyzeyUstTblZE9&#xA;EugKcflKop/rAeObHs7UcMuE8pfe8d7W9l+Lj8eI9UOf9X9n3W+jM3z5u7FXYq7FXYq7FXYq7FXY&#xA;q7FXYqxT8zfOkXlLyrcX6kG/m/cafGe8zg0anggqx+7vmLq8/hwvqeTtuxezTq9QIfwDeXu/byfI&#xA;csss0ryysXlkYvI7GpZmNSSfc5zT7FGIAocgsxSmXlzQb7X9cs9HsVrcXkgQNQkKvV3an7KKCxye&#xA;PGZyERzLjazVw0+KWSfKI/A+L7I8v6HY6Fo1npNivG2s4xGnix6s592arHOoxYxCIiOj4vq9TPPl&#xA;lkn9Uj+PkmGWOO7FVk00MEMk88ixQxKXllchVVVFWZmOwAHU4q+Nfz5/O+686ai+i6LK8PlW0egp&#xA;8JvJFP8Aev8A8Vj9hT/rHfZSArx/Ch2KuxVOPL3lDzT5knMGhaVc6i6kCQ28bOiV6c3pxT/ZEYq9&#xA;L0j/AJxT/NS+XldrY6X3K3Nxzb/p2WcfjgtL0f8ALH/nFePRNcTVvN91baotrR7TTrcO0DSg7NMZ&#xA;FTkq7EJxoT12FC2r6DwK7FUv8waHY67o15pN8vK2vIzG/ip6q491ajDK8uMTiYnq5Gk1M8GWOSH1&#xA;RP4+b438x6DfaBrd5pF8vG5s5CjGlAy9Vda/supDDOXyQMJGJ5h9o0eqhqMUckPpkPwPgluQclfF&#xA;LLDKksTFJY2DxupoVZTUEH2OKJRBFHkX15+WXnSLzb5Vt79iBfw/uNQjHaZAKtTwcUYfd2zpdJn8&#xA;SF9RzfHe2uzTpNQYfwHePu/ZyZXmU6l2KuxV2KuxV2KuxV2KuxVxNNzir5P/ADh88nzV5qk+rSct&#xA;J07lb2FPstQ/vJv+ejDb/JAzmtZqPEnt9I5Prfs92X+U044h+8nvL9A+H32wXMV3zsVfRP8Azj55&#xA;F/R+lP5ovY6XmoqY7FWG6WwO7/OVh/wIHjm67N09DjPXk+ce1vaniZPAifTD6v637Pv9z2HNq8a7&#xA;FXYq+b/+cp/zWkt1HkPR5+MkqrJr0qGhCMA0dtUfzj439uI7sMIV8xYUOxVEafp1/qV7DY2FvJdX&#xA;twwjgt4VLyOx6BVG5xV9P/ld/wA4r6bZxQ6p56P1y+NHXRon/wBHi26TSIaysNtlIX/WGC0vf7Gw&#xA;sbC1jtLC2itLSIcYreBFjjQeCogCj6MCq+KuxV2KuxV2KvHv+cg/Iv6Q0pPNFlHW805RHfKo3e2J&#xA;2f5xMf8AgSfDNV2lp7HGOnN7L2S7U8PJ4Ej6Z/T/AFv2/f73ztmlfR3Yqzv8nvPJ8q+ao/rMnHSd&#xA;R429/Xou/wC7m/55sd/8knMrR6jw57/SebofaHsv83pzwj95DeP6R8fvp9Xg13GdK+SOxV2KuxV2&#xA;KuxV2KuxV2KvMvz288jQfLR0i0k46prCtGCp3jtukr+xb7C/T4Zru0dRwx4Rzl9z1Hsv2X+Yz+JI&#xA;fu8e/vl0H6f7XzFmhfUXYqyr8tvJk3m3zVbacQRYxn19QlFfhgQ7io6Fz8I+de2X6bCckxF1XbPa&#xA;Q0mnM/4jtH3/ALOb69gghghjggRY4YlCRRqKKqqKKoA6ADOnAAFB8dlIyJJ3JX4WLsVSTzt5ptPK&#xA;nlPU/MN2OUWnwGRY+nOQkJFHXtzkZVr74q/PjV9VvtX1S71S/lM17ezPPcSn9p5GLMfbc9MkhCYq&#xA;qW9vPc3EVvbxtLPM6xwxICzM7GiqoG5JJoMVfan5G/ktY+RdJTUdSjSfzTeIGuJiA31ZWH9xE30/&#xA;Gw+0fYDIpeq4q7FXYq7FXYq7FXYqsnghnhkgnRZIZVKSxsKqysKMpB6gjAQCKLKMjEgjYh8hfmT5&#xA;Mm8pearnTgCbGQ+vp8pr8UDnYVPUofhPyr3zmNThOOZi+xdjdpDV6cT/AIhtL3/t5sVyh2rsVfTv&#xA;5E+eRr3loaRdyctU0dVjJY7yW3SJ/cr9hvo8c33Z2o4o8J5x+58u9qOy/wAvn8SI/d5N/dLqP0/2&#xA;PTc2Ly7sVdirsVdirsVdiqhqF/aafY3F9eSCK1tY2lnkPRUQVJyM5iIJPINmLFLJMQiLlI0Hx153&#xA;813fmnzLd6xcVVZW420J/wB1wJtGm3tufeucvmynJIyL7N2ZoI6XBHEOnPzPUpDlTnuxV9W/k55F&#xA;/wALeVke6j46tqXG4vaijIKfu4T/AKgO/wDlE50Oh0/hws/UXyX2i7U/Naj0n93DaPn3n4/cz3M5&#xA;0DsVdir50/5zA81mHTdF8rQvRrp21C8UdfTirHCD7MzOf9iMIV8u4UOxV9A/84o/lxHqWr3PnPUY&#xA;udrpbehpauAVa6ZavJQ/76RhT/KavVcBS+rMCuxV2KuxV2KuxV2KuxV2KsC/OPyL/inys72sfLVt&#xA;N5XFlQVZxT95CP8AXA2/ygMwddp/EhY+oO/9ne1Pyuo9R/dz2l5dx+H3PlLOefWnYqn3kjzXd+Vv&#xA;MtprFvVlibjcwj/dkD7SJv7bj3pluHKcchIOB2noI6rBLEevLyPQvsXT7+01Cxt76zkEtrdRrLBI&#xA;OjI4qDnUQmJAEci+M5cUsczCQqUTRV8k1uxV2KuxV2KuxV4d/wA5E+eeEcXlGxk+J+NxqpU9F+1F&#xA;Cfn9s/7HNP2nqP4B8Xu/ZDsuydTMeUf0n9HzeDZqHvnYq9K/I3yKPMPmb9J3kfLStIKyuGFVkn6x&#xA;R79QKcm+QHfM3QafxJ2fpi8z7Udqfl8HhxP7zJt7h1P6B+x9QZ0T5Y7FXYq7FXxL/wA5L60+pfm5&#xA;qcXqc4dNit7KDrsFiErrv4SyvhCl5ZhQ7FX6BflV5XTyx+Xuh6OI/TnitUlvFIo31icerNX5O5Hy&#xA;GRSyvFXYq7FXYq7FXYq7FXYq7FXYq+X/AM8vIo8veZv0nZx8dK1ctKgUUWOfrLHt0BryX5kds53X&#xA;6fw52Ppk+p+y/an5jB4cj+8x7e8dD+g/tea5hPTOxV7z/wA47eeeccvlG+k+JOVxpRY9V+1LCPl9&#xA;sf7LNv2ZqP4D8Hgfa/suiNTAeUv0H9Hye45uHhHYq7FXYq7FUm83+Z7Lyz5evNZu6FbdP3UVaGSV&#xA;to4x/rN9w3ynPmGOBkXN7P0UtVmjij1+wdS+ONV1O81TUrnUb2T1bu7kaaZ+lWc1NB2HgM5eUjI2&#xA;eZfZ8GCOKAhAVGIoIXA2q9jZXV/ewWVpGZrq5dYoIl6s7migfThAJNBry5Y44mUjUYiy+xPIvlO1&#xA;8q+WbTR4KNJGvO7mH+7J33kf5V2HsBnT6bCMcBF8a7U18tXnlkPI8h3Dp+O9P8vde7FXYq7FX5+f&#xA;mvO035nea3bqNWvU38I53QfguEIYrhVNfKmm/pTzRo+mceX16+trbjtv60ypTeg/axKv0YyKXYq7&#xA;FXYq7FXYq7FXYq7FXYq7FUg89eU7XzV5Zu9Hnoski87SY/7rnTeN/lXY+xOUanCMkDF2HZevlpM8&#xA;cg5DmO8dfx3vju+srqwvZ7K7jMN1bO0U8TdVdDRgfpzmCCDRfZcWWOSIlE3GQsKGBsRWlaneaXqV&#xA;tqNlJ6V3aSLNC/WjIaio7jxGGMjE2OYas+COWBhMXGQovsfyh5nsvM3l6z1m0oFuE/exVqY5V2kj&#xA;P+q33jfOowZhkgJB8Y7Q0UtLmlil0+0dCnOXOE7FXYq7FXzV+ffnr9M+YBoNnJXTdIYrKVO0l10c&#xA;/wDPP7A9+Wc/2hqOOfCOUfvfTfZTsvwcPjSHrycvKPT58/k8qzAesdir2/8A5x38iiWaXzbfR/u4&#xA;S0Glqw6v0llH+qPgHvXwza9m6ezxnpyeG9r+1KA00Dz3l+gfp+T3vN0+fuxV2KuxV2Kvz4/M7/yZ&#xA;Xmz/ALbOof8AUVJkkMZxVk35Y/8AkyvKf/bZ0/8A6io8VfoPkUuxV2KuxV2KuxV2KuxV2KuxV2Ku&#xA;xV4J/wA5EeRfSni822MdI5isGqKo6P0ilP8ArD4D708c0vaWno8Y6830D2Q7UsHTTO43j+kfp+bx&#xA;DNU9y7FXqv5B+ev0N5gOg3klNO1dgsJY/DHddEP/AD0+x8+OZ/Z+o4J8J5S+95P2r7L8bD40R68f&#xA;Pzj1+XP5vpXOgfMnYq7FWGfmx53Xyn5UmngcDVL2tvpy9w7D4paeEa7/ADoO+Yet1Hhw2+o8nd9g&#xA;9mfm9QAf7uO8v1fH7rfJLMzMWYlmY1ZjuST3Oc4+vAU1iqb+UvLV75l8w2ejWYpJdPR5KVEcY3kk&#xA;P+qoJ9+mWYsZnIRHVw9frY6bDLLL+EfM9A+yNI0qy0nTLXTLGP0rS0jWKFPZR1PiT1J7nOoxwEIi&#xA;I5B8Y1GeWbIckzcpGyi8m0uxV2KuxV2Kvz4/M7/yZXmz/ts6h/1FSZJCSforU/0Z+lfqk36M9b6t&#xA;9d4N6Prcefp+pTjy470riqd/lj/5Mryn/wBtnT/+oqPFX6D5FLsVdirsVdirsVdirsVdirsVdirs&#xA;VQmr6VZatpl1pl9H6tpdxtFMnsw6jwI6g9jkMkBOJieRbtPnlhyDJA1KJsPjfzb5avfLXmG80a8F&#xA;ZLV6JJSgkjO8cg/1lIPt0zl8uMwkYno+z6DWx1OGOWP8Q+R6hKMrcxtWZWDKSrKaqw2II7jFSLfW&#xA;35T+d182eVIZ53B1Sypb6ivcuo+GWnhIu/zqO2dHotR4kN/qHN8h7e7M/Kaggf3ct4/q+H3UzPMx&#xA;0jTuiIzuwVFBZmY0AA3JJOAmkgEmg+SPzV87v5t81z3MTE6ZaVt9OTt6aneSnjI3xfKg7ZzWrz+J&#xA;O+nR9e7B7M/KacRP1y3l7+74MNzGd07FX0n+QXkX9D6E3mC9jpqGrKPQBHxR2vVf+Rh+I+3HN52b&#xA;p+GPGeZ+58z9q+1PGzeDE+jHz85fs5fN6vmzeSdirsVdirsVdir4/wBJ/JvVvzB/ODzZJJztPLlp&#xA;rl+NQ1ADdj9ac+hBXYyEdT0UbnsCbV9R/wCB/Kf+E/8ACX6Nh/w/6PofUKfDx68q/a58vi515cvi&#xA;rXfAr5c1b8m9W/L784PKckfO78uXeuWA0/UCN1P1pD6E9NhIB0PRhuO4BtX2BgV2KuxV2KuxV2Ku&#xA;xV2KuxV2KuxV2KuxV5R+f3kX9MaCvmCyj5ahpKn6wFHxSWtat/yKPxfLlms7S0/FHjHMfc9b7Kdq&#xA;eDm8GR9GTl5S/by+T5szRvpjsVZl+VXnd/KXmuC5lYjTLulvqKdvTY7SU8Y2+L5VHfMnSZ/DnfTq&#xA;6Xt7sz83pzEfXHePv7vi+t0dHRXRgyMAyspqCDuCCM6UG3yEgg0XlP5/eev0PoS+X7KSmoasp+sF&#xA;T8Udr0b/AJGH4R7cs1vaWo4Y8A5n7nrPZTsvxsvjSHox8vOX7OfyfNmaN9MdirMvyq8kP5t81Q2s&#xA;qn9GWlLjUXHT01O0dfGRvh+VT2zJ0uDxZ106ul7d7T/KacyH1y2j7+/4PrdEREVEUKigKqqKAAbA&#xA;ADOmAp8hJJNlvFDsVdirsVdirsVU7e1trZGS3iSFGd5WWNQgMkrF5HIFPid2LMe5NcVVMVU7i1tr&#xA;lFS4iSZFdJVWRQ4EkTB43ANfiR1DKexFcVVMVdirsVdirsVdirsVdirsVdirsVdirsVadEdGR1DI&#xA;wKsrCoIOxBBxItIJBsPkj81fJD+UvNU1rEp/Rl3W405z09NjvHXxjb4flQ985nVYPCnXTo+vdhdp&#xA;/m9OJH647S9/f8WG5jO6dir6T/IHz1+mNCby/eyV1DSVH1csfiktei/8iz8J9uObzs3UcUeA8x9z&#xA;5n7V9l+Dl8aI9GTn5S/bz+bwjzt5juPMfmjUdXmYss8rC3U/sQKeMSj5IB9O+afNkM5mR6vfdmaM&#xA;abTwxjoN/f1+1I8rc52KvVvy1/Nvy35L0E2I0ie4vriQy3t0roocjZFAIqFVfxqe+Z+l1kcUa4bJ&#xA;eT7a7Az63Nx8cRACoij8fmy3/oZnRP8Aqy3P/I2P+mZP8qj+b9rp/wDQVl/1SPyLv+hmdE/6stz/&#xA;AMjY/wCmP8qj+b9q/wCgrL/qkfkXf9DM6J/1Zbn/AJGx/wBMf5VH837V/wBBWX/VI/Iu/wChmdE/&#xA;6stz/wAjY/6Y/wAqj+b9q/6Csv8AqkfkXf8AQzOif9WW5/5Gx/0x/lUfzftX/QVl/wBUj8i7/oZn&#xA;RP8Aqy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/AFZbn/kbH/TH+VR/N+1f9BWX/VI/Iu/6GZ0T&#xA;/qy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/Vluf+Rsf9Mf5VH837V/0FZf9Uj8i7/oZnRP+rLc&#xA;/wDI2P8Apj/Ko/m/av8AoKy/6pH5F3/QzOif9WW5/wCRsf8ATH+VR/N+1f8AQVl/1SPyLv8AoZnR&#xA;P+rLc/8AI2P+mP8AKo/m/av+grL/AKpH5F3/AEMzon/Vluf+Rsf9Mf5VH837V/0FZf8AVI/Iu/6G&#xA;Z0T/AKstz/yNj/pj/Ko/m/av+grL/qkfkXf9DM6J/wBWW5/5Gx/0x/lUfzftX/QVl/1SPyLv+hmd&#xA;E/6stz/yNj/pj/Ko/m/av+grL/qkfkXf9DM6J/1Zbn/kbH/TH+VR/N+1f9BWX/VI/Iu/6GZ0T/qy&#xA;3P8AyNj/AKY/yqP5v2r/AKCsv+qR+Rd/0Mzon/Vluf8AkbH/AEx/lUfzftX/AEFZf9Uj8i7/AKGZ&#xA;0T/qy3P/ACNj/pj/ACqP5v2r/oKy/wCqR+Rd/wBDM6J/1Zbn/kbH/TH+VR/N+1f9BWX/AFSPyLv+&#xA;hmdE/wCrLc/8jY/6Y/yqP5v2r/oKy/6pH5F3/QzOif8AVluf+Rsf9Mf5VH837V/0FZf9Uj8i7/oZ&#xA;nRP+rLc/8jY/6Y/yqP5v2r/oKy/6pH5FiX5lfm35b86aCLE6RPb31vIJbK6Z0YITs6kAVKsv40Pb&#xA;MbVayOWNcNEO47F7Az6LNx8cTAipCj8Pk8pzAesdiqeeSfMdx5c80adq8LFVglUXCj9uBjxlU/NC&#xA;fp3yzDkMJiQ6OD2noxqdPPGeo29/T7Uqv7OexvriyuF4z2srwyqezxsVYfeMgQQaLlYsgnASHKQv&#xA;5qGBsdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVd&#xA;iqvYWc99fW9lbrynupUhiUd3kYKo+84QCTQa8uQQgZHlEX8ntP55flZfNfzeatEgM8UwDapaxCro&#xA;4FPWVR1UgfH4HfuabTX6Qg8ceXV4n2Y7dgIDT5TRH0k/d+r5PD81T3TsVdirsVdirsVdirsVdirs&#xA;VdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVe4fkb+Vl8t/D5q1uAwRQgtpdr&#xA;KKO7kU9ZlPRQD8Hid+wrtdBpCTxy5dHhfaft2BgdPiNk/UR936/k96zdPAPKfPH/ACoL63J+nPqn&#xA;6QqfU+o+r6vPv6n1T4eX+vmrz/lb35+X7NnrezP5X4R4XFwf0qr4cf6GIf8AWNX/AC9/9PmYv+C/&#xA;0ncf6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+&#xA;nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/&#xA;AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/&#xA;6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/&#xA;AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq&#xA;/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0&#xA;f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+&#xA;kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCX&#xA;v/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7&#xA;/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8A&#xA;r5/R/wBgy/yP/wAqC+tx/oP6p+kKj0/r3q+rz7en9b+Hl/qZlYPyt7c/P9uzp+0/5X4T4vFwf0ar&#xA;48H6Xq2bR5J//9k=</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#E41408" d="M14.121,192.41C6.324,192.41,0,186.09,0,178.289c0-2.535,0.668-4.918,1.846-6.973
+				L96.664,7.09C99.105,2.855,103.678,0,108.916,0s9.813,2.855,12.246,7.09l94.828,164.227c1.172,2.055,1.844,4.438,1.844,6.973
+				c0,7.801-6.324,14.121-14.121,14.121H14.121"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="21.881,173.875 108.916,23.176 195.951,173.875 21.881,173.875 "/>
+			<path i:knockout="Off" fill="#1C1D20" d="M132.303,87.379c-31.193,0-56.482,25.293-56.482,56.492v20.301l9.264-9.266l9.27,9.266
+				v-20.301c0-20.961,16.992-37.953,37.949-37.953l9.27-9.27L132.303,87.379"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-13b Curva peligrosa hacia la izquierda ─────────
+  curva_peligrosa_izquierda: {
+    license: 'PD',
+    attribution: 'P-13b Curva peligrosa hacia la izquierda — fuente: p13b.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.4707 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="217.836" height="192.41" viewBox="0 0 217.836 192.41" overflow="visible" enable-background="new 0 0 217.836 192.41"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="189.471" y="323.208" width="217.836" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T08:57:46Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T08:57:46Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>256</xapGImg:width>
+     <xapGImg:height>228</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgA5AEAAwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A9U4q7FXYq7FXYq7FXYq7&#xA;FXYq7FXYq7FXYq7FXlP5u/nE3lmQ6JofCTWioa4uHAZLYMKqOJ2aQjeh2A8c1mt13AeGP1fc9Z7P&#xA;+zv5oeLl/uug/nfsfPWr6/res3BuNVvp72UmvKZ2cD2UE0UewzSzmZGybfRdPpMWEVjiIjyDtI1/&#xA;W9GuBcaVfT2UoNeULsgPswBow9jjCZibBpdRpMWYVkiJDzD6F/KL84m8zSDRNc4R60FLW9wgCpch&#xA;RVhxGyyAb0GxHhm60Wu4zwy+r73zr2g9nfyo8XF/ddR/N/Y9WzZvJuxV2KuxV2KuxV2KuxV2KuxV&#xA;2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KpF53812nlby1eaxcUZoV420JNPUnfaNPHc&#xA;7mnapyjUZhjgZOf2ZoJarPHFHrzPcOp/HV8dahf3eoX1xfXkhmurqRpZ5W6s7mpOcxKRJsvs2HFH&#xA;HAQiKjEUEPgbHYqiNPv7vT763vrOQw3VrIssEq9VdDUHDGRBsNebFHJAwkLjIUX2L5I812nmny1Z&#xA;6xb0Vpl43MINfTnTaRPHY7ivahzp9PmGSAk+M9p6CWlzyxS6cj3jofx1T3L3AdirsVdirsVdirsV&#xA;dirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdir5j/Pbz1+n/Mn6Js5OWl6QWjBU1WS&#xA;5O0j7dQv2B9JHXOe1+o450Ppi+o+y3Zf5fB4kh+8yfZHoP0/LueY5gvUOxV2KuxV6d+RPnr9AeZP&#xA;0TeScdL1crGSxosdyNo336BvsH6CemZ2g1HBOj9Mnl/ansv8xg8SI/eY/tj1H6fn3vpzOhfLnYq7&#xA;FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq7FWC/nD55HlXyrJ9Wk46tq&#xA;PK3sQPtLt+8l/wBgp2/yiMwtdqPDht9Rd97Pdl/m9QOIfu4by/QPj91vlAkk1O5PU5zr621iqeeT&#xA;PK155o8x2ej21R67VnlAr6cK7yOfkOnvQZZhxHJIRDg9pa6OlwSyy6cvM9A15z8r3fljzHeaNc1b&#xA;0HrBKRT1IW3jf6V6++2ObEccjE9F7N10dVgjlj15+R6hJMrc5sEg1GxHQ4q+r/ye88jzV5Vj+syc&#xA;tW07jb3wP2m2/dy/7NRv/lA50Wh1HiQ3+oPkntD2X+U1B4R+7nvH9I+H3UzrM10LsVdirsVdirsV&#xA;dirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdiq2WWOKJ5ZWCRRqWd2NFVVFSST2AwE0LKYx&#xA;JNDm+Q/zN86y+bfNVxfqzfo+H9xp0R2pCh2an8zn4j93bOZ1OfxJk9Oj7D2J2aNJpxD+M7y9/wCz&#xA;kxPMd27sVfTX5DeRf0H5d/TV5Hx1PWFV0B6x2vWNfYv9s/7Hwze9nafhjxHnL7nzD2q7U8fN4UT6&#xA;Mf2y6/Ll83fnz5F/Tnl39NWcfLU9HVncDrJa9ZF9yn2x/svHHtHT8UeIc4/cvsr2p4GbwpH0ZPsl&#xA;0+fL5PmXNE+nuxVln5ZedZfKXmq3v2Zv0fN+41GIb1hc7tT+ZD8Q+7vmRps/hzB6dXUdt9mjV6cw&#xA;/jG8ff8At5PryKWOWJJYmDxSKGR1NVZWFQQR2IzpgbFh8elEg0ea7Ch2KuxV2KuxV2KuxV2KuxV2&#xA;KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KvIf8AnILz1+jdHTyzZSUvdTXlelTulqDTj/z1YU/1QfHN&#xA;X2lqKHAOZ5vY+yXZfi5fHkPTDl5y/Z99PnPNI+kOxVm/5ReRz5r81RR3CFtKsKXGoHsyg/BF/wA9&#xA;GFP9WuZWjweJOug5uj9oO0/ymnJif3k9o/pPw++n1mAAAAKAbADOlfInEAggioOxBxV8mfm55HPl&#xA;PzVLHbpx0q/5XGnkDZVJ+OL/AJ5saf6tM5rV4PDnXQ8n132f7T/N6cE/3kNpfoPx++2EZiu8dir6&#xA;M/5x989fpLR38s3slb3TF5WRY7vak04/88mNP9Ujwzd9m6ixwHmOT5v7W9l+Fl8eI9M+flL9v329&#xA;ezaPHOxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KoHXdasdE0e71a+fha2cZl&#xA;kPc06Kv+UxoB75XlyCETI9G/S6aefJHHD6pGnxv5m8wX3mHXbzWL41nu5C/GtQijZEWvZFAAzl8m&#xA;QzkZHmX2jRaSGnxRxQ5RH4PxSvIOUujjkkkWONS8jkKiKKkkmgAGKCQBZ5Prr8r/ACSnlLyrBZSK&#xA;P0jcfv8AUXFD+9YfYBHZB8I+k986XR6fw4UeZ5vj/bnaR1eoMh9A2j7v282XZlOndirEfzR8kx+b&#xA;fKs9nGo/SNtW405zt+9UfYJ8HHw/ce2Yms0/iQ25jk7jsPtI6TUCR+g7S937Ob5FkjkjkaORSkiE&#xA;q6MKEEGhBGc2+wAgixyW4pTTyz5gvvL2u2esWJpPaSB+NaB1Ozo1OzqSDk8eQwkJDmHF1ukhqMUs&#xA;U+Uh+D8H2RoWtWOt6PaatYvztbyMSxnuK9Vb/KU1B986jFkE4iQ6vi+q008GSWOf1RNI7LGh2Kux&#xA;V2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2Kvn3/nIfz19avovKljJW3syJtSZTs0xFUj&#xA;Psimp9z4rmj7S1HFLgHIc/e+h+yPZfBA6iY3ltH3dT8fu97xfNY9s7FXrf8Azj/5F/Sutt5kvI62&#xA;OlMBagjZ7qlQf+eQPL5lc2PZ2n4pcR5R+95D2s7U8LF4ET68nPyj+3l7rfR+b581dirsVdir5w/5&#xA;yA8jHStbXzHZx0sNVal0FGyXdKk/89QOXzDZoe0dPwy4hyl976V7J9qeLi8CR9ePl5x/Zy91PJM1&#xA;z17sVe0f848eevqt9L5UvpKW94TNprMdlmAq8Y9nUVHuPFs2fZuo4ZcB5Hl73ifa7svjgNRAbx2l&#xA;7uh+H3e59BZvHzx2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxVjf5hecLfyn5XutVe&#xA;jXNPSsYT+3O4PAfIfab2GY+qz+FAnr0dn2R2dLV544x9POXkOv6nx9dXVxd3Mt1cyNLcTu0k0rGr&#xA;M7nkzE+JJzmCb3L7JCEYREYigNgpYskboukX2s6taaXYp6l3eSLFEvardz4Ko3J8MlCBkQBzLRqd&#xA;RDDjlkn9MRb7I8reXbHy5oFno1kP3NogUuerud3kb3ZiTnUYcQxxEQ+Ma7WT1OaWWXOR+XcPgmuW&#xA;uI7FXYq7FUq80+XbHzHoF5o16P3N2hUOOqON0kX3VgDlWbEMkTEuXodZPTZo5Y84n594+L431rSL&#xA;7RtWu9Lvk9O7s5GilXtVe48VYbg+GcvOBiSDzD7PptRDNjjkh9MhaCyLeq2t1cWlzFdW0jRXEDrJ&#xA;DKpoyuh5KwPiCMQa3DGcIziYyFg7F9g/l75wt/Nnle11VKLc09K+hH7E6Acx8j9pfY50+lz+LAHr&#xA;1fG+1+zpaTPLGfp5x8x0/UyTMh1jsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVfLP51+&#xA;ev8AEvmhrS0k5aTpRaC3Kn4ZJK0ll+kjivsK985zXajxJ7fSH1b2a7L/AC2DikP3mTc+Q6B53mG9&#xA;G7FXv/8Azjx5G+r2kvmy9j/fXIaHTFYbrEDSSX/ZkcR7A+Objs3T/wAZ+D577X9qcUhp4HaO8vf0&#xA;Hw5/2Pa827xDsVdirsVdirsVeKf85D+RvrFpF5sso/31sFh1MKN2iJpHKafyH4T7EeGajtPT/wAY&#xA;+L2/sh2pwyOnmdpbx9/UfHn/AGvAM076E7FXon5Keev8NeaFtLuTjpOqlYLgsfhjkrSKX6CeLexr&#xA;2zM0Oo8Oe/0l5z2l7L/M4OKI/eY9x5jqH1NnRvlLsVdirsVdirsVdirsVdirsVdirsVdirsVdirs&#xA;Vdirzz86/PX+GvK7WlpJx1fVQ0FtxPxRxU/ey+1AeK+5r2zA1+o4IUPqk9H7Ndl/mc/FIfu8e58z&#xA;0H46PljOffVnYqyLyD5QufNnme10mKqwMfVvZh/uuBCObfM/ZX3Iy7BhOSYiHW9rdoR0mCWQ8+QH&#xA;een6/c+w7O0trO0htLWMRW1uixQxL0VEHFVHyAzqIxERQ5B8byZJTkZSNyJsquFg7FXYq7FXYq7F&#xA;VK8tLa8tJrS6jEttcI0U0TdGRxxZT8wcEoiQo8izx5JQkJRNSBsPjzz95QufKfme60mWrQKfVspj&#xA;/uyByeDfMfZb3Bzl8+E45mJfZOye0I6vBHIOfIjuPX9fuY7lLsnYq+p/yU89f4l8rraXcnLV9KCw&#xA;XPI/FJFT91L71A4t7ivfOg0Go44Ufqi+U+0vZf5bPxRH7vJuPI9R+Oj0PM95x2KuxV2KuxV2KuxV&#xA;2KuxV2KuxV2KuxV2KuxVSurq3tLaa6uZBFbwI0k0rbBUQVZj8gMEpACzyZ44GchGIsnYPj/8wvOF&#xA;x5s80XWqvVbavpWMR/Yt0J4CnYtuze5OcvqMxyTMn2Psjs4aTBHGPq5y8z+NvcxrKXZuxV9Sfkh5&#xA;F/w55YW/u4+OrasFmm5D4o4aVii36bHk3uads3/Z+n4IcR5y+58q9pu1PzOfgif3ePYeZ6n9A/a9&#xA;GzYPNuxV2KuxV2KuxV2KuxV5x+d/kX/Eflhr+0j5atpAaaHiPikhpWWLbqaDkvuKd81/aGn44cQ5&#xA;x+56X2Z7U/LZ+CR/d5Nj5Hof0H9j5czQPqjsVZL+XvnC48p+aLXVUq1tX0r6Ift27kcxTuV2ZfcD&#xA;LtPmOOYk6ztfs4avBLGfq5x8j+Nvc+wLW6t7u2huraQS286LJDKu4ZHFVYfMHOojIEWOT45kgYSM&#xA;ZCiNiq4WDsVdirsVdirsVdirsVdirsVdirsVdirsVeMf85DeevqljF5UspKXF4BNqLL1WEH4I/m7&#xA;Cp9h75qe0tRtwD4va+yPZfHM6iY2jtH39T8Pv9z58zTPojsVeg/kv5F/xP5pSe6j5aTpZWe7r9l3&#xA;r+6i/wBkRU+wOZei0/iT3+kc3nvaTtT8rp6if3k9h5d5/HV9U50j5Ox7zP8AmH5K8rXFvb+YNXg0&#xA;+4ulLwRSElygNORVQxC12qduvgcVULH80vy2vjS28z6WzV4hGu4UYn2V2Un6MVZLBcQXEKzW8iTQ&#xA;uKpLGwZWHiGFQcVX4q7FXYq7FXYq7FXyt+dHkX/DHml57WPjpOqFp7Sn2Uev72L/AGJNR7EZzet0&#xA;/hz2+k8n1j2b7U/NaepH95DY+fcfx1efZiPQuxV9B/8AOPPnr63Yy+VL2StxZgzaczdWhJ+OP5ox&#xA;qPY+2bns3UbcB+D537Xdl8ExqIDaW0vf0Px+/wB72fNs8U7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq&#xA;lnmbzBY+XtCvNYvjSC0jL8a0Lv0SNfd2IUZVmyjHEyPRytFpJ6jLHFDnI/g/B8b67rN9resXerXz&#xA;87q8kMsh3oK9FWv7KiigeGcvOZkSTzL7RpdNDBjjjh9MRSAyLeqW9vPc3EVvbxtLPM6xxRKKszua&#xA;KoHiScQLYzmIgyJoB9gfl15Ng8peVrbTFCm7Yetfyr+3O4HLfwWgVfYZ02lweFCuvV8c7Y7ROr1B&#xA;yfw8o+78bpJ+b/5v6P8Al7o/JuN3r92p/Rum169vWmpusSn6WOw7kZLq3xL5i8xax5i1i51jWLlr&#xA;vULtuc0z/cFUDZVUbKo2AySEtxVMNH8wa9otx9Y0fUbnTp/9+WszwsfmUK1xV6v5N/5yn/MDRmjh&#xA;1pYtfsVoG9YCG5Cj+WaMUPzdGOCk2+h/y8/O7yJ54CQWN19S1cgctKvKRzE039I1KSjr9k1p1AwK&#xA;z/FXYq7FXYqxn8xfJsHm3ytc6YeK3a/vrCZv2J0B47+Dbq3scxtVg8WFdejtOx+0TpNQMn8PKXu/&#xA;G74/uLee2uJbe4jaKeF2jliYUZXQ0ZSPEEZzJFPscJiQEgbBU8WSP0LWb7RNYtNWsX4XVnIJYzvQ&#xA;06q1P2WFVI8MlCZiQRzDRqtNDPjljn9MhT7I8s+YLHzDoVnrFiawXcYfjWpR+jxt7owKnOow5Rki&#xA;JDq+L63ST0+WWKfOJ/B+KZ5a4rsVdirsVdirsVdirsVdirsVdirsVfOf/OQXnr9JawnlmykrZaY3&#xA;K9I6PdEU4/KJTT/WJ8M0PaOo4pcI5R+99I9kuy/Cx+PIeqfL+r+37qeQ5rnsXYq9l/5x68i/XdRk&#xA;8030dbWxJi08N0a4I+KT5Rqdvc+2bPs3T8UuM8h97xftd2pwQGngfVLeXu7vj93vfQubx86fNP8A&#xA;zkp+Smp3N3dee9Daa9DKG1iwZmkkjWNQvrQ1qfTCj4k/Z6j4a8SFfNGFDsVdirsVbR3R1dGKupBV&#xA;gaEEbggjFX0D+UP/ADk5qGmSQaL54le900kRw6xQvcQDp+/pvKg/m+2P8rBSX1Na3Vtd20V1aypP&#xA;bToskE8bB0dHFVZWGxBHQ4FVcVdirsVfPX/OQvkX6lqUfmmxjpa3xEWoBRstwB8Mm3QSKN/8oeLZ&#xA;o+0tPwy4xyP3vovsj2pxwOnmfVHePu7vh93ueNZrHtHYq9e/5x989fo3WH8s3slLLU25WRPRLoCn&#xA;H5SqKf6wHjmx7O1HDLhPKX3vHe1vZfi4/HiPVDn/AFf2fdb6MzfPm7sVdirsVdirsVdirsVdirsV&#xA;dirFPzN86ReUvKtxfqQb+b9xp8Z7zODRqeCCrH7u+Yurz+HC+p5O27F7NOr1Ah/AN5e79vJ8hyyy&#xA;zSvLKxeWRi8jsalmY1JJ9znNPsUYgChyCzFKZeXNBvtf1yz0exWtxeSBA1CQq9XdqfsooLHJ48Zn&#xA;IRHMuNrNXDT4pZJ8oj8D4vsjy/odjoWjWek2K8bazjEaeLHqzn3Zqsc6jFjEIiI6Pi+r1M8+WWSf&#xA;1SP4+SYZY47sVfPn5nf84rx63rj6t5QurbS1uqvd6dcB1gWUndoTGr8VbclONAemxoDavONX/wCc&#xA;U/zUsV5Wi2OqdwttccG/6eVgH442rzTzD5Q80+W5xBrulXOnOxIjNxGyI9OvB6cX/wBiThQk+Kux&#xA;V2KvYPyG/O+68l6imi61K83lW7ehr8Rs5GP96n/FZ/bUf6w32YEJfZUM0M8Mc8EiywyqHilQhlZW&#xA;FVZWGxBHQ4FX4q7FUv8AMGh2Ou6NeaTfLytryMxv4qequPdWowyvLjE4mJ6uRpNTPBljkh9UT+Pm&#xA;+N/Meg32ga5eaPfLS4s5ChahAZeqOtf2XUhhnL5MZhIxPMPtGj1cNRijkhykPwPgluQclfFLLDKk&#xA;sTFJY2DxupoVZTUEH2OKJRBFHkX15+WXnSLzb5Vt79iBfw/uNQjHaZAKtTwcUYfd2zpdJn8SF9Rz&#xA;fHe2uzTpNQYfwHePu/ZyZXmU6l2KuxV2KuxV2KuxV2KuxVxNNzir5P8Azh88nzV5qk+rSctJ07lb&#xA;2FPstQ/vJv8Anow2/wAkDOa1mo8Se30jk+t+z3Zf5TTjiH7ye8v0D4ffbBcxXfOxV9E/84+eRf0f&#xA;pT+aL2Ol5qKmOxVhulsDu/zlYf8AAgeObrs3T0OM9eT5x7W9qeJk8CJ9MPq/rfs+/wBz2HNq8a7F&#xA;XYq7FXYqoX1hY39rJaX9tFd2ko4y286LJG48GRwVP04q8A/NH/nFfTbyKbVPIp+p3wq7aNK/+jy7&#xA;dIZHNYmO+zEr/qjDavmDUNOv9NvZrG/t5LW9t2Mc9vMpSRGHUMp3GFCHxV2Kvp3/AJxY/NV50PkP&#xA;V5uUkStLoUrmpKKC0ttX/JFXT25DsBgKX0hgV2KuxV49/wA5B+Rf0hpSeaLKOt5pyiO+VRu9sTs/&#xA;ziY/8CT4Zqu0tPY4x05vZeyXanh5PAkfTP6f637fv9752zSvo7sVZ1+T3nk+VfNUf1mTjpOo8be/&#xA;r9lan93N/wA82O/+STmVo9R4c9/pPN0PtD2X+b054R+8hvH9I+P30+sAa7jOlfJHYq7FXYq7FXYq&#xA;7FXYq7FXmX57eeRoPlo6RaScdU1hWjBU7x23SV/Yt9hfp8M13aOo4Y8I5y+56j2X7L/MZ/EkP3eP&#xA;f3y6D9P9r5izQvqLsVZV+W3kybzb5qttOIIsYz6+oSivwwIdxUdC5+EfOvbL9NhOSYi6rtntIaTT&#xA;mf8AEdo+/wDZzfXsMMMEMcEKCOGJQkcaiiqqigAA7AZ04AAoPjspGRJO5K/CxdirsVdirsVdirsV&#xA;eVfnl+S1j560l9R02NIPNNmha3mAC/WVUf3ErfR8DH7J9icVfFdxbz21xLb3EbRTwu0c0Tgqyupo&#xA;ysDuCCKHJIU8VRekarfaRqlpqlhKYb2ymSe3lH7LxsGU++46Yq/QfyT5ptPNflPTPMNoOMWoQCRo&#xA;+vCQEpLHXvwkVlr7ZFKd4q7FVk8EM8MkE6LJDKpSWNhVWVhRlIPUEYCARRZRkYkEbEPkL8yfJk3l&#xA;LzVc6cATYyH19PlNfigc7Cp6lD8J+Ve+cxqcJxzMX2LsbtIavTif8Q2l7/282K5Q7V2Kvp38ifPI&#xA;17y0NIu5OWqaOqxksd5LbpE/uV+w30eOb7s7UcUeE84/c+Xe1HZf5fP4kR+7yb+6XUfp/sem5sXl&#xA;3Yq7FXYq7FXYq7FVDUL+00+xuL68kEVraxtLPIeiogqTkZzEQSeQbMWKWSYhEXKRoPjnzv5ru/NP&#xA;mW71i4qqytxtoT/uuBdo0+gdfepzl82U5JGRfZuzNBHS4I4h05+Z6n8dEiypz3Yq+rfyc8i/4W8r&#xA;I91Hx1bUuNxe1FGQU/dwn/UB3/yic6HQ6fw4WfqL5L7RdqfmtR6T+7htHz7z8fuZ7mc6B2KuxV2K&#xA;uxV2KuxV2KuxV8p/85XflxHpur23nPTouFrqjehqioAFW6VapJQf79RTX/KWvVsIV8/YUOxV9Rf8&#xA;4f8AmszabrXlaZ6tauuoWanr6ctI5gPZWVD/ALI4Cl9F4FdirsVYF+cfkX/FPlZ3tY+WrabyuLKg&#xA;qzin7yEf64G3+UBmDrtP4kLH1B3/ALO9qfldR6j+7ntLy7j8PufKWc8+tOxVPfJHmu78reZbTWLe&#xA;rLE3G5hH+7IG2kT6R096HLcOU45CQcDtPQR1WCWI9eXkeh/HR9jaff2moWNvfWcgltbqNZYJB0ZH&#xA;FQc6iExIAjkXxnLiljmYSFSiaKvkmt2KuxV2KuxV2KvDv+cifPPCOLyjYyfE/G41Uqei/aihPz+2&#xA;f9jmn7T1H8A+L3fsh2XZOpmPKP6T+j5vBs1D3zsVel/kZ5FHmHzN+k7yPlpWkFZXDCqyTneKP3Ap&#xA;zb5AHrmboNP4k7P0xeY9qO1Py+Dw4n95k29w6n9A/Y+n86J8tdirsVdirsVdirsVdirsVdirFPzV&#xA;8rp5n/L3XNHMfqTy2ry2agVb6xAPVhp83QD5HFX5+5JDsVep/wDONGtPpv5uaZF6nCHUoriyn67h&#xA;ojKi7eMsSYCkPtrArsVdirsVfMH55+RR5e8zfpOzj46Vq5aVAoosc43lj9ga81+ZA6Zzuv0/hzsf&#xA;TJ9S9l+1PzGDw5H95j2946H9B/a80zCendir3n/nHbzzzjl8o30nxJyuNKLHqv2pYR8vtj/ZZt+z&#xA;NR/Afg8D7X9l0RqYDyl+g/o+T3HNw8I7FXYq7FXYqk3m/wAz2Xlny9eazd0K26fuoq0MkrbRxj/W&#xA;b7hvlOfMMcDIub2foparNHFHr9g6l8carqd5qmpXOo3snq3d3I00z9Ks5qaDsPAZy8pGRs8y+z4M&#xA;EcUBCAqMRQQuBtV7Cxur+9gsrSMy3VzIsUMS9WdzRR9+EAk0GvLljjiZyNRiLL7E8i+U7Xyr5ZtN&#xA;Hgo0ka87uYf7snfeR/lXYewGdPpsIxwEXxrtTXy1eeWQ8jyHcOn470/y917sVdirsVdirsVdirsV&#xA;dirsVdir85/Nem/ovzRrGmceP1G+ubbjtt6MzJTao/ZyQQlWKsq/KidofzO8qOvU6tZJt4SToh/B&#xA;sBV+geBLsVdirsVSDz15TtfNXlm70eeiySLztJj/ALrnTeN/lXY+xOUanCMkDF2HZevlpM8cg5Dm&#xA;O8dfx3vju+srqwvZ7K7jMN1bO0U8TdVdDRgfpzmCCDRfZcWWOSIlE3GQsKGBsRWlaneaXqVtqNlJ&#xA;6V3aSLNC/WjIaio7jxGGMjE2OYas+COWBhMXGQovsfyh5nsvM3l6z1m0oFuE/exVqY5V2kjP+q33&#xA;jfOowZhkgJB8Y7Q0UtLmlil0+0dCnOXOE7FXYq7FXzV+ffnr9M+YBoNnJXTdIYrKVO0l10c/88/s&#xA;D35Zz/aGo458I5R+99N9lOy/Bw+NIevJy8o9Pnz+TyrMB6x2Kvb/APnHfyKJZpfNt9H+7hLQaWrD&#xA;q/SWUf6o+Ae9fDNr2bp7PGenJ4b2v7UoDTQPPeX6B+n5Pe83T5+7FXYq7FXYq7FXYq7FXYq7FXYq&#xA;7FX58fmd/wCTK82f9tnUP+oqTJIYzirJvyx/8mV5T/7bOn/9RUeKv0HyKXYq7FXYq7FXgn/ORHkU&#xA;RTRebbGP93MVg1RVHR+kUp/1h8B96eOaXtLT0eMdeb6B7IdqWDppnlvH9I/T83iGap7l2KvVfyE8&#xA;9fobzAdBvJKabq7BYix2juuiH/np9g+/HM/s/UcE+E8pfe8n7V9l+Nh8aI9ePn5x6/Ln830rnQPm&#xA;TsVdirDPzY87r5T8qTTwOBql7W305e4dh8UtPCNd/nQd8w9bqPDht9R5O77B7M/N6gA/3cd5fq+P&#xA;3W+SWZmYsxLMxqzHcknuc5x9eAprFU48peWr7zL5gs9GswRJcvSSSlRHEN5JD7Ku/v0yzFjM5CI6&#xA;uH2hrYabDLLL+H7T0D7H0jSrLSdMtdMsY/StLSNYoU9lHU+JPUnuc6jHAQiIjkHxjUZ5ZshyTNyk&#xA;bKLybS7FXYq7FXYq7FXYq7FXYq7FXYq7FX58fmd/5MrzZ/22dQ/6ipMkhJP0Vqf6M/Sv1Sb9Get9&#xA;W+u8G9H1uPP0/Upx5cd6VxVO/wAsf/JleU/+2zp//UVHir9B8il2KuxV2KuxVCavpVlq2mXWmX0f&#xA;q2l3G0UyezDqPAjqD2OQyQE4mJ5Fu0+eWHIMkDUomw+OPNvlq+8teYLzRrwEyWz0jkpQSRHeOQez&#xA;Lv7dM5fLjMJGJ6Ps/Z+thqcMcsf4vsPUJPlbmNqzKwZSVZTVWGxBHcYqRb62/KfzuvmzypDPO4Oq&#xA;WVLfUV7l1Hwy08JF3+dR2zo9FqPEhv8AUOb5D292Z+U1BA/u5bx/V8PupmeZjpGndERndgqKCzMx&#xA;oABuSScBNJAJNB8kfmr53fzb5qmuomP6MtK2+nIenpqd5KeMjfF8qDtnNarP4s76dH17sLswaTTi&#xA;J+uW8vf3fBhuYzunYq+k/wAgvIv6H0JvMF7HTUNWUegCPijteq/8jD8R9uObzs3T8MeM8z9z5n7V&#xA;9qeNm8GJ9GPn5y/Zy+b1fNm8k7FXYq7FXYq7FXYq7FXYq7FXYq7FXYq+P9J/JvVvzB/ODzZJJztP&#xA;Llprl+NQ1ADdj9ac+hBXYyEdT0UbnsCbV9R/4H8p/wCE/wDCX6Nh/wAP+j6H1Cnw8evKv2ufL4ud&#xA;eXL4q13wK+XNW/JvVvy+/ODynJHzu/Ll3rlgNP1AjdT9aQ+hPTYSAdD0YbjuAbV9gYFdirsVdirs&#xA;Vdiryj8/fIv6Y0JfMFlHXUNJU+uAPikterf8iz8Q9uWaztLT8UeMcx9z1vsp2p4ObwZH0ZOXlL9v&#xA;L5PmzNG+mOxVmX5Ved38peaobqVj+jLulvqKDp6bHaSnjG3xfKo75k6XP4U76dXS9u9mDV6cxH1x&#xA;3j7+74vrdHR0V0YMjAMrKagg7ggjOlBt8hIINF5T+f3nr9D6Evl+ykpqGrKfrBU/FHa9G/5GH4R7&#xA;cs1vaWo4Y8A5n7nrPZTsvxsvjSHox8vOX7OfyfNmaN9MdirMvyq8kP5t81Q2sqn9GWlLjUXHT01O&#xA;0dfGRvh+VT2zJ0uDxZ106ul7d7T/ACmnMh9cto+/v+D63RERFRFCooCqqigAGwAAzpgKfISSTZbx&#xA;Q7FXYq7FXYq7FXYq7FXYq7FXYq7FXYqp29rbWyMlvEkKM7yssahAZJWLyOQKfE7sWY9ya4qqYqp3&#xA;FrbXKKlxEkyK6SqsihwJImDxuAa/EjqGU9iK4qqYq7FXYq7FXYq7FWnRHRkdQyMCrKwqCDsQQcSL&#xA;SCQbD5I/NXyQ/lLzVNaxKf0Zd1uNOc9PTY7x18Y2+H5UPfOZ1WDwp106Pr3YXaf5vTiR+uO0vf3/&#xA;ABYbmM7p2KvpP8gfPX6Y0JvL97JXUNJUfVyx+KS16L/yLPwn245vOzdRxR4DzH3PmftX2X4OXxoj&#xA;0ZOflL9vP5vCPO3mO48x+aNR1eZiyzysLdT+xAp4xKPkgH075p82QzmZHq992ZoxptPDGOg39/X7&#xA;UjytznYq9W/LX82/LfkzQTYjSJ7i+uJDLe3aui8z0RRUV4qvQeNT3zP0usjijXDZeS7a9n8+tzcf&#xA;HERAoDf4/Nlv/QzOif8AVluf+Rsf9Myf5VH837XUf6Csv+qR+Rd/0Mzon/Vluf8AkbH/AEx/lUfz&#xA;ftX/AEFZf9Uj8i7/AKGZ0T/qy3P/ACNj/pj/ACqP5v2r/oKy/wCqR+Rd/wBDM6J/1Zbn/kbH/TH+&#xA;VR/N+1f9BWX/AFSPyLv+hmdE/wCrLc/8jY/6Y/yqP5v2r/oKy/6pH5F3/QzOif8AVluf+Rsf9Mf5&#xA;VH837V/0FZf9Uj8i7/oZnRP+rLc/8jY/6Y/yqP5v2r/oKy/6pH5F3/QzOif9WW5/5Gx/0x/lUfzf&#xA;tX/QVl/1SPyLv+hmdE/6stz/AMjY/wCmP8qj+b9q/wCgrL/qkfkXf9DM6J/1Zbn/AJGx/wBMf5VH&#xA;837V/wBBWX/VI/Iu/wChmdE/6stz/wAjY/6Y/wAqj+b9q/6Csv8AqkfkXf8AQzOif9WW5/5Gx/0x&#xA;/lUfzftX/QVl/wBUj8i7/oZnRP8Aqy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/AFZbn/kbH/TH&#xA;+VR/N+1f9BWX/VI/Iu/6GZ0T/qy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/Vluf+Rsf9Mf5VH8&#xA;37V/0FZf9Uj8i7/oZnRP+rLc/wDI2P8Apj/Ko/m/av8AoKy/6pH5F3/QzOif9WW5/wCRsf8ATH+V&#xA;R/N+1f8AQVl/1SPyLv8AoZnRP+rLc/8AI2P+mP8AKo/m/av+grL/AKpH5F3/AEMzon/Vluf+Rsf9&#xA;Mf5VH837V/0FZf8AVI/Iu/6GZ0T/AKstz/yNj/pj/Ko/m/av+grL/qkfkXf9DM6J/wBWW5/5Gx/0&#xA;x/lUfzftX/QVl/1SPyLv+hmdE/6stz/yNj/pj/Ko/m/av+grL/qkfkXf9DM6J/1Zbn/kbH/TH+VR&#xA;/N+1f9BWX/VI/IsS/Mr82/LfnPQRYnSJ7e+t5BLZXbOjcD0dTQV4svUeND2zG1WsjljXDRdv2L7P&#xA;59Fm4+OJiRRG/wAPk8pzAetdiqeeSfMdx5c80adq8LFVglUXCj9uBjxlU/NCfp3yzDkMJiQ6OD2n&#xA;oxqdPPGeo29/T7Uqv7OexvriyuF4z2srwyqezxsVYfeMgQQaLlYsgnASHKQv5qGBsdirsVdirsVd&#xA;irsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdirsVdiqvYWc99fW9lbryn&#xA;upUhiUd3kYKo+84QCTQa8uQQgZHlEX8ntP55flZfNfzeatEgM8UwDapaxCro4FPWVR1UgfH4Hfua&#xA;bTX6Qg8ceXV4n2Y7dgIDT5TRH0k/d+r5PD81T3TsVdirsVdirsVdirsVdirsVdirsVdirsVdirsV&#xA;dirsVdirsVdirsVdirsVdirsVdirsVdirsVe4fkb+Vl8t/D5q1uAwRQgtpdrKKO7kU9ZlPRQD8Hi&#xA;d+wrtdBpCTxy5dHhfaft2BgdPiNk/UR936/k96zdPAPKfPH/ACoL63J+nPqn6QqfU+o+r6vPv6n1&#xA;T4eX+vmrz/lb35+X7NnrezP5X4R4XFwf0qr4cf6GIf8AWNX/AC9/9PmYv+C/0ncf6+f0f9g7/rGr&#xA;/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R&#xA;/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX&#xA;+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/&#xA;AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg&#xA;7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+&#xA;vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnz&#xA;H/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rG&#xA;r/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H&#xA;/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBg7/rGr/l7/wCnzH/Bf6S/6+f0f9g7/rGr/l7/AOnzH/Bf&#xA;6S/6+f0f9g7/AKxq/wCXv/p8x/wX+kv+vn9H/YO/6xq/5e/+nzH/AAX+kv8Ar5/R/wBgy/yP/wAq&#xA;C+tx/oP6p+kKj0/r3q+rz7en9b+Hl/qZlYPyt7c/P9uzp+0/5X4T4vFwf0ar48H6Xq2bR5J//9k=</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#E41408" d="M14.125,192.41C6.324,192.41,0,186.09,0,178.289c0-2.535,0.672-4.918,1.844-6.973
+				L96.668,7.09C99.105,2.855,103.68,0,108.914,0c5.242,0,9.813,2.855,12.254,7.09l94.824,164.227
+				c1.172,2.055,1.844,4.438,1.844,6.973c0,7.801-6.324,14.121-14.125,14.121H14.125"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="21.879,173.875 108.914,23.176 195.957,173.875 21.879,173.875 "/>
+			<path i:knockout="Off" fill="#1C1D20" d="M85.527,87.379c31.199,0,56.488,25.293,56.488,56.492v20.301l-9.27-9.266l-9.266,9.266
+				v-20.301c0-20.961-16.992-37.953-37.953-37.953l-9.27-9.27L85.527,87.379"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-14a Varias curvas peligrosas (primera hacia la derecha) ─────────
+  varias_curvas: {
+    license: 'PD',
+    attribution: 'P-14a Varias curvas peligrosas (primera hacia la derecha) — fuente: p14a.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="190.0195 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="217.832" height="192.41" viewBox="0 0 217.832 192.41" overflow="visible" enable-background="new 0 0 217.832 192.41"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="190.02" y="323.208" width="217.832" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T08:58:13Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T08:58:13Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>256</xapGImg:width>
+     <xapGImg:height>228</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgA5AEAAwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A9U4q7FXYq7FXYq7FXYq7&#xA;FXYq7FXYq7FXYq7FXlP5u/nE3lmQ6JofCTWioa4uHAZLYMKqOJ2aQjeh2A8c1mt13AeGP1fc9Z7P&#xA;+zv5oeLl/uug/nfsfPWr6/res3BuNVvp72UmvKZ2cD2UE0UewzSzmZGybfRdPpMWEVjiIjyDtI1/&#xA;W9GuBcaVfT2UoNeULsgPswBow9jjCZibBpdRpMWYVkiJDzD6F/KL84m8zSDRNc4R60FLW9wgCpch&#xA;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</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#E41408" d="M14.125,192.41C6.324,192.41,0,186.09,0,178.289c0-2.535,0.672-4.918,1.844-6.973
+				L96.668,7.09C99.105,2.855,103.676,0,108.918,0s9.809,2.855,12.25,7.09l94.824,164.227c1.176,2.055,1.84,4.438,1.84,6.973
+				c0,7.801-6.32,14.121-14.121,14.121H14.125"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="21.883,173.875 108.918,23.176 195.953,173.875 21.883,173.875 "/>
+			<path i:knockout="Off" fill="#1C1D20" d="M116.074,133.574l-26.57-10.004v40.602l-9.27-9.266l-9.266,9.266v-46.777
+				c1.762-17.66,18.566-13.203,18.566-13.203l26.445,9.668V80.762l9.266-9.27l9.266,9.27v40.156
+				C133.633,138.57,116.074,133.574,116.074,133.574"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-15 Perfil irregular de la calzada (badenes/resaltos) ─────────
+  calzada_irregular: {
+    license: 'PD',
+    attribution: 'P-15 Perfil irregular de la calzada (badenes/resaltos) — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.418">
+<path fill="#E41408" d="M14.125,192.418C6.32,192.418,0,186.09,0,178.297c0-2.547,0.672-4.926,1.84-6.98L96.668,7.09C99.104,2.855,103.676,0,108.916,0c5.238,0,9.813,2.855,12.254,7.09l94.82,164.227c1.172,2.055,1.844,4.434,1.844,6.98c0,7.793-6.32,14.121-14.125,14.121H14.125"/>
+<polyline fill="#FFFFFF" points="21.881,173.879 108.916,23.176 195.951,173.879 21.881,173.879"/>
+<path fill="#1C1D20" d="M161.877,142.988c-7.949,0-13.238-7.063-13.238-7.063c-5.297-7.063-13.242-6.176-13.242-6.176s-7.945-0.887-13.242,6.176c0,0-5.297,7.063-13.238,7.063c-7.943,0-13.24-7.063-13.24-7.063c-5.291-7.063-13.24-6.176-13.24-6.176s-7.939-0.887-13.238,6.176c0,0-5.297,7.063-13.236,7.063v21.184h105.916V142.988"/>
+</svg>`,
+  },
+
+  // ─── P-17 Estrechamiento de calzada ─────────
+  estrechamiento_calzada: {
+    license: 'PD',
+    attribution: 'P-17 Estrechamiento de calzada — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.41">
+<path fill="#E41408" d="M14.125,192.41C6.32,192.41,0,186.086,0,178.289c0-2.543,0.672-4.926,1.84-6.984 L96.668,7.086C99.104,2.848,103.676,0,108.916,0c5.238,0,9.813,2.848,12.254,7.086l94.82,164.219 c1.172,2.059,1.844,4.441,1.844,6.984c0,7.797-6.32,14.121-14.125,14.121H14.125"/>
+<polyline fill="#FFFFFF" points="21.881,173.875 108.916,23.168 195.951,173.875 21.881,173.875 "/>
+<polyline fill="#1C1D20" points="90.385,164.168 90.385,122.684 100.973,105.031 100.973,74.141 85.084,74.141 85.084,101.5 74.496,119.152 74.496,164.168 90.385,164.168 "/>
+<polyline fill="#1C1D20" points="127.451,164.168 127.451,122.684 116.857,105.031 116.857,74.141 132.748,74.141 132.748,101.5 143.342,119.152 143.342,164.168 127.451,164.168 "/>
+</svg>`,
+  },
+
+  // ─── P-18 Obras en la vía ─────────
+  obras: {
+    license: 'PD',
+    attribution: 'P-18 Obras en la vía — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 321 281">
+<g transform="translate(-336 -56)"><path d="M301.971 281.534C303.21 281.534 304.485 281.351 305.723 280.987 307.144 280.623 308.601 280.113 310.022 279.384 311.297 278.656 312.718 277.781 313.957 276.506 315.232 275.45 316.288 273.992 317.199 272.572 317.927 271.151 318.62 269.329 318.984 267.726 319.348 266.306 319.53 264.885 319.53 263.246L319.53 262.699C319.53 261.278 319.166 259.858 318.802 258.4 318.255 256.98 317.745 255.741 317.199 254.648L175.448 8.96186C174.72 7.86895 174.028 6.81247 172.935 5.71956 171.842 4.48093 170.785 3.57017 169.365 2.69584 168.09 1.96724 166.669 1.23863 164.884 0.728607 163.426 0.364303 161.824 0 160.221 0L159.492 0C157.889 0 156.286 0.364303 154.829 0.728607 153.044 1.23863 151.623 1.96724 150.348 2.69584 148.927 3.57017 147.834 4.48093 146.778 5.71956 145.685 6.81247 144.993 7.86895 144.264 8.96186L2.33154 254.648C1.78509 255.741 1.23863 256.98 0.728607 258.4 0.364303 259.858 0 261.278 0 262.881L0 263.246C0 264.703 0.182152 266.306 0.546455 267.726 0.910758 269.329 1.60293 271.151 2.33154 272.572 3.2423 273.992 4.29878 275.45 5.71956 276.506 6.99462 277.781 8.41541 278.656 9.69047 279.384 11.1112 280.113 12.532 280.623 13.9892 280.987 15.2279 281.351 16.5029 281.534 17.7416 281.534L301.971 281.534Z" fill="#FF0000" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M33.5159 254.648 286.014 254.648 159.856 35.8474 33.5159 254.648Z" fill="#FFFF00" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M160.84 240.513 254.575 240.513C253.482 238.181 251.697 236.032 249.548 234.393 247.398 232.608 245.067 231.551 242.553 230.823 241.46 228.673 239.675 226.888 237.526 225.977 236.651 223.099 235.012 220.586 232.68 218.801 230.531 217.198 227.69 216.141 224.812 216.141 224.447 215.048 223.719 213.955 223.026 212.899 222.298 211.806 221.241 210.932 220.148 210.021 217.999 208.236 215.303 206.997 212.462 206.451 209.402 205.904 206.524 206.269 203.828 207.179 202.589 207.507 201.35 208.054 200.257 208.782 199.165 209.474 198.29 210.385 197.38 211.114L162.989 181.897 177.853 150.348C178.764 148.927 179.456 147.324 179.638 145.503 179.638 143.718 179.274 142.115 178.581 140.512L165.685 120.621C164.592 119.346 163.171 118.289 161.714 117.561 160.111 116.65 158.144 116.322 156.541 116.14L127.324 116.14C125.357 116.322 123.39 117.014 121.932 118.471 120.512 119.71 119.601 121.495 119.273 123.462L115.666 142.989 110.129 138.18C109.218 137.634 108.307 137.452 107.433 137.634 106.522 137.998 105.83 138.362 105.284 139.237 104.919 139.965 104.737 140.84 104.919 141.75 105.101 142.843 105.648 143.535 106.34 143.9L113.699 150.348C114.063 151.441 114.61 152.315 115.302 153.226 115.848 154.282 116.759 155.011 117.634 155.557L112.096 160.585C110.493 162.916 109.765 165.758 110.129 168.636L110.639 198.91 102.041 230.276C101.349 232.243 101.531 234.575 102.406 236.36 103.316 238.327 105.101 239.784 107.069 240.331 107.979 240.659 108.854 240.841 109.947 240.841 111.003 240.841 112.096 240.513 112.97 239.967 114.063 239.42 114.938 238.874 115.666 237.999 116.213 237.271 116.759 236.36 117.123 235.486L126.595 204.301C127.324 201.788 127.688 199.274 127.87 196.578L127.142 179.565 144.337 200.185 128.563 228.309C128.053 229.22 127.688 230.094 127.506 231.187 127.506 232.243 127.506 233.336 127.87 234.393 128.053 235.486 128.563 236.542 129.291 237.271 130.02 238.181 130.712 238.691 131.623 239.238 132.351 239.602 133.408 239.967 134.501 240.149 135.375 240.331 136.65 240.331 137.707 239.967 138.617 239.602 139.674 239.056 140.402 238.509 141.313 237.817 142.005 237.089 142.37 236.178L161.532 203.937C162.079 202.698 162.443 201.423 162.625 200.185 162.807 198.727 162.807 197.489 162.443 196.068 162.261 194.611 161.714 193.372 161.022 192.279 160.293 191.041 159.383 189.948 158.144 189.256L191.296 216.141C189.875 216.651 188.6 217.562 187.179 218.618 185.904 219.711 184.847 220.768 183.937 222.043 181.969 222.589 180.184 223.646 178.581 225.249 177.124 226.888 176.068 228.855 175.521 230.823 174.101 230.64 172.498 230.823 170.858 231.187 169.437 231.551 167.835 232.243 166.559 233.154 165.139 234.028 163.864 235.303 162.989 236.542 162.079 237.817 161.386 239.056 160.84 240.513ZM159.747 156.432 149.729 171.514 142.37 165.394 159.747 156.432ZM141.823 130.821 129.109 142.989 131.441 130.821 141.823 130.821Z" fill="#010101" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M185.831 137.087C188.891 137.087 191.915 135.849 194.064 133.699 196.214 131.55 197.489 128.49 197.489 125.612 197.489 122.406 196.214 119.346 194.064 117.196 191.915 115.047 188.891 113.808 185.831 113.808 182.807 113.808 179.747 115.047 177.598 117.196 175.266 119.346 174.173 122.406 174.173 125.612 174.173 128.49 175.266 131.55 177.598 133.699 179.747 135.849 182.807 137.087 185.831 137.087Z" fill="#010101" transform="matrix(1 0 0 1.00173 336.207 56)"/></g>
+</svg>`,
+  },
+
+  // ─── P-19 Pavimento deslizante (calzada resbala) ─────────
+  pavimento_deslizante: {
+    license: 'PD',
+    attribution: 'P-19 Pavimento deslizante (calzada resbala) — fuente: p19.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.5664 515.2041" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="217.832" height="192.41" viewBox="0 0 217.832 192.41" overflow="visible" enable-background="new 0 0 217.832 192.41"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="189.566" y="322.794" width="217.832" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T09:09:55Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T09:09:55Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>256</xapGImg:width>
+     <xapGImg:height>228</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgA5AEAAwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A9U4q7FXYq7FXYq7FXYq7&#xA;FXYq7FXYq7FXYq7FXlP5u/nE3lmQ6JofCTWioa4uHAZLYMKqOJ2aQjeh2A8c1mt13AeGP1fc9Z7P&#xA;+zv5oeLl/uug/nfsfPWr6/res3BuNVvp72UmvKZ2cD2UE0UewzSzmZGybfRdPpMWEVjiIjyDtI1/&#xA;W9GuBcaVfT2UoNeULsgPswBow9jjCZibBpdRpMWYVkiJDzD6F/KL84m8zSDRNc4R60FLW9wgCpch&#xA;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&#xA;Gx/0x/lUfzftX/QVl/1SPyLv+hmdE/6stz/yNj/pj/Ko/m/av+grL/qkfkXf9DM6J/1Zbn/kbH/T&#xA;H+VR/N+1f9BWX/VI/Iu/6GZ0T/qy3P8AyNj/AKY/yqP5v2r/AKCsv+qR+Rd/0Mzon/Vluf8AkbH/&#xA;AEx/lUfzftX/AEFZf9Uj8i7/AKGZ0T/qy3P/ACNj/pj/ACqP5v2r/oKy/wCqR+Rd/wBDM6J/1Zbn&#xA;/kbH/TH+VR/N+1f9BWX/AFSPyLv+hmdE/wCrLc/8jY/6Y/yqP5v2r/oKy/6pH5F3/QzOif8AVluf&#xA;+Rsf9Mf5VH837V/0FZf9Uj8i7/oZnRP+rLc/8jY/6Y/yqP5v2r/oKy/6pH5F3/QzOif9WW5/5Gx/&#xA;0x/lUfzftX/QVl/1SPyLv+hmdE/6stz/AMjY/wCmP8qj+b9q/wCgrL/qkfkXf9DM6J/1Zbn/AJGx&#xA;/wBMf5VH837V/wBBWX/VI/Iu/wChmdE/6stz/wAjY/6Y/wAqj+b9q/6Csv8AqkfkXf8AQzOif9WW&#xA;5/5Gx/0x/lUfzftX/QVl/wBUj8i7/oZnRP8Aqy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/AFZb&#xA;n/kbH/TH+VR/N+1f9BWX/VI/Iu/6GZ0T/qy3P/I2P+mP8qj+b9q/6Csv+qR+Rd/0Mzon/Vluf+Rs&#xA;f9Mf5VH837V/0FZf9Uj8i7/oZnRP+rLc/wDI2P8Apj/Ko/m/av8AoKy/6pH5F3/QzOif9WW5/wCR&#xA;sf8ATH+VR/N+1f8AQVl/1SPyLEvzK/Nvy3500EWJ0ie3vreQS2V0zowQnZ1IAqVZfxoe2Y2q1kcs&#xA;a4aIdx2L2Bn0Wbj44mBFSFH4fJ5TmA9Y7FU88leY5/LnmnTtXiYqtvMv1hR+1Cx4yqfmhP05ZhyG&#xA;ExIdHB7T0Y1OnnjPUbe/p9qVX9nPY31xZXC8Z7WV4ZVPZ42KsPvGQIINFysWQTgJDlIX81DA2OxV&#xA;2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxVXsLOe+&#xA;vreyt15T3UqQxKO7yMFUfecIBJoNeXIIQMjyiL+T2n88vysvmv5vNWiQGeKYBtUtYhV0cCnrKo6q&#xA;QPj8Dv3NNpr9IQeOPLq8T7MduwEBp8poj6Sfu/V8nh+ap7p2KuxV2KuxV2KuxV2KuxV2KuxV2Kux&#xA;V2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KuxV2KvcPyN/Ky+W/h81a3AYIoQW0u1lFHdyKes&#xA;ynooB+DxO/YV2ug0hJ45cujwvtP27AwOnxGyfqI+79fye9ZungHlPnj/AJUF9bk/Tn1T9IVPqfUf&#xA;V9Xn39T6p8PL/XzV5/yt78/L9mz1vZn8r8I8Li4P6VV8OP8AQxD/AKxq/wCXv/p8zF/wX+k7j/Xz&#xA;+j/sHf8AWNX/AC9/9PmP+C/0l/18/o/7B3/WNX/L3/0+Y/4L/SX/AF8/o/7B3/WNX/L3/wBPmP8A&#xA;gv8ASX/Xz+j/ALB3/WNX/L3/ANPmP+C/0l/18/o/7B3/AFjV/wAvf/T5j/gv9Jf9fP6P+wd/1jV/&#xA;y9/9PmP+C/0l/wBfP6P+wd/1jV/y9/8AT5j/AIL/AEl/18/o/wCwd/1jV/y9/wDT5j/gv9Jf9fP6&#xA;P+wd/wBY1f8AL3/0+Y/4L/SX/Xz+j/sHf9Y1f8vf/T5j/gv9Jf8AXz+j/sHf9Y1f8vf/AE+Y/wCC&#xA;/wBJf9fP6P8AsHf9Y1f8vf8A0+Y/4L/SX/Xz+j/sHf8AWNX/AC9/9PmP+C/0l/18/o/7B3/WNX/L&#xA;3/0+Y/4L/SX/AF8/o/7B3/WNX/L3/wBPmP8Agv8ASX/Xz+j/ALB3/WNX/L3/ANPmP+C/0l/18/o/&#xA;7B3/AFjV/wAvf/T5j/gv9Jf9fP6P+wd/1jV/y9/9PmP+C/0l/wBfP6P+wd/1jV/y9/8AT5j/AIL/&#xA;AEl/18/o/wCwd/1jV/y9/wDT5j/gv9Jf9fP6P+wd/wBY1f8AL3/0+Y/4L/SX/Xz+j/sHf9Y1f8vf&#xA;/T5j/gv9Jf8AXz+j/sHf9Y1f8vf/AE+Y/wCC/wBJf9fP6P8AsHf9Y1f8vf8A0+Y/4L/SX/Xz+j/s&#xA;Hf8AWNX/AC9/9PmP+C/0l/18/o/7B3/WNX/L3/0+Y/4L/SX/AF8/o/7B3/WNX/L3/wBPmP8Agv8A&#xA;SX/Xz+j/ALBl/kf/AJUF9bj/AEH9U/SFR6f171fV59vT+t/Dy/1MysH5W9ufn+3Z0/af8r8J8Xi4&#xA;P6NV8eD9L1bNo8k//9k=</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#E41408" d="M14.121,192.41C6.32,192.41,0,186.086,0,178.289c0-2.543,0.668-4.926,1.84-6.984
+				L96.664,7.086C99.105,2.848,103.676,0,108.914,0s9.813,2.848,12.25,7.086l94.828,164.219c1.168,2.059,1.84,4.441,1.84,6.984
+				c0,7.797-6.324,14.121-14.125,14.121H14.121"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="21.875,173.875 108.914,23.168 195.949,173.875 21.875,173.875 "/>
+			<path i:knockout="Off" fill="none" stroke="#1C1D20" stroke-width="3.5" stroke-miterlimit="3.864" d="M78.004,111.273
+				c0,0-8.563-0.93-8.563,7.32c0.156,0.156-1.25,6.227,6.695,9.031c0,0.156,17.125,8.563,52.469,17.273
+				c0.309,0,9.957,1.41,5.285,13.082 M59.484,152.691h25.602c0,0,9.707-0.883,1.762-8.824l-6.199-3.012c0,0-7.941-4.98,2.961-8.41
+				c0.156-0.152,28.492-1.867,28.492-1.867"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M139.094,89.121c1.496,0.934,1.305,2.898,1.305,2.898l-3.176,16.746
+				c1.031,1.688,0.563,2.434,0.563,2.434c-0.371,3.926-2.246,6.922-2.246,6.922c-2.336,3.742-4.301,3.559-4.301,3.559
+				c0.09,3.18-3.086,3.273-3.086,3.273l-3.277,5.242c-0.52,0.824-1.602,1.07-2.434,0.555l-5.984-3.738
+				c-0.828-0.516-1.082-1.605-0.566-2.434l3.746-5.984L89.695,99.879l-3.738,5.992c-0.52,0.824-1.613,1.074-2.438,0.559
+				l-5.988-3.738c-0.824-0.52-1.074-1.605-0.559-2.434l3.273-5.242c0,0-1.309-2.895,1.586-4.211c0,0-1.027-1.68,1.313-5.422
+				c0,0,1.871-2.996,5.234-5.055c0,0,0.469-0.75,2.434-0.563l13.66-10.199c0,0,1.688-1.031,3.184-0.09L139.094,89.121"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="103.227,94.883 118.195,104.242 115.855,107.984 100.887,98.633 
+				103.227,94.883 "/>
+			<path i:knockout="Off" fill="#FFFFFF" d="M135.262,91.926c1.492,0.934,1.023,1.684,1.023,1.684l-1.867,11.32
+				c-0.656,2.715-2.434,0.563-2.434,0.563c-4.305-4.77-17.027-12.727-17.027-12.727s-12.73-7.949-18.902-9.727
+				c0,0-2.715-0.652-0.563-2.43l9.355-6.641c0,0,0.469-0.754,1.965,0.188L135.262,91.926"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-20 Peatones cruzando ─────────
+  peatones: {
+    license: 'PD',
+    attribution: 'P-20 Peatones cruzando — fuente: p20.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="609" height="537" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><g transform="translate(-351 -20)"><path d="M924.756 555.563C927.214 555.563 929.937 555.26 932.66 554.693 935.232 553.975 938.068 552.954 940.639 551.517 943.362 550.079 945.934 548.416 948.354 546.071 950.623 543.953 952.627 541.382 954.367 538.545 955.955 535.671 957.241 532.495 957.922 529.394 958.678 526.255 958.905 523.078 958.829 520.053 958.829 517.103 958.224 514.229 957.392 511.506 956.636 508.897 955.501 506.477 954.367 504.359L684.543 37.0554C683.409 34.8999 681.858 32.7821 680.005 30.74 678.001 28.7735 675.883 26.8827 673.274 25.3322 670.702 23.6304 667.828 22.3446 664.727 21.4749 661.551 20.4916 658.412 20.0378 655.122 20.0378 651.68 20.0378 648.504 20.4916 645.403 21.4749 642.264 22.3446 639.39 23.6304 636.818 25.3322 634.247 26.8827 632.091 28.7735 630.087 30.74 628.234 32.7821 626.646 34.8999 625.511 37.0554L355.688 504.359C354.402 506.477 353.381 508.897 352.549 511.506 351.792 514.229 351.263 517.103 351.112 520.053 350.96 523.078 351.263 526.255 352.095 529.394 352.851 532.495 353.986 535.671 355.688 538.545 357.238 541.382 359.394 543.953 361.663 546.071 364.007 548.416 366.579 550.079 369.264 551.517 371.987 552.954 374.71 553.975 377.432 554.693 380.155 555.26 382.727 555.563 385.109 555.563L924.756 555.563Z" fill="#FF0000"/><path d="M414.758 504.359 895.335 504.359 654.933 88.2595 414.758 504.359Z" fill="#FFFFFF"/><path d="M586.333 476.488C593.442 478.681 601.346 477.774 607.926 474.068 614.506 470.475 619.536 464.5 621.654 457.201L631.222 415.867 648.277 383.874C648.806 382.551 650.243 381.719 651.68 381.719 653.118 381.719 654.365 382.551 655.122 383.874L666.58 420.443 708.33 475.505C714.078 472.063 718.2 466.315 719.637 459.773 721.226 453.344 720.205 446.348 716.65 440.6L692.75 409.022 678.039 349.385 679.476 294.324 703.376 312.589 703.376 347.041C703.376 348.099 703.603 349.234 704.775 349.915 705.191 350.255 705.759 350.558 706.326 350.558 706.931 350.558 707.498 350.558 707.914 350.255L715.667 346.662C719.221 344.772 721.49 341.33 721.642 337.322L721.642 298.862 671.156 254.427C669.303 252.687 667.034 251.553 664.614 251.402 662.042 251.137 659.509 251.704 657.391 252.99L632.205 266.717 570.147 349.385C569.467 350.255 569.315 351.389 569.92 352.373 570.072 352.978 570.45 353.432 570.904 353.545 571.471 353.81 572.038 353.961 572.492 353.961L580.32 353.961C582.589 354.112 584.782 353.28 586.333 351.692L627.516 310.32 632.205 349.385 605.506 399.871 586.333 476.488Z" fill="#010101"/><path d="M648.277 250.683C651.151 250.683 654.101 250.305 657.126 249.019 660.151 247.847 662.836 245.994 665.257 243.725 667.677 241.267 669.417 238.544 670.551 235.556 671.837 232.569 672.291 229.581 672.291 226.707 672.291 220.278 669.719 214.114 665.257 209.69 660.719 205.076 654.555 202.467 648.277 202.467 645.441 202.467 642.415 203.072 639.39 204.206 636.402 205.341 633.528 207.194 631.222 209.69 628.801 211.996 626.91 214.87 625.776 217.82 624.641 220.846 624.036 223.833 624.036 226.707 624.036 232.985 626.608 239.149 631.222 243.725 635.684 248.149 641.81 250.683 648.277 250.683Z" fill="#010101"/></g></svg>`,
+  },
+
+  // ─── P-22 Lugar frecuentado por ciclistas ─────────
+  ciclistas: {
+    license: 'PD',
+    attribution: 'P-22 Lugar frecuentado por ciclistas — fuente: p22.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.4707 514.999" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="217.836" height="192.414" viewBox="0 0 217.836 192.414" overflow="visible" enable-background="new 0 0 217.836 192.414"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  x="189.471" y="322.585" width="217.836" height="192.414" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+<?xpacket begin='﻿' id='W5M0MpCehiHzreSzNTczkc9d'?><x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='XMP toolkit 3.0-29, framework 1.6'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:iX='http://ns.adobe.com/iX/1.0/'>
+
+ <rdf:Description rdf:about=''
+  xmlns:pdf='http://ns.adobe.com/pdf/1.3/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:xap='http://ns.adobe.com/xap/1.0/'
+  xmlns:xapGImg='http://ns.adobe.com/xap/1.0/g/img/'>
+  <xap:CreateDate>2006-09-07T09:11:07Z</xap:CreateDate>
+  <xap:ModifyDate>2006-09-07T09:11:07Z</xap:ModifyDate>
+  <xap:CreatorTool>Illustrator</xap:CreatorTool>
+  <xap:Thumbnails>
+   <rdf:Alt>
+    <rdf:li rdf:parseType='Resource'>
+     <xapGImg:format>JPEG</xapGImg:format>
+     <xapGImg:width>256</xapGImg:width>
+     <xapGImg:height>228</xapGImg:height>
+     <xapGImg:image>/9j/4AAQSkZJRgABAgEASABIAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAASAAAAAEA&#xA;AQBIAAAAAQAB/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoK&#xA;DBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8f&#xA;Hx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgA5AEAAwER&#xA;AAIRAQMRAf/EAaIAAAAHAQEBAQEAAAAAAAAAAAQFAwIGAQAHCAkKCwEAAgIDAQEBAQEAAAAAAAAA&#xA;AQACAwQFBgcICQoLEAACAQMDAgQCBgcDBAIGAnMBAgMRBAAFIRIxQVEGE2EicYEUMpGhBxWxQiPB&#xA;UtHhMxZi8CRygvElQzRTkqKyY3PCNUQnk6OzNhdUZHTD0uIIJoMJChgZhJRFRqS0VtNVKBry4/PE&#xA;1OT0ZXWFlaW1xdXl9WZ2hpamtsbW5vY3R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo+Ck5SVlpeYmZ&#xA;qbnJ2en5KjpKWmp6ipqqusra6voRAAICAQIDBQUEBQYECAMDbQEAAhEDBCESMUEFURNhIgZxgZEy&#xA;obHwFMHR4SNCFVJicvEzJDRDghaSUyWiY7LCB3PSNeJEgxdUkwgJChgZJjZFGidkdFU38qOzwygp&#xA;0+PzhJSktMTU5PRldYWVpbXF1eX1RlZmdoaWprbG1ub2R1dnd4eXp7fH1+f3OEhYaHiImKi4yNjo&#xA;+DlJWWl5iZmpucnZ6fkqOkpaanqKmqq6ytrq+v/aAAwDAQACEQMRAD8A9U4q7FXYq7FXYq7FXYq7&#xA;FXYq7FXYq7FXYq7FXlP5u/nE3lmQ6JofCTWioa4uHAZLYMKqOJ2aQjeh2A8c1mt13AeGP1fc9Z7P&#xA;+zv5oeLl/uug/nfsfPWr6/res3BuNVvp72UmvKZ2cD2UE0UewzSzmZGybfRdPpMWEVjiIjyDtI1/&#xA;W9GuBcaVfT2UoNeULsgPswBow9jjCZibBpdRpMWYVkiJDzD6F/KL84m8zSDRNc4R60FLW9wgCpch&#xA;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&#xA;8Xi4P6NV8eD9L1bNo8k//9k=</xapGImg:image>
+    </rdf:li>
+   </rdf:Alt>
+  </xap:Thumbnails>
+ </rdf:Description>
+
+ <rdf:Description rdf:about=''
+  xmlns:dc='http://purl.org/dc/elements/1.1/'>
+  <dc:format>image/svg+xml</dc:format>
+ </rdf:Description>
+
+</rdf:RDF>
+</x:xmpmeta>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?xpacket end='w'?>
+			</metadata>
+		<g id="Capa_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+			<path i:knockout="Off" fill="#E41408" d="M14.125,192.414C6.324,192.414,0,186.086,0,178.297c0-2.543,0.672-4.926,1.844-6.984
+				L96.668,7.09C99.105,2.855,103.68,0,108.914,0c5.242,0,9.813,2.855,12.254,7.09l94.824,164.223
+				c1.172,2.059,1.844,4.441,1.844,6.984c0,7.789-6.324,14.117-14.125,14.117H14.125"/>
+			<polyline i:knockout="Off" fill="#FFFFFF" points="21.879,173.879 108.914,23.176 195.957,173.879 21.879,173.879 "/>
+			<path i:knockout="Off" fill="#1C1D20" d="M123.004,142.531c0-9.027,7.32-16.348,16.348-16.348s16.344,7.32,16.344,16.348
+				c0,9.023-7.316,16.34-16.344,16.34S123.004,151.555,123.004,142.531"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M62.047,142.402c0-9.027,7.32-16.348,16.348-16.348s16.348,7.32,16.348,16.348
+				s-7.32,16.344-16.348,16.344S62.047,151.43,62.047,142.402"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M113.422,77.109c0-3.141,2.547-5.688,5.684-5.688s5.684,2.547,5.684,5.688
+				c0,3.133-2.547,5.676-5.684,5.676S113.422,80.242,113.422,77.109"/>
+			<path i:knockout="Off" fill="#FFFFFF" d="M65.32,142.402c0-7.223,5.852-13.074,13.074-13.074c7.227,0,13.078,5.852,13.078,13.074
+				c0,7.215-5.852,13.082-13.078,13.082C71.172,155.484,65.32,149.617,65.32,142.402"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M75.824,141.875c0-1.594,1.293-2.883,2.883-2.883s2.875,1.289,2.875,2.883
+				c0,1.59-1.285,2.879-2.875,2.879S75.824,143.465,75.824,141.875"/>
+			<path i:knockout="Off" fill="#FFFFFF" d="M126.27,142.531c0-7.227,5.859-13.086,13.082-13.086
+				c7.219,0,13.074,5.859,13.074,13.086c0,7.215-5.855,13.07-13.074,13.07C132.129,155.602,126.27,149.746,126.27,142.531"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M111.555,146.313c-4.434,0-4.359-4.207-4.203-4.367c0-4.977,4.281-4.824,4.281-4.824
+				l27.945,1.477c1.59,0,2.961,1.809,2.961,3.402c0,1.586-1.211,3.297-2.805,3.297C139.734,145.297,111.477,146.313,111.555,146.313
+				"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M119.105,84.813c0,0,1.789-2.414,4.984-1.789c0-0.078,3.891-0.078,5.059,5.527
+				l3.035,17.203c0,0,1.32,3.891-3.43,5.676c-0.07,0.082-14.238,5.457-14.238,5.457s-1.711,0.469-1.016,2.02
+				c0.078,0,6.617,14.949,6.617,14.949s1.324,3.66-1.871,4.977c-0.23,0.16-3.574,1.723-5.523-2.641
+				c0,0.074-8.645-18.449-8.645-18.449s-2.023-4.203,2.336-6.074c-0.074,0.156,12.227-4.977,12.227-4.977s1.32-0.316,0.777-1.328
+				c0-0.078-3.816-5.836-3.816-5.836l-9.188,8.328c0,0-2.875,2.805-5.289,0.387c0.465,0-3.66-2.41-0.313-5.832
+				C100.813,102.332,119.105,84.813,119.105,84.813"/>
+			<path i:knockout="Off" fill="#1C1D20" d="M104.859,107.543h-9.883c0,0-7.004,0.625-3.43,7.941c0,0.156,0.859,0.617-0.313,2.492
+				c-0.156,0.074-13.543,22.262-13.543,22.262l3.273,1.789l10.113-16.426l17.055,14.875l3.188-2.887l-16.734-14.164h28.258
+				l-3.191,4.902c0,0-0.391,0.621,0,1.398c0,0.082,1.48,2.645,1.48,2.645s0.543,0.707,1.242-0.309l4.512-7.008l7.945,13.855
+				l5.059,0.082L129.461,120l2.254-3.898h2.879c0,0,1.09,0.316,1.09-1.164c-0.078,0,0-3.352,0-3.352s0.547-2.336-2.801-1.008
+				c-0.074,0-8.25,3.426-8.25,3.426s-2.258,1.637,0.309,1.949c0.078,0,1.871,0.07,1.871,0.07l-1.246,2.883H95.207
+				c0,0,1.715-1.324,0.543-3.266c0,0.074-1.242-2.102-1.242-2.102s-1.168-1.48,0.621-1.48h9.73V107.543"/>
+		</g>
+	</svg>`,
+  },
+
+  // ─── P-29 Viento lateral fuerte ─────────
+  viento_lateral: {
+    license: 'PD',
+    attribution: 'P-29 Viento lateral fuerte — fuente: p29.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="463" height="408" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><defs><clipPath id="clip0"><rect x="76" y="67" width="463" height="408"/></clipPath></defs><g clip-path="url(#clip0)" transform="translate(-76 -67)"><path d="M25.9216 407.532C24.0808 407.532 22.1273 407.307 20.061 406.743 17.9948 406.33 15.9286 405.541 13.8624 404.452 11.7586 403.362 9.80512 402.085 8.07701 400.319 6.23621 398.591 4.69594 396.638 3.49378 394.459 2.21648 392.28 1.31486 389.988 0.676215 387.621 0.15027 385.217-0.075135 382.813 0.0375675 380.521 0.15027 378.267 0.45081 376.088 1.12703 374.022 1.76567 372.031 2.51702 370.19 3.49378 368.575L208.725 12.9984C209.702 11.3454 210.904 9.72998 212.332 8.18972 213.722 6.68702 215.487 5.25945 217.441 4.05729 219.394 2.77999 221.573 1.80324 223.865 1.12703 226.231 0.375675 228.749 0.0375675 231.266 0.0375675 233.745 0.0375675 236.262 0.375675 238.554 1.12703 240.92 1.80324 243.099 2.77999 245.053 4.05729 247.006 5.25945 248.772 6.68702 250.162 8.18972 251.59 9.72998 252.792 11.3454 253.656 12.9984L458.962 368.575C459.939 370.19 460.803 372.031 461.329 374.022 462.005 376.088 462.306 378.267 462.418 380.521 462.531 382.813 462.306 385.217 461.78 387.621 461.141 389.988 460.239 392.28 458.962 394.459 457.76 396.638 456.22 398.591 454.379 400.319 452.651 402.085 450.697 403.362 448.631 404.452 446.565 405.541 444.499 406.33 442.432 406.743 440.366 407.307 438.375 407.532 436.534 407.532L25.9216 407.532Z" fill="#FF0000" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M414.031 368.575 48.4245 368.575 231.228 51.9559 414.031 368.575Z" fill="#FFFFFF" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M146.701 263.423 146.701 348.213 148.993 348.213 148.993 268.983 170.106 304.222 342.09 317.596C343.743 317.708 345.358 317.521 347.011 317.07 348.626 316.619 350.279 315.868 351.669 314.778 353.097 313.576 354.299 312.299 355.163 310.871 356.027 309.331 356.591 307.828 356.891 306.288 357.868 300.765 358.093 295.205 357.567 289.758 357.342 288.03 356.703 286.377 355.614 284.987 354.412 283.559 352.872 282.583 351.369 282.057L189.152 225.781 140.916 256.473 140.916 348.213 143.245 348.213 143.245 257.788 183.179 232.317C177.732 242.648 173.825 253.956 171.646 265.828 169.58 277.699 169.467 289.533 171.082 301.179L148.016 263.01C148.016 262.897 147.903 262.785 147.678 262.672 147.49 262.672 147.377 262.672 147.152 262.672 146.814 262.785 146.626 263.123 146.701 263.423Z" fill="#010101" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M223.902 306.138C223.564 295.656 224.541 285.1 226.833 274.656 229.237 264.287 232.806 254.294 237.614 245.053L215.374 237.314C209.289 247.119 204.705 258.014 201.888 269.434 199.145 280.967 198.281 292.576 199.145 304.146L223.902 306.138Z" fill="#FEFEFE" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M269.885 309.594C269.096 301.216 269.66 292.538 271.613 284.01 273.567 275.52 276.948 267.443 281.418 260.155L263.348 253.956C258.84 262.146 255.346 270.937 253.28 280.178 251.139 289.458 250.35 298.925 250.913 308.204L269.885 309.594Z" fill="#FEFEFE" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M319.925 313.501 320.038 313.501C319.587 307.189 320.038 300.803 321.428 294.379 322.742 288.03 325.034 281.944 327.964 276.384L307.152 269.096C303.884 275.745 301.479 282.695 299.977 289.871 298.324 297.197 297.685 304.597 298.023 311.885L319.925 313.501Z" fill="#FEFEFE" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M350.768 312.411C352.721 310.683 354.149 308.392 354.6 305.799 355.614 300.578 355.802 295.205 355.126 289.984 355.126 289.533 355.013 289.119 354.9 288.669 352.609 291.599 351.331 295.093 350.993 298.774 350.43 303.282 350.354 307.866 350.768 312.411Z" fill="#FEFEFE" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M303.47 455.506 128.331 455.506" stroke="#808080" stroke-width="0.75135" stroke-linejoin="round" stroke-dasharray="4.80864 4.80864" fill="none" transform="matrix(1 0 0 1.00058 76.1726 67)"/><path d="M488.19 335.027 509.528 161.165" stroke="#808080" stroke-width="0.75135" stroke-linejoin="round" stroke-dasharray="4.80864 4.80864" fill="none" transform="matrix(1 0 0 1.00058 76.1726 67)"/></g></svg>`,
+  },
+
+  // ─── R-1 Ceda el paso ─────────
+  ceda_el_paso: {
+    license: 'PD',
+    attribution: 'R-1 Ceda el paso — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 438 387">
+<path stroke="#E41408" stroke-width="54" stroke-linejoin="round" d="M28,28H410L219,360z"/>
+<path fill="#FFF" d="M44,38H394L219,340"/>
+</svg>`,
+  },
+
+  // ─── R-2 Stop (parada obligatoria) ─────────
   stop: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_r2.svg (Wikimedia Commons, dominio público)',
+    attribution: 'R-2 Stop (parada obligatoria) — fuente: archivo Wikimedia Commons (dominio público)',
     xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1010 1010">
 <g transform="translate(1515.529,3241.075)">
 <path d="m -801.1513,-2230.8749 295.8223,-295.8221 -10e-5,-418.3556 -295.822,-295.8224 -418.3557,3e-4 -295.8222,295.8221 2e-4,418.3558 295.822,295.822 z" fill="#000000"/>
@@ -51,10 +927,302 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 </g></g></svg>`,
   },
 
-  // ─── S-1a Autopista ──────────────────────────────────────────
-  autopista: {
+  // ─── R-6 Preferencia para pasar paso estrecho ─────────
+  prioridad_sentido_contrario: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_s1a.svg (Wikimedia Commons, dominio público)',
+    attribution: 'R-6 Preferencia para pasar paso estrecho — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
+<g transform="translate(-455 -183)">
+<path d="M463.608 500.01C463.608 501.218 463.796 502.54 464.363 503.861 464.891 505.145 465.684 506.353 466.666 507.334 467.76 508.316 468.969 509.222 470.252 509.637 471.46 510.204 472.782 510.392 474.103 510.392L772.048 510.392C773.369 510.392 774.691 510.204 775.974 509.637 777.182 509.222 778.504 508.316 779.485 507.334 780.467 506.353 781.222 505.145 781.788 503.861 782.317 502.54 782.543 501.218 782.543 500.01L782.543 201.952C782.543 200.744 782.317 199.422 781.788 198.139 781.222 196.818 780.467 195.609 779.485 194.515 778.504 193.533 777.182 192.778 775.974 192.212 774.691 191.683 773.369 191.457 772.048 191.457L474.103 191.457C472.782 191.457 471.46 191.683 470.252 192.212 468.969 192.778 467.76 193.533 466.666 194.515 465.684 195.609 464.891 196.818 464.363 198.139 463.796 199.422 463.608 200.744 463.608 201.952Z" fill="#0055FF"/>
+<path d="M680.875 462.748 705.037 462.748 705.037 313.7 734.862 313.7 692.88 239.252 650.975 313.7 680.875 313.7 680.875 462.748Z" fill="#FFFFFF"/>
+<path d="M541.114 239.252 565.276 239.252 565.276 388.187 595.138 388.187 553.233 462.748 511.252 388.187 541.114 388.187 541.114 239.252Z" fill="#FF0000"/>
+</g></svg>`,
+  },
+
+  // ─── R-101 Entrada prohibida ─────────
+  entrada_prohibida: {
+    license: 'PD',
+    attribution: 'R-101 Entrada prohibida — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<circle fill="#E41408" cx="24" cy="24" r="23"/>
+<path fill="#FFF" d="m7,19h34v10H7z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 20 km/h ─────────
+  vel_max_20: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 20 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M228.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C237.011,41.012,237.011,0.352,228.88-28.869z M180.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C183.355,6.888,183.355,32.88,180.128,52.375z"/>
+<path fill-rule="evenodd" d="M-161.117,135.415H2.195V87.321h-72.388l36.46-30.668c3.159-2.655,8.447-7.384,11.605-10.038C-7.311,31.316,3.259,5.93,3.259-15.737c0-14.286-5.283-33.832-12.668-46.501c-3.187-4.27-9.001-10.062-12.718-13.778c-4.222-3.668-11.076-8.445-16.359-11.101c-5.814-3.136-15.323-6.321-21.693-7.916c-23.236-6.321-54.969-2.653-76.084,9.508c-7.937,4.778-17.443,14.286-22.197,22.731c-9.001,15.877-13.755,40.708-11.632,58.685h52.845c-1.061-6.902,0-16.408,2.656-22.731c4.729-12.692,17.951-21.669,30.645-21.669c3.69,0,9.508,0.532,13.199,1.593c9.505,2.076,17.999,11.102,19.569,20.607c1.593,11.101-2.124,25.363-9.001,33.832c-6.854,8.978-18.507,21.139-27.461,27.99l-69.231,51.808c-2.653,2.124-4.246,5.817-4.246,9.001V135.415"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 30 km/h ─────────
+  vel_max_30: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 30 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M-171.814,70.122c1.99,7.914,5.869,19.652,7.836,25.548c7.861,15.619,23.453,33.308,39.15,39.1c23.531,9.827,58.777,9.827,84.301,2.017c19.6-7.809,37.184-25.497,43.08-45.047c1.912-7.861,3.93-19.653,3.93-25.443c0-9.828-3.93-19.602-5.895-27.515c-5.947-7.81-15.699-13.704-23.533-17.583c5.896-1.915,13.705-7.81,19.602-13.707C4.465-4.352,6.482-23.849,0.588-39.52C-5.359-61.085-26.824-82.6-48.391-88.497c-19.6-5.896-47.01-5.896-66.611,0c-5.869,2.017-13.705,5.896-19.576,7.81c-19.652,11.791-35.246,37.34-35.246,60.769l52.91,5.844c-2.02-9.774,3.877-21.514,13.703-25.445c9.828-5.896,23.455-7.861,33.281-3.827c9.826,1.862,17.584,11.585,17.584,23.428c-1.939,5.844-5.869,11.74-11.715,13.706c-9.746,5.896-25.443,7.86-37.236,5.896v47.012c9.773-2.017,25.496-2.017,33.307,0c9.775,1.913,17.637,7.809,19.6,17.634c1.992,9.776-1.963,19.55-9.824,23.48c-5.846,3.931-13.705,5.897-21.541,5.897c-3.881,0-11.768-1.967-15.645-1.967c-11.688-3.931-21.514-15.618-21.514-29.375L-171.814,70.122"/>
+<path fill-rule="evenodd" d="M238.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C247.011,41.012,247.011,0.352,238.88-28.869z M190.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C193.355,6.888,193.355,32.88,190.128,52.375z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 40 km/h ─────────
+  vel_max_40: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 40 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M-17.92,55.642V-88.984h-65.016l-112.1,146.224v47.157h123.498v34.084h53.618v-34.084H9.705V55.642H-17.92z M-71.539,55.642h-60.116l60.116-79.646V55.642z"/>
+<path fill-rule="evenodd" d="M238.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C247.011,41.012,247.011,0.352,238.88-28.869z M190.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C193.355,6.888,193.355,32.88,190.128,52.375z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 60 km/h ─────────
+  vel_max_60: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 60 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M-28.752-4.75c-3.879-1.965-9.672-5.896-15.566-7.861c-21.592-13.705-54.873-11.688-76.414,1.966c0-11.74,7.836-21.567,15.645-29.376c7.809-5.896,21.514-7.861,31.34-3.931c7.838,2.069,13.705,9.827,15.723,17.636l47.012-19.602c-3.955-15.619-15.721-31.289-29.426-39.099c-25.471-15.722-62.709-15.722-90.119,0c-1.939,1.862-7.887,5.793-11.766,7.81c-9.826,11.688-21.516,29.324-25.393,44.995c-7.914,29.324-7.914,74.476,0,103.798c3.877,15.723,15.566,37.236,27.408,49.027c3.881,1.967,7.811,5.795,11.689,7.811c11.766,5.896,29.428,11.844,41.166,11.844c7.836,0,19.602-2.018,25.498-4.035c9.748-1.912,21.516-9.824,29.324-15.619C2.691,87.309,4.605,30.523-28.752-4.75z M-56.163,63.828C-58.026,79.5-69.868,91.24-85.489,91.24c-15.67,0-29.426-11.74-31.365-27.412c0-1.967,0-7.861,0-11.74c1.939-15.723,15.695-27.41,31.365-27.41c15.621,0,27.463,11.688,29.326,27.41C-54.147,55.967-54.147,61.861-56.163,63.828z"/>
+<path fill-rule="evenodd" d="M220.235-29.186c-11.458-40.833-50.649-70.245-93.163-70.245c-40.833,0-80.024,29.412-91.485,70.245c-4.888,29.411-4.888,70.245,0,98.015c11.461,40.834,50.652,70.245,91.485,70.245c42.514,0,81.705-29.411,93.163-70.245C226.771,41.06,226.771,0.226,220.235-29.186z M169.586,52.482c-3.244,19.595-21.278,34.3-40.834,34.3c-21.273,0-39.228-14.705-42.513-34.3c-3.248-19.598-3.248-45.723,0-63.714c3.285-21.202,21.239-35.907,42.513-35.907c19.556,0,37.59,14.705,40.834,35.907C172.873,6.759,172.873,32.885,169.586,52.482z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 70 km/h ─────────
+  vel_max_70: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 70 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<polyline fill-rule="evenodd" points="-135.389,139.074 -78.205,139.074 -3.07,-45.535 -3.07,-89.614 -164.8,-89.614 -164.8,-40.605 -61.858,-40.605 -135.389,139.074"/>
+<path fill-rule="evenodd" d="M214.235-29.186c-11.458-40.833-50.649-70.245-93.163-70.245c-40.833,0-80.024,29.412-91.485,70.245c-4.888,29.411-4.888,70.245,0,98.015c11.461,40.834,50.652,70.245,91.485,70.245c42.514,0,81.705-29.411,93.163-70.245C220.771,41.06,220.771,0.226,214.235-29.186z M163.586,52.482c-3.244,19.595-21.278,34.3-40.834,34.3c-21.273,0-39.228-14.705-42.513-34.3c-3.248-19.598-3.248-45.723,0-63.714c3.285-21.202,21.239-35.907,42.513-35.907c19.556,0,37.59,14.705,40.834,35.907C166.873,6.759,166.873,32.885,163.586,52.482z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 80 km/h ─────────
+  vel_max_80: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 80 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M230.569-21.61c-9.932-39.569-49.553-69.311-91.109-69.311c-41.607,0-79.189,29.742-91.133,69.311c-5.88,27.703-5.88,71.297,0,99c11.943,39.568,49.525,69.259,91.133,69.259c41.557,0,81.178-29.69,91.109-69.259C238.409,49.688,238.409,6.093,230.569-21.61z M181.017,59.619c-2.013,19.705-21.745,35.596-41.557,35.596c-19.783,0-37.687-15.891-41.607-35.596c-1.959-17.825-1.959-45.527,0-63.404c3.921-19.863,21.824-35.648,41.607-35.648c19.812,0,39.544,15.786,41.557,35.648C184.937,14.092,184.937,41.794,181.017,59.619z"/>
+<path fill-rule="evenodd" d="M2.482,57.073C0.619,49.161-3.412,41.353-9.205,35.455c-5.896-5.843-13.707-9.773-19.602-9.773c11.688-5.896,23.48-17.584,27.41-29.376C0.619-9.539,0.619-17.4,0.619-23.296c0-19.601-11.84-43.082-31.441-52.804c-29.324-17.687-72.459-17.687-103.748,0c-17.713,9.723-29.426,33.203-29.426,52.804c0,5.896,0,13.757,2.016,19.602c1.861,11.792,13.705,23.479,27.41,29.376c-7.811,0-15.723,3.931-19.65,9.773c-5.898,5.897-11.768,13.706-13.707,21.618c-7.809,29.429,5.947,60.665,31.342,76.389c31.367,17.583,76.439,17.583,107.779,0C-3.412,117.738,10.369,86.502,2.482,57.073z M-99.352-38.966c9.775-3.931,23.533-3.931,35.248,0c7.887,3.931,11.766,11.792,11.766,19.653c0,7.757-3.879,17.584-11.766,19.55c-11.715,3.93-25.473,3.93-35.248,0c-7.809-1.966-13.754-11.792-13.754-19.55C-113.105-27.175-107.16-35.036-99.352-38.966z M-64.104,96.224c-9.748,1.966-25.473,1.966-35.248,0c-9.824-1.964-17.635-11.74-17.635-21.514c0-11.844,7.811-19.653,17.635-23.532c9.775-2.017,25.5-2.017,35.248,0c9.828,3.879,15.695,11.688,15.695,23.532C-48.408,84.483-54.275,94.26-64.104,96.224z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 90 km/h ─────────
+  vel_max_90: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 90 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
+<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
+<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
+<path fill-rule="evenodd" d="M230.569-21.61c-9.932-39.569-49.553-69.311-91.109-69.311c-41.607,0-79.189,29.742-91.133,69.311c-5.88,27.703-5.88,71.297,0,99c11.943,39.568,49.525,69.259,91.133,69.259c41.557,0,81.178-29.69,91.109-69.259C238.409,49.688,238.409,6.093,230.569-21.61z M181.017,59.619c-2.013,19.705-21.745,35.596-41.557,35.596c-19.783,0-37.687-15.891-41.607-35.596c-1.959-17.825-1.959-45.527,0-63.404c3.921-19.863,21.824-35.648,41.607-35.648c19.812,0,39.544,15.786,41.557,35.648C184.937,14.092,184.937,41.794,181.017,59.619z"/>
+<path fill-rule="evenodd" d="M-3.99-24.693c-5.394-16.128-16.139-35.856-28.711-46.602c-1.785-3.631-7.198-7.177-10.745-8.961c-10.776-5.414-28.7-10.798-41.27-10.798c-8.963,0-19.702,1.836-28.68,3.625c-8.972,1.759-19.752,8.957-26.946,16.134c-34.067,32.257-35.856,87.877-1.785,123.766c3.62,3.571,8.978,7.172,14.365,8.954c21.543,12.535,53.8,10.778,75.343-1.782c0,8.982-5.405,21.517-14.376,26.904c-8.972,7.2-21.495,8.982-32.287,5.358c-7.137-1.789-14.315-8.989-14.315-17.945l-48.426,19.787c5.382,16.075,17.928,32.234,30.504,39.401c26.9,14.397,62.761,14.397,89.645,0c3.616-1.759,8.972-5.356,10.798-8.956C-20.129,113.447-9.383,95.53-3.99,81.16C3.187,50.661,3.187,5.812-3.99-24.693z M-55.985-3.149C-57.822,11.195-70.346,23.73-86.5,23.73c-14.346,0-28.72-12.535-30.504-26.88c0-3.568,0-8.982,0-14.344c1.785-14.345,16.159-26.9,30.504-26.9c16.154,0,28.678,12.555,30.515,26.9C-54.222-12.132-54.222-6.718-55.985-3.149z"/>
+</svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 100 km/h ─────────
+  vel_max_100: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 100 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="472 192 336 336">
+<g transform="translate(-472 -192)">
+<path d="M807.358 359.622C807.358 337.537 802.979 315.791 794.56 295.443 786.141 275.132 773.796 256.595 758.28 241.079 742.65 225.449 724.113 213.104 703.802 204.685 683.453 196.266 661.708 192 639.736 192 617.65 192 595.905 196.266 575.556 204.685 555.207 213.104 536.746 225.449 521.116 241.079 505.6 256.595 493.217 275.132 484.798 295.443 476.379 315.791 472 337.537 472 359.622 472 381.595 476.379 403.378 484.798 423.689 493.217 444.038 505.6 462.499 521.116 478.129 536.746 493.683 555.207 506.028 575.556 514.447 595.905 522.866 617.65 527.245 639.736 527.245 661.708 527.245 683.453 522.866 703.802 514.447 724.113 506.028 742.65 493.683 758.28 478.129 773.796 462.499 786.141 444.038 794.56 423.689 802.979 403.378 807.358 381.595 807.358 359.622Z" fill="#FF0000"/>
+<path d="M762.659 359.585C762.659 343.427 759.488 327.457 753.258 312.469 747.142 297.595 738.044 284.041 726.68 272.678 715.204 261.201 701.65 252.14 686.776 245.987 671.788 239.757 655.856 236.586 639.773 236.586 623.578 236.586 607.608 239.757 592.62 245.987 577.746 252.14 564.192 261.201 552.829 272.678 541.314 284.041 532.253 297.595 526.138 312.469 519.908 327.457 516.737 343.427 516.737 359.585 516.737 375.667 519.908 391.788 526.138 406.625 532.253 421.499 541.314 435.053 552.829 446.529 564.192 457.931 577.746 466.991 592.62 473.107 607.608 479.337 623.578 482.508 639.773 482.508 655.856 482.508 671.788 479.337 686.776 473.107 701.65 466.991 715.204 457.931 726.68 446.529 738.044 435.053 747.142 421.499 753.258 406.625 759.488 391.788 762.659 375.667 762.659 359.585Z" fill="#FFFFFF"/>
+<path d="M543.881 409.909 567.515 409.909 567.515 309.298 546.411 309.298 546.411 313.338C546.411 316.093 545.316 318.812 543.353 320.813 541.352 322.776 538.634 323.871 535.802 323.871L526.779 323.871 526.779 343.993 543.881 343.993Z" fill="#010101"/>
+<path d="M578.954 381.293C581.445 390.127 586.693 397.904 593.904 403.378 601.228 408.928 610.1 411.872 619.198 411.872 628.41 411.872 637.244 408.928 644.455 403.378 651.779 397.904 657.026 390.127 659.443 381.293 663.369 367.06 663.369 351.959 659.443 337.726 657.026 328.967 651.779 321.228 644.455 315.64 637.244 310.166 628.41 307.108 619.198 307.108 610.1 307.108 601.228 310.166 593.904 315.64 586.693 321.228 581.445 328.967 578.954 337.726 574.99 351.959 574.99 367.06 578.954 381.293ZM600.813 373.742C599.265 364.342 599.265 354.828 600.813 345.427 601.568 341.01 603.757 337.084 607.155 334.215 610.553 331.383 614.857 329.873 619.198 329.873 623.691 329.873 627.957 331.383 631.241 334.215 634.639 337.084 636.942 341.01 637.697 345.427 639.207 354.828 639.207 364.342 637.697 373.742 636.942 378.008 634.639 382.048 631.241 384.879 627.957 387.711 623.691 389.258 619.198 389.258 614.857 389.258 610.553 387.711 607.155 384.879 603.757 382.048 601.568 378.008 600.813 373.742Z" fill="#010101"/>
+<path d="M671.373 381.293C673.864 390.127 679.112 397.904 686.323 403.378 693.571 408.928 702.556 411.872 711.617 411.872 720.829 411.872 729.663 408.928 736.874 403.378 744.198 397.904 749.445 390.127 751.862 381.293 755.788 367.06 755.788 351.959 751.862 337.726 749.445 328.967 744.198 321.228 736.874 315.64 729.663 310.166 720.829 307.108 711.617 307.108 702.556 307.108 693.571 310.166 686.323 315.64 679.112 321.228 673.864 328.967 671.373 337.726 667.409 351.959 667.409 367.06 671.373 381.293ZM693.231 373.742C691.684 364.342 691.684 354.828 693.231 345.427 693.873 341.01 696.176 337.084 699.574 334.215 703.009 331.383 707.276 329.873 711.617 329.873 716.11 329.873 720.376 331.383 723.66 334.215 727.058 337.084 729.361 341.01 730.116 345.427 731.626 354.828 731.626 364.342 730.116 373.742 729.361 378.008 727.058 382.048 723.66 384.879 720.376 387.711 716.11 389.258 711.617 389.258 707.276 389.258 703.009 387.711 699.574 384.879 696.176 382.048 693.873 378.008 693.231 373.742Z" fill="#010101"/>
+</g></svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 110 km/h ─────────
+  vel_max_110: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 110 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1155">
+<g transform="translate(-1609 -660)">
+<path d="M2751.45 1230.47C2751.45 1156.65 2736.88 1082.33 2707.76 1012.53 2680.14 942.724 2637.95 879.952 2583.72 827.726 2530.99 773.993 2467.22 731.811 2398.92 704.191 2329.12 675.065 2254.8 660 2180.47 660 2105.15 660 2030.83 675.065 1961.02 704.191 1892.73 731.811 1828.45 773.993 1776.22 827.726 1722.49 879.952 1681.82 942.724 1652.69 1012.53 1623.56 1082.33 1609 1156.65 1609 1230.47 1609 1306.3 1623.56 1380.62 1652.69 1448.92 1681.82 1518.72 1722.49 1580.99 1776.22 1634.72 1828.45 1687.45 1892.73 1729.63 1961.02 1758.76 2030.83 1787.38 2105.15 1801.94 2180.47 1801.94 2254.8 1801.94 2329.12 1787.38 2398.92 1758.76 2467.22 1729.63 2530.99 1687.45 2583.72 1634.72 2637.95 1580.99 2680.14 1518.72 2707.76 1448.92 2736.88 1380.62 2751.45 1306.3 2751.45 1230.47Z" fill="#FF0000"/>
+<path d="M2598.28 1229.97C2598.28 1119.49 2555.1 1013.53 2476.25 934.689 2397.92 856.35 2291.45 811.154 2180.47 811.154 2068.49 811.154 1962.53 856.35 1884.19 934.689 1805.35 1013.53 1761.66 1119.49 1761.66 1229.97 1761.66 1341.95 1805.35 1448.92 1884.19 1527.25 1962.53 1605.59 2068.49 1649.28 2180.47 1649.28 2291.45 1649.28 2397.92 1605.59 2476.25 1527.25 2555.1 1448.92 2598.28 1341.95 2598.28 1229.97Z" fill="#FEFEFE"/>
+<g transform="matrix(1 0 0 1.00106 1857.02 1056)">
+<path d="M382.198 251.873C375.598 227.578 372.625 203.283 372.625 177.9 372.625 153.097 375.598 128.221 382.198 104.433 386.767 89.7113 392.858 74.9891 401.489 62.37 410.119 49.6784 420.2 38.5098 432.384 28.9368 444.568 19.7988 458.274 12.6916 472.417 7.61494 487.139 2.53831 502.369 0 517.526 0 532.756 0 547.986 2.53831 562.635 7.61494 576.85 12.6916 590.557 19.7988 602.668 28.9368 614.852 38.5098 625.513 49.6784 633.636 62.37 642.193 74.9891 648.793 89.7113 652.347 104.433 658.946 128.221 662.5 153.097 662.5 177.9 662.5 203.283 658.946 227.578 652.347 251.873 648.793 266.595 642.193 280.81 633.636 293.502 625.513 306.121 614.852 317.289 602.668 326.427 590.557 336.073 576.85 343.108 562.635 348.184 547.986 353.261 532.756 355.291 517.526 355.291 502.369 355.291 487.139 353.261 472.417 348.184 458.274 343.108 444.568 336.073 432.384 326.427 420.2 317.289 410.119 306.121 401.489 293.502 392.858 280.81 386.767 266.595 382.198 251.873ZM455.736 130.252C450.66 161.654 450.66 194.145 455.736 226.055 457.259 233.162 459.797 240.27 463.351 246.869 466.832 252.889 471.401 258.981 476.985 263.55 483.077 268.118 489.169 272.18 496.277 274.718 503.384 277.256 510.419 278.272 517.526 278.272 525.141 278.272 532.248 277.256 539.355 274.718 546.463 272.18 552.482 268.118 558.066 263.55 564.158 258.981 568.727 252.889 572.281 246.869 575.835 240.27 578.373 233.162 579.388 226.055 584.973 194.145 584.973 161.654 579.388 130.252 578.373 122.637 575.835 116.11 572.281 109.51 568.727 103.418 564.158 97.3262 558.066 92.7572 552.482 87.6806 546.463 83.6193 539.355 81.081 532.248 78.5427 525.141 77.0197 517.526 77.0197 510.419 77.0197 503.384 78.5427 496.277 81.081 489.169 83.6193 483.077 87.6806 476.985 92.7572 471.401 97.3262 466.832 103.418 463.351 109.51 459.797 116.11 457.259 122.637 455.736 130.252Z"/>
+<path d="M141.493 360.368 59.9042 360.368 59.9042 129.236 0.0725233 129.236 0.0725233 57.801 31.4751 57.801C40.1054 57.801 49.751 54.7551 56.3506 47.1401 63.9655 40.5405 66.4313 30.8949 66.4313 22.3372L66.4313 6.09195 141.493 6.09195 141.493 360.368Z"/>
+<path d="M334.042 360.368 253.469 360.368 253.469 129.236 193.202 129.236 193.202 57.801 224.605 57.801C233.742 57.801 242.88 54.7551 249.407 47.1401 257.022 40.5405 260.068 30.8949 260.068 22.3372L260.068 6.09195 334.042 6.09195 334.042 360.368Z"/>
+</g></g></svg>`,
+  },
+
+  // ─── R-301 Velocidad máxima 120 km/h ─────────
+  vel_max_120: {
+    license: 'PD',
+    attribution: 'R-301 Velocidad máxima 120 km/h — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="844 192 336 336">
+<path d="M1180.67 360.133C1180.67 338.376 1176.37 316.486 1167.79 295.894 1159.64 275.335 1147.23 256.838 1131.23 241.435 1115.69 225.6 1096.9 213.191 1076.77 205.041 1056.21 196.458 1034.32 192 1012.4 192 990.21 192 968.32 196.458 947.728 205.041 927.601 213.191 908.672 225.6 893.269 241.435 877.434 256.838 865.457 275.335 856.874 295.894 848.292 316.486 844 338.376 844 360.133 844 382.455 848.292 404.379 856.874 424.505 865.457 445.065 877.434 463.428 893.269 479.263 908.672 494.799 927.601 507.208 947.728 515.791 968.32 524.241 990.21 528.532 1012.4 528.532 1034.32 528.532 1056.21 524.241 1076.77 515.791 1096.9 507.208 1115.69 494.799 1131.23 479.263 1147.23 463.428 1159.64 445.065 1167.79 424.505 1176.37 404.379 1180.67 382.455 1180.67 360.133Z" fill="#FF0000"/>
+<path d="M1135.52 359.967C1135.52 327.431 1122.81 296.193 1099.56 272.973 1076.47 249.885 1045.1 236.545 1012.4 236.545 979.398 236.545 948.193 249.885 925.106 272.973 901.852 296.193 888.977 327.431 888.977 359.967 888.977 392.968 901.852 424.505 925.106 447.593 948.193 470.68 979.398 483.555 1012.4 483.555 1045.1 483.555 1076.47 470.68 1099.56 447.593 1122.81 424.505 1135.52 392.968 1135.52 359.967Z" fill="#FEFEFE"/>
+<path d="M916.223 410.733 939.743 410.733 939.743 309.5 918.718 309.5 918.718 313.792C918.718 319.88 913.994 324.604 907.94 324.604L898.891 324.604 898.891 344.73 916.223 344.73 916.223 410.733Z"/>
+<path d="M955.013 410.733 1028.43 410.733 1028.43 389.708 996.331 389.708 1011.87 375.935C1013.5 374.771 1015.26 372.974 1016.89 371.644 1024.58 364.258 1028.87 354.478 1028.87 344.131 1028.87 336.447 1027.24 329.194 1022.94 322.674 1021.18 320.611 1019.12 318.383 1016.89 316.752 1014.83 314.989 1012.17 313.359 1009.64 312.029 1006.68 310.698 1003.58 309.5 1000.16 309.068 988.912 306.406 976.936 307.737 966.557 313.359 962.265 315.854 958.872 319.281 956.81 323.107 954.581 326.966 952.951 331.257 952.086 335.549 951.187 340.272 950.722 344.564 951.62 349.321L975.606 349.321C975.14 345.895 975.606 342.069 977.369 338.942 978.999 333.918 984.188 330.059 989.811 330.059 991.574 330.059 993.803 330.059 995.433 330.359 999.724 331.257 1003.58 334.65 1004.45 339.408 1005.35 344.564 1004.02 350.186 1000.62 354.478 998.992 356.573 996.764 359.069 994.701 360.865 992.472 363.061 990.243 364.691 988.014 366.62L957.242 389.708C956.81 390.14 955.911 390.606 955.479 391.504 955.479 391.937 955.013 392.669 955.013 393.567L955.013 410.733Z"/>
+<path d="M1044.2 382.023C1046.27 391.038 1051.89 398.756 1059.27 404.379 1066.53 409.834 1075.57 412.795 1084.59 412.795 1093.6 412.795 1102.49 409.834 1109.91 404.379 1117.16 398.756 1122.31 391.038 1124.84 382.023 1128.7 367.818 1128.7 352.881 1124.84 338.21 1122.31 329.627 1117.16 321.51 1109.91 315.888 1102.49 310.265 1093.6 307.305 1084.59 307.305 1075.57 307.305 1066.53 310.265 1059.27 315.888 1051.89 321.51 1046.27 329.627 1044.2 338.21 1039.91 352.881 1039.91 367.818 1044.2 382.023ZM1066.09 374.338C1064.46 364.857 1064.46 355.376 1066.09 346.061 1067.42 336.879 1075.57 330.392 1084.59 330.392 1093.6 330.392 1101.32 336.879 1102.95 346.061 1104.72 355.376 1104.72 364.857 1102.95 374.338 1101.32 383.354 1093.6 390.173 1084.59 390.173 1075.57 390.173 1067.42 383.354 1066.09 374.338Z"/>
+</svg>`,
+  },
+
+  // ─── R-302 Prohibido girar a la derecha ─────────
+  prohibido_girar_derecha: {
+    license: 'PD',
+    attribution: 'R-302 Prohibido girar a la derecha — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.104 48.103">
+<path d="m0.779 21.617c0 4.623-3.7516 8.374-8.3742 8.374-4.6228 0-8.3738-3.751-8.3738-8.374 0-4.622 3.751-8.374 8.3738-8.374 4.6226 0 8.3742 3.752 8.3742 8.374z" transform="matrix(2.1163 0 0 2.1163 40.126 -21.696)" fill="#fff"/>
+<path d="m21.112 20.043c-0.295 0-0.535 0.239-0.535 0.534v18.44l-2.404-2.406-2.406 2.406v-18.44c0-2.951 2.393-5.345 5.345-5.345h15.233l2.405 2.405-2.405 2.406h-15.233" fill="#1c1d20"/>
+<path d="m24.062 0c-13.284 0-24.062 10.78-24.062 24.062 0 13.284 10.778 24.032 24.062 24.032s24.032-10.748 24.032-24.032c0-13.282-10.748-24.062-24.032-24.062zm0 6.4062c4.31 0 8.252 1.5544 11.313 4.1248l-25.219 24.344c-2.3343-2.987-3.7498-6.727-3.7498-10.813 0-9.74 7.9138-17.656 17.656-17.656zm13.907 6.8438c2.321 2.991 3.719 6.735 3.719 10.812 0 9.742-7.884 17.626-17.626 17.626-4.31 0-8.245-1.561-11.312-4.126l25.219-24.312z" fill="#e41408"/>
+</svg>`,
+  },
+
+  // ─── R-303 Prohibido girar a la izquierda y cambio de sentido ─────────
+  prohibido_girar_izquierda: {
+    license: 'PD',
+    attribution: 'R-303 Prohibido girar a la izquierda y cambio de sentido — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+<circle fill="#ffffff" cx="400" cy="400" r="350"/>
+<path fill="#1c1d20" d="m 448.97077,333.39709 c 4.92368,0 8.89923,3.97555 8.89923,8.88262 l 0,306.73263 39.98837,-40.02162 40.00499,40.02162 0,-306.73263 c 0,-49.08723 -39.80539,-88.90923 -88.90923,-88.90923 l -253.37048,0 -39.98836,40.00499 39.98836,40.02162 253.38712,0"/>
+<path fill="#e41408" d="M 400.24952,0 C 179.28224,0 0,179.31552 0,400.24952 0,621.21678 179.28224,800 400.24952,800 621.21677,800 800,621.21678 800,400.24952 800,179.31552 621.21677,0 400.24952,0 Z M 400.24952,106.56131 c 162.04931,0 293.19248,131.67216 293.19248,293.69152 0,68.14988 -23.47069,130.62753 -62.37784,180.3801 l -419.49515,-405.456 c 51.06666,-42.8993 116.87112,-68.60896 188.68051,-68.60896 z m -231.82934,113.8404 419.49515,404.94033 c -50.83378,42.36703 -116.2224,68.09997 -187.66581,68.09997 -162.04933,0 -293.69153,-131.14318 -293.69153,-293.19249 0.003,-67.78392 23.18959,-130.11187 61.86219,-179.84781 z"/>
+</svg>`,
+  },
+
+  // ─── R-304 Prohibido el cambio de sentido ─────────
+  prohibido_cambio_sentido: {
+    license: 'PD',
+    attribution: 'R-304 Prohibido el cambio de sentido — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.104 48.103">
+<path fill="#fff" d="m6.414 24.052c0-9.741 7.896-17.638 17.637-17.638 9.742 0 17.639 7.897 17.639 17.638 0 9.742-7.896 17.637-17.639 17.637-9.741 0-17.637-7.895-17.637-17.637"/>
+<path fill="#1c1d20" d="m20.043 20.577c0-2.214 1.795-4.009 4.009-4.009s4.01 1.795 4.01 4.009v15.768l2.404-2.405 2.405 2.405v-15.768c0-4.869-3.949-8.819-8.819-8.819s-8.818 3.95-8.818 8.819v13.362l2.404 2.405 2.405-2.405v-13.362"/>
+<path fill="#e41408" d="m24.062 0c-13.282 0 -24.062 10.78 -24.062 24.062 0 13.284 10.78 24.032 24.062 24.032 13.284 0 24.032-10.748 24.032-24.032 0-13.282-10.748-24.062-24.032-24.062zm0 6.4062c9.742 0 17.626 7.9158 17.626 17.656 -0.001 4.097-1.411 7.853-3.75 10.844l-25.219-24.375c3.07-2.5792 7.026-4.1248 11.343-4.1248zm-13.937 6.8438l25.219 24.344c-3.056 2.547-6.987 4.094-11.282 4.094-9.74 0-17.656-7.884-17.656-17.626 0.0002-4.075 1.394-7.822 3.719-10.812z"/>
+</svg>`,
+  },
+
+  // ─── R-305 Prohibido adelantar ─────────
+  prohibido_adelantar: {
+    license: 'PD',
+    attribution: 'R-305 Prohibido adelantar — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.103 48.104">
+<path fill="#e41408" d="m0 24.053c0-13.283 10.768-24.053 24.051-24.053s24.052 10.77 24.052 24.053c0 13.284-10.769 24.052-24.052 24.052s-24.051-10.768-24.051-24.052"/>
+<path fill="#fff" d="m6.413 24.053c0-9.74 7.897-17.637 17.638-17.637 9.742 0 17.639 7.896 17.639 17.637 0 9.742-7.896 17.638-17.639 17.638-9.741-0.001-17.638-7.896-17.638-17.638"/>
+<path fill="#1c1d20" d="m29 19.781c-0.342 0-0.5 0.344-0.5 0.344l-1.188 3.063c-0.34 0.172-0.343 0.343-0.343 0.343-0.344 0.683-0.344 1.375-0.344 1.375 0 0.854 0.344 1.031 0.344 1.032-0.344 0.514 0.156 0.843 0.156 0.843v1.188c0 0.19 0.154 0.344 0.344 0.343h1.375c0.19 0 0.343-0.154 0.344-0.343v-1.375h6.843v1.375c0 0.19 0.155 0.344 0.344 0.343h1.344c0.189 0 0.343-0.154 0.343-0.343v-1.188s0.528-0.33 0.188-0.843c0 0 0.344-0.178 0.344-1.032 0 0-0.002-0.691-0.344-1.375 0 0-0.002-0.171-0.344-0.343l-1.187-3.063s-0.189-0.344-0.531-0.344h-7.188zm0.344 0.844h6.5c0.342 0 0.344 0.156 0.344 0.156l0.874 2.063c0.173 0.515-0.343 0.344-0.343 0.344-1.196-0.342-4.125-0.344-4.125-0.344s-2.897 0.002-4.094 0.344c0 0-0.517 0.171-0.344-0.344l0.844-2.063s0.001-0.156 0.344-0.156zm1.531 3.813h3.406v0.843h-3.406v-0.843z"/>
+<path fill="#e41408" d="m11.906 19.781c-0.343 0-0.5 0.344-0.5 0.344l-1.218 3.063c-0.3435 0.172-0.3442 0.343-0.3442 0.343-0.342 0.684-0.3438 1.375-0.3438 1.375 0 0.854 0.3438 1.032 0.3438 1.032-0.342 0.513 0.1872 0.843 0.1872 0.843v1.188c0 0.189 0.156 0.343 0.344 0.343h1.375c0.19 0.001 0.344-0.153 0.344-0.343v-1.375h6.812v1.375c0 0.189 0.155 0.343 0.344 0.343h1.375c0.189 0.001 0.344-0.153 0.344-0.343v-1.188s0.529-0.329 0.187-0.843c0-0.001 0.343-0.178 0.344-1.032 0 0-0.001-0.692-0.344-1.375 0 0-0.002-0.171-0.344-0.343l-1.218-3.063s-0.158-0.344-0.5-0.344h-7.188zm0.344 0.844h6.5c0.343 0 0.344 0.156 0.344 0.156l0.844 2.063c0.17 0.515-0.344 0.344-0.344 0.344-1.197-0.342-4.094-0.344-4.094-0.344s-2.898 0.002-4.094 0.344c0 0-0.514 0.171-0.344-0.344l0.844-2.063s0.003-0.156 0.344-0.156zm1.531 3.813h3.438v0.843h-3.438v-0.843z"/>
+</svg>`,
+  },
+
+  // ─── R-306 Prohibido adelantar para camiones >3.500 kg ─────────
+  prohibido_adelantar_camiones: {
+    license: 'PD',
+    attribution: 'R-306 Prohibido adelantar para camiones >3.500 kg — fuente: r306.svg (Wikimedia Commons, dominio público)',
+    xml: `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+<path fill="#E41408" d="M0,24.053C0,10.77,10.769,0,24.053,0c13.282,0,24.052,10.77,24.052,24.053
+	c0,13.284-10.77,24.052-24.052,24.052C10.769,48.104,0,37.337,0,24.053"/>
+<path fill="#FFF" d="M6.415,24.053c0-9.74,7.896-17.637,17.638-17.637c9.741,0,17.637,7.896,17.637,17.637
+	c0,9.742-7.896,17.638-17.637,17.638C14.311,41.69,6.415,33.795,6.415,24.053"/>
+<path fill="#1C1D20" d="M37.798,19.767c0.341,0,0.513,0.343,0.513,0.343l1.197,3.077
+	c0.341,0.173,0.341,0.342,0.341,0.342c0.343,0.684,0.343,1.369,0.343,1.369c0,0.854-0.343,1.024-0.343,1.024
+	c0.343,0.514-0.17,0.855-0.17,0.855v1.197c0,0.189-0.152,0.343-0.342,0.343h-1.368c-0.188,0-0.343-0.153-0.343-0.343v-1.366
+	h-6.84v1.366c0,0.189-0.153,0.343-0.342,0.343h-1.367c-0.19,0-0.344-0.153-0.344-0.343v-1.197c0,0-0.513-0.341-0.171-0.855
+	c0,0-0.342-0.17-0.342-1.024c0,0,0-0.686,0.342-1.369c0,0,0-0.169,0.343-0.342l1.196-3.077c0,0,0.171-0.343,0.513-0.343H37.798
+	"/>
+<polyline fill="#FFF" points="32.472,24.433 35.891,24.434 35.892,25.287 32.472,25.285 32.472,24.433 "/>
+<path fill="#FFF" d="M37.457,20.621c0.342,0,0.342,0.171,0.342,0.171l0.854,2.053
+	c0.172,0.515-0.341,0.342-0.341,0.342c-1.198-0.342-4.104-0.342-4.104-0.342s-2.906,0-4.104,0.342c0,0-0.513,0.173-0.343-0.342
+	l0.854-2.053c0,0,0-0.171,0.342-0.171H37.457"/>
+<path fill="#E41408" d="M22.81,16.044c0.495,0,0.424,0.425,0.424,0.425v4.783H9.281v-4.783
+	c0,0-0.071-0.425,0.424-0.425H22.81"/>
+<path fill="#E41408" d="M9.281,21.535v5.043h0.801v1.533c0,0-0.024,0.189,0.189,0.189h1.461
+	c0,0,0.189,0.023,0.189-0.189v-1.533h0.165v1.533c0,0-0.024,0.213,0.211,0.213c-0.022,0,1.486,0,1.486,0
+	s0.188,0.023,0.188-0.188c0.023,0,0-0.755,0-0.755h4.572c0,0-0.023,0.755,0,0.755c0,0.212,0.189,0.188,0.189,0.188
+	s1.508,0,1.485,0c0.236,0,0.212-0.213,0.212-0.213v-1.533h0.165v1.533c0,0.213,0.188,0.189,0.188,0.189h1.462
+	c0.212,0,0.188-0.189,0.188-0.189v-1.533h0.802v-5.043H9.281"/>
+	<line fill="none" stroke="#FFF" stroke-width="1.933" stroke-miterlimit="3.864" x1="11.85" y1="25.308" x2="11.85" y2="24.931"/>
+	<line fill="none" stroke="#FFF" stroke-width="0.377" stroke-miterlimit="3.864" x1="14.584" y1="26.532" x2="17.907" y2="26.532"/>
+</svg>`,
+  },
+
+  // ─── R-500 Fin de todas las prohibiciones ─────────
+  fin_limitaciones: {
+    license: 'PD',
+    attribution: 'R-500 Fin de todas las prohibiciones — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 287 287">
+<g transform="translate(-2057 -1094)">
+<path d="M2069.5 1238C2069.5 1163.17 2128.15 1102.5 2200.5 1102.5 2272.85 1102.5 2331.5 1163.17 2331.5 1238 2331.5 1312.83 2272.85 1373.5 2200.5 1373.5 2128.15 1373.5 2069.5 1312.83 2069.5 1238Z" stroke="#666" stroke-width="6" fill="#FFFFFF"/>
+<path d="M2090.86 1319.15 2284.47 1125.44 2281.12 1122.09 2278.7 1124.51 2087.51 1315.7C2088.63 1316.92 2089.73 1318.02 2090.86 1319.15Z" fill="#010101"/>
+<path d="M2098.7 1326.99 2292.4 1133.37 2289.05 1130.02 2286.63 1132.34 2095.44 1323.63C2096.47 1324.76 2097.6 1325.89 2098.7 1326.99Z" fill="#010101"/>
+<path d="M2106.66 1334.85 2300.27 1141.21 2296.89 1137.86 2294.47 1140.31 2103.27 1331.47C2104.4 1332.6 2105.53 1333.73 2106.66 1334.85Z" fill="#010101"/>
+<path d="M2114.5 1342.79 2308.11 1149.08 2304.76 1145.69 2302.3 1148.14 2111.14 1339.34C2112.24 1340.53 2113.37 1341.66 2114.5 1342.79Z" fill="#010101"/>
+<path d="M2122.33 1350.62 2316.04 1157.01 2312.69 1153.66 2310.27 1155.98 2119.08 1347.27C2120.11 1348.4 2121.2 1349.49 2122.33 1350.62Z" fill="#010101"/>
+</g></svg>`,
+  },
+
+  // ─── R-502 Fin de prohibición de adelantamiento ─────────
+  fin_prohibido_adelantar: {
+    license: 'PD',
+    attribution: 'R-502 Fin de prohibición de adelantamiento — fuente: r502.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="286" height="287" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><g transform="translate(-2057 -1094)"><path d="M2069.5 1238C2069.5 1163.17 2128.15 1102.5 2200.5 1102.5 2272.85 1102.5 2331.5 1163.17 2331.5 1238 2331.5 1312.83 2272.85 1373.5 2200.5 1373.5 2128.15 1373.5 2069.5 1312.83 2069.5 1238Z" stroke="#FFFFFF" stroke-width="6.875" stroke-miterlimit="8" fill="#FFFFFF" fill-rule="evenodd"/><path d="M237.444 185.129 249.27 185.129" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M249.27 185.161C250.491 185.161 251.519 184.1 251.519 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M251.487 182.976 251.487 173.496" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M251.487 173.528C252.708 172.982 253.737 171.857 254.219 170.54 254.604 169.222 254.508 167.712 253.737 166.523" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M253.769 166.555C253.608 166.362 253.608 166.137 253.769 165.944" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M253.737 165.976C254.604 164.113 255.054 162.152 255.247 160.096" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M255.215 160.128C255.343 158.907 255.472 157.782 255.472 156.561" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M254.315 148.591C253.769 146.406 252.162 144.832 250.105 144.285" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M250.138 144.318C249.945 144.318 249.752 144.125 249.623 143.9" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M249.656 143.932 238.28 119.606" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M238.312 119.638C237.573 118.031 235.87 117.099 234.167 117.099" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M234.199 117.099 207.366 117.324" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.398 117.324 180.566 117.099" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M180.598 117.099C178.798 117.099 177.224 118.031 176.484 119.638" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M176.517 119.606 165.044 143.932" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M165.077 143.9C164.98 144.125 164.852 144.318 164.659 144.318" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M164.691 144.285C162.634 144.832 160.931 146.406 160.385 148.591" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M160.417 148.559C159.678 151.162 159.357 153.894 159.26 156.593" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M159.549 160.096C159.646 162.152 160.192 164.113 160.963 165.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M160.931 165.944C161.06 166.137 161.06 166.362 160.931 166.555" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M160.963 166.523C160.289 167.712 160.096 169.222 160.578 170.54 160.963 171.857 161.992 172.982 163.309 173.528" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M163.277 173.496 163.277 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M163.277 182.976C163.277 184.1 164.241 185.161 165.43 185.161" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M165.398 185.129 177.224 185.129" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M177.224 185.161C178.445 185.161 179.505 184.1 179.505 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M179.473 182.976 179.473 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M179.473 172.66 207.366 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 172.66 235.195 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M235.195 172.66 235.195 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M235.195 182.976C235.195 184.1 236.223 185.161 237.476 185.161" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M193.709 163.181 193.709 159.164" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M193.709 159.196C193.709 158.65 194.159 158.039 194.866 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M194.833 158.039 207.366 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 158.039 219.867 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M219.867 158.039C220.509 158.039 221.088 158.65 221.088 159.196" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M221.055 159.164 221.055 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M221.088 163.181C221.088 163.823 220.509 164.402 219.867 164.402" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M219.867 164.37 207.366 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 164.37 194.833 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M194.866 164.402C194.159 164.402 193.709 163.823 193.709 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M171.471 141.811 179.859 122.787" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M179.827 122.819C180.212 121.855 181.144 121.213 182.204 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M182.172 121.213 207.398 121.405" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 121.405 232.528 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M232.495 121.213C233.524 121.213 234.488 121.855 234.97 122.819" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M234.938 122.787 243.229 141.811" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M243.229 141.779C243.421 142.229 243.421 142.679 243.132 143.096 242.875 143.482 242.361 143.643 241.911 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M241.943 143.643C230.503 142.518 218.935 141.94 207.366 142.036" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.398 142.036C195.862 141.94 184.293 142.518 172.757 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M172.789 143.643C172.339 143.643 171.953 143.482 171.632 143.096 171.375 142.679 171.279 142.229 171.471 141.779" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M172.757 143.643C184.293 142.518 195.862 141.94 207.398 142.036" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 142.036C218.935 141.94 230.503 142.518 241.943 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M241.911 143.643C242.361 143.643 242.875 143.482 243.132 143.096 243.421 142.679 243.421 142.229 243.229 141.779" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M243.229 141.811 234.938 122.787" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M234.97 122.819C234.488 121.855 233.524 121.213 232.495 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M232.528 121.213 207.366 121.405" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.398 121.405 182.172 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M182.204 121.213C181.144 121.213 180.212 121.855 179.827 122.819" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M179.859 122.787 171.471 141.811" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M171.471 141.779C171.279 142.229 171.375 142.679 171.632 143.096 171.953 143.482 172.339 143.643 172.789 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M194.833 164.37 207.366 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 164.37 219.867 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M219.867 164.402C220.509 164.402 221.088 163.823 221.088 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M221.055 163.181 221.055 159.164" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M221.088 159.196C221.088 158.65 220.509 158.039 219.867 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M219.867 158.039 207.366 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M207.366 158.039 194.833 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M194.866 158.039C194.159 158.039 193.709 158.65 193.709 159.196" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M193.709 159.164 193.709 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M193.709 163.181C193.709 163.823 194.159 164.402 194.866 164.402" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M159.26 156.561C159.26 157.782 159.357 158.907 159.582 160.128" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M255.44 156.593C255.44 153.894 255.054 151.162 254.283 148.559" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M254.315 148.591C253.769 146.406 252.162 144.832 250.138 144.285 250.041 144.285 249.945 144.189 249.848 144.189 249.752 144.093 249.752 143.996 249.656 143.9L238.312 119.606C237.573 118.128 235.998 117.099 234.295 117.099L234.199 117.099 234.134 117.099 207.366 117.292 180.566 117.099 180.405 117.099C179.634 117.099 178.798 117.292 178.059 117.742 177.32 118.32 176.774 118.963 176.484 119.606L165.044 143.9C164.948 144.093 164.852 144.285 164.659 144.285 162.634 144.832 160.931 146.406 160.385 148.591 159.357 152.319 159.067 156.207 159.549 160.128 159.646 162.184 160.192 164.145 160.931 165.976 161.028 166.169 161.028 166.362 160.931 166.555 160.674 167.101 160.385 167.744 160.289 168.419 160.289 169.158 160.289 169.8 160.578 170.54 160.771 171.311 161.124 171.857 161.702 172.403 162.152 172.885 162.699 173.239 163.277 173.528L163.277 183.008C163.277 183.49 163.47 184.036 163.92 184.518 164.305 184.968 164.948 185.161 165.398 185.161L177.224 185.161C178.445 185.161 179.473 184.133 179.473 183.008L179.473 172.693 207.366 172.693 235.227 172.693 235.227 183.008C235.227 183.49 235.516 184.036 235.902 184.518 236.352 184.968 236.898 185.161 237.476 185.161L249.302 185.161C249.848 185.161 250.395 184.968 250.877 184.518 251.069 184.325 251.23 184.036 251.327 183.779 251.423 183.49 251.519 183.201 251.519 183.008L251.519 173.528C252.098 173.239 252.644 172.885 253.094 172.403 253.576 171.857 253.929 171.311 254.219 170.54 254.411 169.8 254.508 169.158 254.411 168.419 254.315 167.744 254.122 167.101 253.769 166.555 253.672 166.362 253.672 166.169 253.769 165.976 254.604 164.145 255.054 162.184 255.247 160.128 255.697 156.207 255.343 152.319 254.315 148.591ZM182.172 121.213 207.366 121.373 232.528 121.213C233.01 121.213 233.556 121.373 233.942 121.662 234.391 121.952 234.777 122.305 234.97 122.787L243.229 141.779C243.421 142.132 243.421 142.614 243.132 143.064 242.779 143.546 242.297 143.611 241.943 143.611 230.503 142.518 218.935 141.94 207.366 142.036 195.83 141.94 184.293 142.518 172.757 143.611 172.403 143.611 171.921 143.546 171.632 143.064 171.471 142.871 171.375 142.614 171.375 142.422 171.375 142.132 171.375 141.94 171.471 141.779L179.827 122.787C180.019 122.305 180.309 121.952 180.758 121.662 181.24 121.373 181.69 121.213 182.172 121.213ZM193.709 163.213 193.709 159.196C193.709 158.907 193.805 158.65 193.966 158.457 194.255 158.168 194.544 158.071 194.833 158.071L207.366 158.071 219.867 158.071C220.124 158.071 220.509 158.168 220.702 158.457 220.766 158.553 220.863 158.65 220.959 158.81 220.959 158.907 221.055 159.1 221.055 159.196L221.055 163.213C221.055 163.855 220.509 164.402 219.867 164.402L207.366 164.402 194.833 164.402C194.159 164.402 193.709 163.855 193.709 163.213Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M172.757 143.643C184.293 142.55 195.862 141.972 207.398 142.068 218.967 141.972 230.503 142.55 241.943 143.643 242.297 143.643 242.779 143.578 243.132 143.096 243.229 142.904 243.325 142.647 243.325 142.454 243.325 142.164 243.325 141.972 243.229 141.811L234.97 122.787C234.777 122.305 234.391 121.952 233.942 121.662 233.556 121.373 233.01 121.213 232.528 121.213L207.398 121.373 182.172 121.213C181.69 121.213 181.24 121.373 180.758 121.662 180.309 121.952 180.019 122.305 179.827 122.787L171.471 141.811C171.375 141.972 171.375 142.164 171.375 142.454 171.375 142.647 171.471 142.904 171.632 143.096 171.921 143.578 172.403 143.643 172.757 143.643Z" fill="#FEFEFE" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M194.833 164.402 207.366 164.402 219.899 164.402C220.156 164.402 220.541 164.305 220.734 164.048 220.991 163.855 221.088 163.47 221.088 163.213L221.088 159.164C221.088 159.067 220.991 158.875 220.991 158.778 220.895 158.618 220.798 158.521 220.734 158.425 220.638 158.232 220.445 158.135 220.349 158.135 220.156 158.039 220.059 158.039 219.899 158.039L207.366 158.039 194.833 158.039C194.737 158.039 194.544 158.039 194.351 158.135 194.255 158.135 194.062 158.232 193.966 158.425 193.902 158.521 193.805 158.618 193.709 158.778 193.709 158.875 193.709 159.067 193.709 159.164L193.709 163.213C193.709 163.855 194.159 164.402 194.833 164.402Z" fill="#FEFEFE" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M108.102 185.129 119.895 185.129" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M119.895 185.161C121.116 185.161 122.08 184.1 122.08 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M122.048 182.976 122.048 173.496" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M122.048 173.528C123.366 172.982 124.394 171.857 124.78 170.54 125.229 169.222 125.133 167.712 124.394 166.523" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M124.426 166.555C124.265 166.362 124.265 166.137 124.426 165.944" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M124.362 165.976C125.229 164.113 125.711 162.152 125.904 160.096" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M125.872 160.128C126.001 158.907 126.065 157.782 126.065 156.561" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M124.972 148.591C124.394 146.406 122.819 144.832 120.731 144.285" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M120.763 144.318C120.602 144.318 120.377 144.125 120.281 143.9" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M120.313 143.932 108.937 119.606" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M108.969 119.638C108.134 118.031 106.527 117.099 104.824 117.099" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M104.856 117.099 78.0234 117.324" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0555 117.324 51.1265 117.099" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M51.1586 117.099C49.4555 117.099 47.8809 118.031 47.1418 119.638" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M47.1739 119.606 35.6697 143.932" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M35.7018 143.9C35.6375 144.125 35.509 144.318 35.3162 144.318" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M35.3483 144.285C33.2917 144.832 31.6207 146.406 31.0422 148.591" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M31.0744 148.559C30.3031 151.162 29.9175 153.894 29.9175 156.593" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M30.2067 160.096C30.3031 162.152 30.8816 164.113 31.6207 165.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M31.5885 165.944C31.7492 166.137 31.7492 166.362 31.5885 166.555" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M31.5885 166.523C30.8494 167.712 30.753 169.222 31.2029 170.54 31.5885 171.857 32.6169 172.982 33.9344 173.528" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M33.9022 173.496 33.9022 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M33.9022 182.976C33.9022 184.1 34.8663 185.161 36.0874 185.161" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M36.0553 185.129 47.8809 185.129" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M47.8809 185.161C49.1342 185.161 50.1303 184.1 50.1303 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M50.0982 182.976 50.0982 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M50.0982 172.66 78.0234 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 172.66 105.852 172.66" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M105.852 172.66 105.852 182.976" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M105.852 182.976C105.852 184.1 106.88 185.161 108.134 185.161" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M64.2697 163.181 64.2697 159.164" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M64.2697 159.196C64.2697 158.65 64.816 158.039 65.4908 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M65.4586 158.039 78.0234 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 158.039 90.4917 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M90.4917 158.039C91.1665 158.039 91.7449 158.65 91.7449 159.196" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M91.7128 159.164 91.7128 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M91.7449 163.181C91.7449 163.823 91.1665 164.402 90.4917 164.402" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M90.4917 164.37 78.0234 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 164.37 65.4586 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M65.4908 164.402C64.816 164.402 64.2697 163.823 64.2697 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M42.0966 141.811 50.516 122.787" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M50.4838 122.819C50.8694 121.855 51.7692 121.213 52.8297 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M52.7975 121.213 78.0555 121.405" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 121.405 103.185 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M103.153 121.213C104.213 121.213 105.145 121.855 105.499 122.819" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M105.467 122.787 113.886 141.811" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M113.886 141.779C114.079 142.229 113.982 142.679 113.789 143.096 113.468 143.482 113.018 143.643 112.568 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M112.6 143.643C101.128 142.518 89.5919 141.94 78.0234 142.036" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0555 142.036C66.5191 141.94 54.9827 142.518 43.4142 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M43.4463 143.643C42.9321 143.643 42.4822 143.482 42.2894 143.096 42.0002 142.679 41.936 142.229 42.0966 141.779" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M43.4142 143.643C54.9827 142.518 66.5191 141.94 78.0555 142.036" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 142.036C89.5919 141.94 101.128 142.518 112.6 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M112.568 143.643C113.018 143.643 113.468 143.482 113.789 143.096 113.982 142.679 114.079 142.229 113.886 141.779" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M113.886 141.811 105.467 122.787" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M105.499 122.819C105.145 121.855 104.213 121.213 103.153 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M103.185 121.213 78.0234 121.405" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0555 121.405 52.7975 121.213" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M52.8297 121.213C51.7692 121.213 50.8694 121.855 50.4838 122.819" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M50.516 122.787 42.0966 141.811" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M42.0966 141.779C41.936 142.229 42.0002 142.679 42.2894 143.096 42.4822 143.482 42.9321 143.643 43.4463 143.643" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M65.4586 164.37 78.0234 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 164.37 90.4917 164.37" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M90.4917 164.402C91.1665 164.402 91.7449 163.823 91.7449 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M91.7128 163.181 91.7128 159.164" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M91.7449 159.196C91.7449 158.65 91.1665 158.039 90.4917 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M90.4917 158.039 78.0234 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M78.0234 158.039 65.4586 158.039" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M65.4908 158.039C64.816 158.039 64.2697 158.65 64.2697 159.196" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M64.2697 159.164 64.2697 163.181" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M64.2697 163.181C64.2697 163.823 64.816 164.402 65.4908 164.402" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M29.9175 156.561C29.9175 157.782 30.0139 158.907 30.2389 160.128" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M126.065 156.593C126.065 153.894 125.711 151.162 124.94 148.559" stroke="#848484" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M124.94 148.591C124.362 146.406 122.787 144.832 120.731 144.285 120.634 144.285 120.57 144.189 120.473 144.189 120.377 144.093 120.377 143.996 120.281 143.9L108.937 119.606C108.166 118.128 106.591 117.099 104.92 117.099L104.824 117.099 104.727 117.099 78.0234 117.292 51.2229 117.099 51.1265 117.099 51.0301 117.099C50.291 117.099 49.4555 117.292 48.7164 117.742 47.9773 118.32 47.3989 118.963 47.1418 119.606L35.6697 143.9C35.6054 144.093 35.509 144.285 35.3162 144.285 33.2595 144.832 31.5885 146.406 31.0422 148.591 30.0139 152.319 29.7247 156.207 30.2067 160.128 30.3031 162.184 30.8494 164.145 31.5885 165.976 31.6849 166.169 31.6849 166.362 31.5885 166.555 31.2993 167.101 31.0422 167.744 30.9458 168.419 30.8494 169.158 30.9458 169.8 31.2029 170.54 31.3957 171.311 31.7813 171.857 32.2312 172.403 32.8097 172.885 33.356 173.239 33.9022 173.528L33.9022 183.008C33.9022 183.49 34.0951 184.036 34.5771 184.518 34.9306 184.968 35.6054 185.161 36.0553 185.161L47.8809 185.161C49.102 185.161 50.0982 184.133 50.0982 183.008L50.0982 172.693 78.0234 172.693 105.852 172.693 105.852 183.008C105.852 183.49 106.045 184.036 106.495 184.518 106.977 184.968 107.523 185.161 108.102 185.161L119.895 185.161C120.473 185.161 121.02 184.968 121.502 184.518 121.662 184.325 121.855 184.036 121.952 183.779 122.048 183.49 122.048 183.201 122.048 183.008L122.048 173.528C122.691 173.239 123.173 172.885 123.719 172.403 124.201 171.857 124.555 171.311 124.747 170.54 125.037 169.8 125.101 169.158 125.037 168.419 124.94 167.744 124.651 167.101 124.362 166.555 124.265 166.362 124.265 166.169 124.362 165.976 125.197 164.145 125.679 162.184 125.904 160.128 126.258 156.207 126.001 152.319 124.94 148.591ZM52.7975 121.213 78.0234 121.373 103.153 121.213C103.635 121.213 104.181 121.373 104.535 121.662 105.017 121.952 105.306 122.305 105.467 122.787L113.854 141.779C114.047 142.132 114.047 142.614 113.757 143.064 113.404 143.546 112.922 143.611 112.568 143.611 101.096 142.518 89.5598 141.94 78.0234 142.036 66.487 141.94 54.9506 142.518 43.4142 143.611 43.0285 143.611 42.5787 143.546 42.2894 143.064 42.0966 142.871 42.0002 142.614 42.0002 142.422 42.0002 142.132 42.0002 141.94 42.0966 141.779L50.4838 122.787C50.6766 122.305 50.9337 121.952 51.4157 121.662 51.8656 121.373 52.3476 121.213 52.7975 121.213ZM64.2697 163.213 64.2697 159.196C64.2697 158.907 64.4303 158.65 64.6231 158.457 64.9124 158.168 65.2016 158.071 65.4586 158.071L78.0234 158.071 90.4917 158.071C90.7809 158.071 91.0701 158.168 91.3272 158.457 91.4236 158.553 91.52 158.65 91.6164 158.81 91.6164 158.907 91.7128 159.1 91.7128 159.196L91.7128 163.213C91.7128 163.855 91.1344 164.402 90.4917 164.402L78.0234 164.402 65.4586 164.402C64.816 164.402 64.2697 163.855 64.2697 163.213Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M43.4142 143.643C54.9506 142.55 66.487 141.972 78.0234 142.068 89.5598 141.972 101.096 142.55 112.568 143.643 112.922 143.643 113.436 143.578 113.789 143.096 113.886 142.904 113.982 142.647 113.982 142.454 113.982 142.164 113.982 141.972 113.886 141.811L105.467 122.787C105.306 122.305 105.017 121.952 104.535 121.662 104.181 121.373 103.635 121.213 103.153 121.213L78.0234 121.373 52.7975 121.213C52.3476 121.213 51.8656 121.373 51.4157 121.662 50.9337 121.952 50.6766 122.305 50.4838 122.787L42.0966 141.811C42.0002 141.972 42.0002 142.164 42.0002 142.454 42.0002 142.647 42.0966 142.904 42.2894 143.096 42.5787 143.578 43.0285 143.643 43.4142 143.643Z" fill="#FEFEFE" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M65.4586 164.402 78.0555 164.402 90.5238 164.402C90.813 164.402 91.1665 164.305 91.3593 164.048 91.6485 163.855 91.7449 163.47 91.7449 163.213L91.7449 159.164C91.7449 159.067 91.6485 158.875 91.6485 158.778 91.5521 158.618 91.4557 158.521 91.3593 158.425 91.2629 158.232 91.1022 158.135 91.0058 158.135 90.813 158.039 90.7166 158.039 90.5238 158.039L78.0555 158.039 65.4586 158.039C65.2658 158.039 65.2016 158.039 65.0088 158.135 64.9124 158.135 64.7196 158.232 64.6231 158.425 64.5267 158.521 64.4303 158.618 64.3339 158.778 64.3339 158.875 64.2697 159.067 64.2697 159.164L64.2697 163.213C64.2697 163.855 64.816 164.402 65.4586 164.402Z" fill="#FEFEFE" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M285.389 143.096C285.389 124.265 281.662 105.756 274.496 88.4351 267.33 71.1465 256.822 55.4004 243.614 42.0966 230.31 28.8892 214.564 18.3811 197.276 11.2151 179.955 4.04899 161.445 0.321348 142.711 0.321348" stroke="#343434" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M26.5755 222.244 31.3315 226.936" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M226.583 31.7171 221.891 26.929" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M34.6735 230.278 39.333 235.034" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M234.681 39.7187 229.893 35.027" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M42.6751 238.344 47.431 243.132" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M242.779 47.8166 237.991 43.0285" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M50.773 246.442 55.529 251.23" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M250.78 55.9146 246.089 51.1265" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M58.871 254.54 63.5306 259.232" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M258.878 63.9162 254.187 59.2245" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M142.807 0.321348C137.666 0.321348 132.267 0.578427 126.868 1.25326 121.502 1.89596 115.91 2.82787 110.222 4.11326 104.631 5.43079 98.9753 7.1018 93.191 9.25483 87.5353 11.2793 81.8474 13.9144 76.256 16.7744 70.5681 19.7629 65.1052 23.1049 59.8029 26.929 54.4043 30.8494 49.2627 35.027 44.3461 39.6865 39.4937 44.3139 34.9306 49.3591 30.6566 54.6613 26.4791 60.06 22.5587 65.78 19.1202 71.7249 15.6818 77.6699 12.6933 83.8076 10.1867 90.2346 7.68022 96.5652 5.52719 102.992 3.95258 109.612 2.37798 116.103 1.34966 122.723 0.706966 129.246 0.0321348 135.738-0.128539 142.261 0.128539 148.591 0.321348 154.922 0.964045 161.06 1.99236 167.101 3.02067 173.078 4.40247 178.83 6.10562 184.325 7.77663 189.917 9.73685 195.219 11.9542 200.232 14.1072 205.181 16.5173 209.905 19.1202 214.371 21.6267 218.838 24.6153 223.305 27.7645 227.675 31.0422 232.142 34.6735 236.448 38.5618 240.722 42.5787 244.9 46.8526 249.013 51.6085 252.901 56.236 256.725 61.2811 260.453 66.5834 263.795 71.982 267.137 77.6699 270.222 83.6148 273.018 89.6562 275.717 95.8903 278.031 102.317 279.894 108.744 281.855 115.428 283.236 122.144 284.265 128.925 285.293 135.834 285.775 142.711 285.775 149.491 285.775 156.4 285.293 163.181 284.265 169.865 283.236 176.581 281.855 183.008 279.894 189.499 278.031 195.733 275.717 201.71 273.018 207.655 270.222 213.343 267.137 218.774 263.795 224.076 260.453 229.089 256.725 233.845 252.901 238.505 249.013 242.779 244.9 246.763 240.722 250.684 236.448 254.315 232.142 257.561 227.675 260.838 223.305 263.698 218.838 266.237 214.371 268.84 209.905 271.25 205.181 273.5 200.232 275.62 195.219 277.581 189.917 279.252 184.325 280.923 178.83 282.337 173.078 283.365 167.101 284.361 161.06 285.036 154.922 285.293 148.591 285.486 142.261 285.389 135.738 284.747 129.246 284.104 122.723 282.979 116.103 281.405 109.612 279.798 102.992 277.773 96.5652 275.267 90.2346 272.728 83.8076 269.772 77.6699 266.333 71.7249 262.863 65.78 259.071 60.06 254.765 54.6613 250.587 49.3591 245.928 44.3139 241.108 39.6865 236.255 35.027 231.146 30.8494 225.747 26.929 220.445 23.1049 214.918 19.7629 209.23 16.7744 203.671 13.9144 197.983 11.2793 192.295 9.25483 186.639 7.1018 180.951 5.43079 175.263 4.11326 169.704 2.82787 164.113 1.89596 158.714 1.25326 153.219 0.578427 147.917 0.321348 142.807 0.321348ZM62.213 251.134C61.5703 250.684 60.8955 250.202 60.3492 249.752 59.7065 249.27 59.0317 248.724 58.389 248.242L55.4969 251.23 50.773 246.474 53.2795 243.968C52.7011 243.421 52.1548 242.843 51.5121 242.297 50.9337 241.847 50.3874 241.268 49.8411 240.722L47.3989 243.132 42.6751 238.376 45.0852 235.966C44.5389 235.42 43.9604 234.841 43.5106 234.295 42.9321 233.749 42.3858 233.074 41.936 232.528L39.3009 235.034 34.6735 230.31 37.5335 227.418C37.0836 226.743 36.6016 226.101 36.0553 225.554 35.6054 224.912 35.1234 224.237 34.6735 223.594L31.2993 226.936 26.5755 222.277 30.753 218.099C27.1218 212.604 23.7798 206.948 20.984 200.875 18.0919 194.93 15.6818 188.696 13.7216 182.269 11.7613 175.842 10.3795 169.351 9.35124 162.731 8.41933 156.207 7.96944 149.62 7.96944 143.096 7.96944 139.112 8.03371 135.095 8.41933 131.014 8.80494 126.9 9.35124 122.723 10.1867 118.545 10.9258 114.336 11.9542 110.158 13.0789 105.981 14.2679 101.771 15.7782 97.5935 17.3528 93.5124 20.6948 85.1252 24.8081 77.0272 29.8211 69.3148 34.9306 61.5382 40.8112 54.3721 47.3025 47.7845 53.9222 41.1647 61.1847 35.3162 68.8971 30.271 76.6416 25.1616 84.7395 21.0804 92.9982 17.7063 97.1115 16.1317 101.289 14.6535 105.467 13.4324 109.676 12.3076 113.854 11.2793 118.031 10.5402 122.241 9.70472 126.418 9.15843 130.5 8.77281 134.613 8.41933 138.598 8.32292 142.614 8.32292 149.138 8.32292 155.725 8.77281 162.345 9.70472 168.933 10.733 175.456 12.147 181.883 14.0751 188.31 16.0353 194.544 18.4454 200.489 21.3375 206.531 24.1333 212.218 27.4753 217.746 31.1065L221.923 26.929 226.583 31.6849 223.241 35.027C223.883 35.4769 224.526 35.9589 225.201 36.4088 225.747 36.9872 226.39 37.4371 227.065 37.9191L229.925 35.027 234.681 39.6865 232.174 42.2894C232.72 42.7393 233.299 43.3178 233.942 43.864 234.488 44.3139 235.066 44.8924 235.613 45.4387L238.023 43.0285 242.779 47.7845 240.369 50.1946C240.915 50.7409 241.461 51.3193 241.943 51.962 242.489 52.5083 243.068 53.0867 243.614 53.633L246.121 51.1265 250.78 55.8825 247.888 58.7425C248.37 59.4173 248.916 60.06 249.398 60.7027 249.848 61.2811 250.298 61.9238 250.78 62.5665L254.219 59.2245 258.878 63.884 254.701 68.1901C258.332 73.5888 261.578 79.2445 264.47 85.318 267.265 91.2629 269.676 97.4971 271.636 103.924 273.564 110.351 275.074 116.842 276.006 123.366 277.034 129.985 277.484 136.477 277.484 143.096 277.484 147.017 277.291 151.098 276.938 155.211 276.552 159.292 276.006 163.373 275.171 167.583 274.431 171.761 273.5 175.938 272.278 180.148 271.057 184.325 269.676 188.503 268.004 192.713 264.727 200.971 260.549 209.069 255.536 216.814 250.491 224.526 244.642 231.789 238.023 238.376 231.435 244.9 224.173 250.78 216.396 255.89 208.78 260.903 200.682 265.112 192.295 268.358 188.214 270.029 184.036 271.443 179.827 272.632 175.649 273.853 171.471 274.785 167.262 275.62 163.084 276.36 159.003 276.906 154.89 277.291 150.809 277.677 146.696 277.838 142.807 277.838 136.187 277.838 129.568 277.388 123.076 276.36 116.457 275.428 109.933 273.949 103.538 271.989 97.1115 270.029 90.9737 267.715 84.9002 264.823 78.8589 261.931 73.2031 258.685 67.7081 255.054L63.4984 259.232 58.871 254.572 62.213 251.134Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M223.241 35.0591 226.583 31.7171 221.923 26.929 217.713 31.1387C218.678 31.8135 219.609 32.3598 220.541 33.0025 221.473 33.6452 222.309 34.32 223.241 35.0591Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M232.174 42.3216 234.681 39.7187 229.925 35.027 227.033 37.9512C227.9 38.6903 228.736 39.333 229.668 40.0721 230.503 40.8112 231.339 41.5825 232.174 42.3216Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M240.336 50.2267 242.779 47.8166 237.991 43.0285 235.58 45.4387C236.416 46.1778 237.251 47.0454 237.991 47.8166 238.73 48.6521 239.565 49.3912 240.336 50.2267Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M247.856 58.7746 250.78 55.9146 246.089 51.1265 243.582 53.6652C244.321 54.5007 244.964 55.3362 245.735 56.2681 246.474 57.1036 247.117 57.9391 247.856 58.7746Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M250.748 62.5987C251.487 63.5306 252.13 64.4625 252.805 65.3944 253.447 66.3263 254.026 67.1618 254.701 68.1901L258.878 63.9162 254.219 59.2245 250.748 62.5987Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M62.2452 251.102 58.871 254.572 63.5306 259.232 67.7402 255.054C66.8083 254.476 65.8764 253.833 65.0409 253.158 64.109 252.516 63.1771 251.841 62.2452 251.102Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M53.3117 243.936 50.773 246.442 55.529 251.23 58.4211 248.242C57.5856 247.47 56.7501 246.828 55.9146 246.089 54.9827 245.349 54.1472 244.675 53.3117 243.936Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M49.8733 240.722C49.0378 239.983 48.2665 239.115 47.431 238.344 46.6919 237.605 45.8564 236.769 45.1173 235.934L42.6751 238.344 47.431 243.132 49.8733 240.722Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M37.5335 227.386 34.6735 230.278 39.333 235.034 41.9681 232.495C41.1969 231.66 40.4578 230.824 39.7187 229.989 38.9474 229.057 38.3047 228.222 37.5335 227.386Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M34.7056 223.562C33.9344 222.63 33.2917 221.795 32.649 220.863 32.0063 219.931 31.4279 218.999 30.7852 218.067L26.5755 222.244 31.3315 226.936 34.7056 223.562Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M223.241 35.0591C221.473 33.6452 219.609 32.3598 217.713 31.1065" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M232.174 42.3216C230.471 40.7791 228.8 39.3009 227.033 37.9191" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M240.369 50.2267C238.858 48.62 237.284 47.0133 235.58 45.4387" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M247.888 58.7746C246.506 57.0715 244.996 55.304 243.582 53.633" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M254.701 68.1901C253.447 66.1978 252.13 64.4303 250.748 62.5665" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M30.753 218.067C31.9742 219.963 33.2917 221.827 34.7056 223.594" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M37.5335 227.386C38.9474 229.153 40.4256 230.824 41.9681 232.528" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M45.0852 235.934C46.6598 237.605 48.2022 239.244 49.8733 240.722" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M53.2795 243.936C54.9506 245.349 56.718 246.86 58.4211 248.242" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M62.213 251.102C64.0769 252.516 65.8764 253.833 67.7402 255.054" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M242.04 47.0133 49.102 240.079" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M142.743 8.32292C124.94 8.32292 107.427 11.7613 91.0701 18.5418 74.7777 25.3544 59.8672 35.2198 47.3989 47.7845 34.8342 60.2528 24.9688 75.1312 18.1883 91.52 11.4079 107.812 7.96944 125.326 7.96944 143.096" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M7.96944 143.064C7.96944 160.738 11.4079 178.252 18.1883 194.609 24.9688 210.901 34.8342 225.811 47.3989 238.344 59.8672 250.877 74.7777 260.806 91.0701 267.522 107.427 274.303 124.94 277.838 142.743 277.838" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M142.711 277.838C160.385 277.838 177.866 274.303 194.255 267.522 210.547 260.806 225.426 250.877 237.991 238.344 250.459 225.811 260.421 210.901 267.169 194.609 273.949 178.252 277.484 160.738 277.484 143.064" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M49.102 240.079 242.04 47.0133 238.665 43.6712 236.255 46.1135 45.7279 236.609C46.8526 237.83 47.9773 238.955 49.102 240.079Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M238.665 43.6712 45.7279 236.609" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M246.506 51.5764 53.5688 244.546" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M234.199 39.2045 41.2611 232.142" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M249.848 54.9506 56.9108 247.888" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M230.857 35.8625 37.9191 228.8" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M254.411 59.4173 61.3775 252.355" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M226.293 31.3957 33.356 224.333" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M257.753 62.7593 64.7196 255.697" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M222.951 28.0537 30.0139 220.991" stroke="#010101" stroke-width="0.642697" stroke-linejoin="round" fill="none" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M56.9108 247.888 249.848 54.9506 246.506 51.5764 244.064 53.9222 53.5688 244.546C54.6613 245.639 55.7861 246.763 56.9108 247.888Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M64.7196 255.697 257.753 62.7593 254.411 59.4173 252.001 61.8274 61.4739 252.355C62.5022 253.48 63.5948 254.572 64.7196 255.697Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M41.1647 232.142 41.2611 232.142 234.199 39.2045 230.857 35.8625 228.447 38.2726 37.9191 228.8C38.9474 229.925 40.0721 231.049 41.1647 232.142Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/><path d="M33.356 224.333 226.293 31.3957 222.951 28.0537 220.638 30.3674 30.0139 220.991C31.1387 222.116 32.2312 223.209 33.356 224.333Z" fill="#010101" transform="matrix(1 0 0 1.0035 2057 1094)"/></g></svg>`,
+  },
+
+  // ─── R-400a Obligación de ir hacia la derecha ─────────
+  obligacion_ir_derecha: {
+    license: 'PD',
+    attribution: 'R-400a Obligación de ir hacia la derecha — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
+<g transform="translate(-530 -325)">
+<path d="M857.543 493.038C857.543 472.047 853.391 451.396 845.425 432.029 837.421 412.7 825.604 395.069 810.843 380.346 796.006 365.433 778.489 353.73 759.122 345.651 739.755 337.647 718.991 333.494 698.113 333.494 677.123 333.494 656.359 337.647 637.105 345.651 617.738 353.73 600.145 365.433 585.27 380.346 570.509 395.069 558.805 412.7 550.726 432.029 542.76 451.396 538.608 472.047 538.608 493.038 538.608 513.915 542.76 534.717 550.726 554.046 558.805 573.413 570.509 590.893 585.27 605.768 600.145 620.529 617.738 632.346 637.105 640.311 656.359 648.277 677.123 652.43 698.113 652.43 718.991 652.43 739.755 648.277 759.122 640.311 778.489 632.346 796.006 620.529 810.843 605.768 825.604 590.893 837.421 573.413 845.425 554.046 853.391 534.717 857.543 513.915 857.543 493.038Z" fill="#0055FF"/>
+<path d="M714.762 563.975C712.233 565.599 708.873 565.372 706.457 563.522 705.362 562.767 704.38 561.559 703.927 560.011 703.399 558.614 703.399 557.067 703.701 555.67L715.517 513.084 566.582 513.084 566.582 472.84 715.517 472.84 703.701 430.217C703.399 428.896 703.399 427.386 703.927 425.838 704.38 424.403 705.362 423.233 706.457 422.327 707.551 421.458 708.948 420.93 710.609 420.93 712.12 420.817 713.554 421.232 714.762 421.911L831.079 492.962 714.762 563.975Z" fill="#FEFEFE"/>
+</g></svg>`,
+  },
+
+  // ─── R-400b Obligación de ir hacia la izquierda ─────────
+  obligacion_ir_izquierda: {
+    license: 'PD',
+    attribution: 'R-400b Obligación de ir hacia la izquierda — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
+<g transform="translate(-52 -271)">
+<path d="M60.5699 439.038C60.5699 418.047 64.7227 397.396 72.6885 378.029 80.8054 358.7 92.471 341.069 107.232 326.346 122.107 311.433 139.738 299.73 158.954 291.651 178.321 283.647 199.085 279.494 220.076 279.494 240.953 279.494 261.717 283.647 281.084 291.651 300.376 299.73 317.969 311.433 332.843 326.346 347.604 341.069 359.308 358.7 367.387 378.029 375.353 397.396 379.506 418.047 379.506 439.038 379.506 459.915 375.353 480.717 367.387 500.046 359.308 519.413 347.604 536.893 332.843 551.768 317.969 566.529 300.376 578.346 281.084 586.311 261.717 594.277 240.953 598.43 220.076 598.43 199.085 598.43 178.321 594.277 158.954 586.311 139.738 578.346 122.107 566.529 107.232 551.768 92.471 536.893 80.8054 519.413 72.6885 500.046 64.7227 480.717 60.5699 459.915 60.5699 439.038Z" fill="#0055FF"/>
+<path d="M203.389 509.975C205.994 511.599 209.278 511.372 211.694 509.522 212.789 508.767 213.771 507.559 214.337 506.011 214.752 504.614 214.752 503.067 214.413 501.67L202.634 459.084 351.644 459.084 351.644 438.962 351.644 418.84 202.634 418.84 214.413 376.217C214.752 374.896 214.752 373.386 214.337 371.838 213.771 370.403 212.789 369.233 211.694 368.327 210.6 367.458 209.165 366.93 207.542 366.93 205.994 366.817 204.597 367.232 203.389 367.911L87.0346 438.962 203.389 509.975Z" fill="#FEFEFE"/>
+</g></svg>`,
+  },
+
+  // ─── R-401a Paso obligatorio por la derecha del obstáculo ─────────
+  paso_obligatorio_derecha: {
+    license: 'PD',
+    attribution: 'R-401a Paso obligatorio por la derecha del obstáculo — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
+<g transform="translate(-289 -230)">
+<path d="M595.024 477.734C584.642 495.893 570.674 511.749 554.025 524.547 537.413 537.232 518.462 546.633 498.264 551.994 478.028 557.43 456.924 558.865 436.16 556.146 415.359 553.391 395.387 546.52 377.228 536.138 359.182 525.642 343.213 511.636 330.528 495.025 317.73 478.527 308.443 459.499 302.969 439.264 297.532 419.028 296.211 397.924 298.929 377.16 301.685 356.51 308.443 336.387 318.938 318.342 329.32 300.182 343.326 284.251 359.938 271.528 376.549 258.73 395.463 249.443 415.698 243.969 435.934 238.608 457.038 237.173 477.802 239.929 498.566 242.647 518.575 249.443 536.772 259.938 554.931 270.433 570.787 284.326 583.547 300.975 596.232 317.587 605.633 336.501 610.994 356.736 616.468 376.934 617.789 398.038 615.033 418.802 612.315 439.604 605.52 459.613 595.024 477.734Z" fill="#0055FF"/>
+<path d="M507.022 344.693C505.512 342.088 502.643 340.54 499.585 340.88 498.188 341.069 496.754 341.635 495.546 342.617 494.451 343.711 493.696 345.033 493.243 346.316L482.332 389.204 353.18 314.793 343.1 332.197 333.058 349.714 462.21 424.049 430.724 455.007C429.742 455.988 428.987 457.423 428.648 458.933 428.421 460.481 428.534 461.878 429.176 463.199 429.742 464.52 430.611 465.729 431.932 466.597 433.216 467.352 434.764 467.805 436.198 467.805L572.41 464.294 507.022 344.693Z" fill="#FEFEFE"/>
+</g></svg>`,
+  },
+
+  // ─── R-401b Paso obligatorio por la izquierda del obstáculo ─────────
+  paso_obligatorio_izquierda: {
+    license: 'PD',
+    attribution: 'R-401b Paso obligatorio por la izquierda del obstáculo — fuente: archivo Wikimedia Commons (dominio público)',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
+<g transform="translate(-396 -214)">
+<path d="M425.9 461.734C436.282 479.893 450.289 495.749 466.9 508.547 483.511 521.232 502.425 530.633 522.661 535.994 542.896 541.43 564 542.865 584.764 540.146 605.528 537.391 625.537 530.52 643.734 520.138 661.893 509.642 677.749 495.636 690.51 479.025 703.195 462.527 712.595 443.499 717.956 423.264 723.43 403.028 724.751 381.924 721.995 361.16 719.277 340.51 712.482 320.387 702.1 302.342 691.604 284.182 677.636 268.251 660.987 255.528 644.376 242.73 625.424 233.443 605.226 227.969 584.991 222.608 563.887 221.173 543.123 223.929 522.321 226.647 502.35 233.443 484.191 243.938 466.145 254.433 450.175 268.326 437.49 284.975 424.692 301.587 415.405 320.501 409.931 340.736 404.494 360.934 403.173 382.038 405.891 402.802 408.647 423.604 415.405 443.613 425.9 461.734Z" fill="#0055FF"/>
+<path d="M584.802 451.805C587.86 451.805 590.691 450.031 591.899 447.199 592.466 445.878 592.692 444.481 592.352 442.933 592.013 441.423 591.258 439.988 590.276 439.007L558.79 408.049 687.905 333.714 677.825 316.197 667.896 298.793 538.668 373.204 527.72 330.316C527.418 329.033 526.625 327.711 525.454 326.617 524.246 325.635 522.812 325.069 521.377 324.88 519.98 324.767 518.546 324.993 517.111 325.635 515.714 326.39 514.733 327.485 513.94 328.693L448.552 448.294 584.802 451.805Z" fill="#FEFEFE"/>
+</g></svg>`,
+  },
+
+  // ─── S-1a Inicio de autovía ─────────
+  autovia: {
+    license: 'PD',
+    attribution: 'S-1a Inicio de autovía — fuente: archivo Wikimedia Commons (dominio público)',
     xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 504">
 <path d="M0 484C0 487 1 491 3 494 5 497 7 499 10 501 13 503 16 503 19 503L317 503C320 503 323 503 326 501 328 499 331 497 333 494 335 491 336 487 336 484L336 19C336 16 335 13 333 11 331 8 328 5 326 3 323 2 320 0 317 0L19 0C16 0 13 2 10 3 7 5 5 8 3 11 1 13 0 16 0 19L0 484Z" fill="#fff"/>
 <path d="M9 484C9 486 9 488 9 489 10 491 11 492 12 493 13 495 14 495 15 495 16 496 18 496 19 496L317 496C318 496 320 496 321 495 322 495 323 495 324 493 325 492 326 491 327 489 327 488 328 486 328 484L328 19C328 18 327 16 327 15 326 14 325 13 324 12 323 11 322 10 321 9 320 9 318 9 317 9L19 9C18 9 16 9 15 9 14 10 13 11 12 12 11 13 10 14 9 15 9 16 9 18 9 19L9 484Z" fill="#0055FF"/>
@@ -75,149 +1243,17 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 </svg>`,
   },
 
-  // ─── R-1 Ceda el Paso ────────────────────────────────────────
-  ceda_el_paso: {
+  // ─── S-2a Fin de autovía ─────────
+  fin_autovia: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_r1.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 438 387">
-<path stroke="#E41408" stroke-width="54" stroke-linejoin="round" d="M28,28H410L219,360z"/>
-<path fill="#FFF" d="M44,38H394L219,340"/>
-</svg>`,
+    attribution: 'S-2a Fin de autovía — fuente: s2.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="336" height="504" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><defs><clipPath id="clip0"><rect x="849" y="108" width="336" height="504"/></clipPath></defs><g clip-path="url(#clip0)" transform="translate(-849 -108)"><path d="M0.377453 484.536C0.377453 486.801 0.830396 489.103 1.69854 491.406 2.67991 493.708 4.11423 495.897 5.85052 497.747 7.70004 499.596 9.88926 500.917 12.1917 501.899 14.4942 502.767 16.9099 503.22 19.0991 503.22L316.985 503.22C319.287 503.22 321.59 502.767 323.854 501.899 326.157 500.917 328.346 499.596 330.196 497.747 332.083 495.897 333.366 493.708 334.348 491.406 335.254 489.103 335.669 486.801 335.669 484.536L335.669 19.0614C335.669 16.7589 335.254 14.4564 334.348 12.154 333.366 9.88926 332.083 7.70004 330.196 5.81277 328.346 3.96325 326.157 2.52893 323.854 1.66079 321.59 0.792651 319.287 0.377453 316.985 0.377453L19.0991 0.377453C16.9099 0.377453 14.4942 0.792651 12.1917 1.66079 9.88926 2.52893 7.70004 3.96325 5.85052 5.81277 4.11423 7.70004 2.67991 9.88926 1.69854 12.154 0.830396 14.4564 0.377453 16.7589 0.377453 19.0614L0.377453 484.536Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M0.377453 484.498C0.377453 489.556 2.37795 494.237 5.88826 497.747 9.39857 501.257 14.1922 503.22 19.1369 503.22" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M19.0991 503.182 316.947 503.182" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M316.947 503.22C321.967 503.22 326.723 501.257 330.196 497.747 333.706 494.237 335.669 489.556 335.669 484.498" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M335.631 484.498 335.631 19.0614" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M335.669 19.0991C335.669 14.079 333.706 9.36083 330.196 5.85052 326.723 2.34021 321.967 0.377453 316.947 0.377453" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M316.947 0.377453 19.0991 0.377453" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M19.1369 0.377453C14.1922 0.377453 9.39857 2.34021 5.88826 5.85052 2.37795 9.36083 0.377453 14.079 0.377453 19.0991" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M0.377453 19.0614 0.377453 484.498" stroke="#343434" stroke-width="0.754905" stroke-linejoin="round" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M8.60592 484.536C8.60592 485.819 8.79465 487.14 9.36083 488.462 9.88926 489.669 10.6819 490.877 11.6633 491.972 12.7579 492.953 13.9658 493.708 15.2491 494.237 16.4569 494.803 17.778 495.029 19.0991 495.029L316.985 495.029C318.306 495.029 319.627 494.803 320.91 494.237 322.118 493.708 323.439 492.953 324.421 491.972 325.402 490.877 326.157 489.669 326.723 488.462 327.251 487.14 327.478 485.819 327.478 484.536L327.478 19.0614C327.478 17.7403 327.251 16.4192 326.723 15.1359 326.157 13.928 325.402 12.6069 324.421 11.6255 323.439 10.6442 322.118 9.77602 320.91 9.32308 319.627 8.79465 318.306 8.56818 316.985 8.56818L19.0991 8.56818C17.778 8.56818 16.4569 8.79465 15.2491 9.32308 13.9658 9.77602 12.7579 10.6442 11.6633 11.6255 10.6819 12.6069 9.88926 13.928 9.36083 15.1359 8.79465 16.4192 8.60592 17.7403 8.60592 19.0614L8.60592 484.536Z" fill="#0055FF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M26.5349 465.928 45.1056 465.928 132.712 132.637 128.976 132.637 26.5349 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M84.2474 465.928 93.5328 465.928 109.839 365.336 102.856 365.336 84.2474 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M115.161 298.376 120.747 298.376 127.353 257.347 122.71 257.347 115.161 298.376Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M129.58 220.093 133.316 220.093 137.393 195.898 134.071 195.898 129.58 220.093Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M138.11 173.553 140.979 173.553 143.96 154.907 141.507 154.907 138.11 173.553Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M144.338 140.11 146.338 140.11 147.546 132.637 145.659 132.637 144.338 140.11Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M132.675 465.928 151.283 465.928 164.381 132.637 160.568 132.637 132.675 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M309.549 465.928 290.978 465.928 203.372 132.637 207.108 132.637 309.549 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M251.836 465.928 242.513 465.928 226.207 365.336 233.341 365.336 251.836 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M220.923 298.376 215.412 298.376 208.731 257.347 213.45 257.347 220.923 298.376Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M206.58 220.093 202.73 220.093 198.804 195.898 202.05 195.898 206.58 220.093Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M197.936 173.553 195.181 173.553 192.123 154.907 194.539 154.907 197.936 173.553Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M191.821 140.11 189.708 140.11 188.5 132.637 190.425 132.637 191.821 140.11Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M203.409 465.928 184.839 465.928 171.779 132.637 175.516 132.637 203.409 465.928Z" fill="#FFFFFF" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M128.976 533.114 128.976 585.165" stroke="#808080" stroke-width="0.754905" stroke-linejoin="round" stroke-dasharray="4.83139 4.83139" fill="none" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M31.3286 94.2877 41.1801 94.2877 43.3693 87.72 58.4674 87.72 60.6567 94.2877 70.5082 94.2877 57.0709 53.2586 44.9924 53.2586 31.3286 94.2877ZM46.2002 78.8499 50.7296 64.7331 55.6365 78.8499 46.2002 78.8499Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M87.871 53.2586 78.2082 53.2586 78.2082 77.5665C78.2082 82.2847 80.0955 86.6254 83.3416 89.9092 86.6631 93.1931 91.1548 95.0426 95.873 95.0426 100.44 95.0426 104.932 93.1931 108.216 89.9092 111.5 86.6254 113.349 82.2847 113.349 77.5665L113.349 53.2586 103.724 53.2586 103.724 77.5665C103.724 79.6425 102.856 81.7185 101.422 83.1528 99.9117 84.6626 97.949 85.4553 95.873 85.4553 94.8916 85.4553 93.8725 85.3421 92.8911 84.8891 91.9097 84.5494 91.0416 83.9077 90.2867 83.1528 89.5318 82.3602 88.8524 81.492 88.5504 80.5107 88.0975 79.5293 87.871 78.5479 87.871 77.5665L87.871 53.2586Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M132.863 94.2877 142.488 94.2877 142.488 61.9022 154.68 61.9022 154.68 53.2586 120.747 53.2586 120.747 61.9022 132.863 61.9022 132.863 94.2877Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M160.644 80.2087C161.852 84.4739 164.343 88.2862 167.853 90.8906 171.364 93.646 175.742 95.0426 180.12 95.0426 184.612 95.0426 188.877 93.646 192.501 90.8906 195.973 88.2862 198.502 84.4739 199.597 80.2087 200.805 76.0567 200.805 71.565 199.597 67.4131 198.502 63.1478 195.973 59.2601 192.501 56.5424 188.877 53.938 184.612 52.3904 180.12 52.3904 175.742 52.3904 171.364 53.938 167.853 56.5424 164.343 59.2601 161.852 63.1478 160.644 67.4131 159.549 71.565 159.549 76.0567 160.644 80.2087ZM170.911 78.4347C170.156 75.3773 170.156 72.2067 170.911 69.0361 171.477 67.0733 172.647 65.2238 174.308 63.9027 175.931 62.5817 178.007 61.94 180.12 61.94 182.31 61.94 184.272 62.5817 186.046 63.9027 187.669 65.2238 188.877 67.0733 189.444 69.0361 190.198 72.2067 190.198 75.3773 189.444 78.4347 188.877 80.5107 187.669 82.3602 186.046 83.6813 184.272 84.8891 182.31 85.644 180.12 85.644 178.007 85.644 175.931 84.8891 174.308 83.6813 172.647 82.3602 171.477 80.5107 170.911 78.4347Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M205.561 53.2586 215.224 53.2586 222.659 79.9445 229.755 53.2586 239.607 53.2586 228.434 94.2877 216.733 94.2877 205.561 53.2586Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M247.647 94.2877 257.083 94.2877 257.083 53.2586 247.647 53.2586 247.647 94.2877Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M249.27 50.4654 254.667 50.4654 260.82 42.237 252.591 42.237 249.27 50.4654Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M265.576 94.2877 275.427 94.2877 277.616 87.72 292.828 87.72 294.904 94.2877 304.755 94.2877 291.318 53.2586 279.24 53.2586 265.576 94.2877ZM280.447 78.8499 284.977 64.7331 289.884 78.8499 280.447 78.8499Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M138.11 173.553 140.979 173.553 143.96 154.907 141.507 154.907 138.11 173.553Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M144.338 140.11 146.338 140.11 147.546 132.637 145.659 132.637 144.338 140.11Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M197.936 173.553 195.181 173.553 192.123 154.907 194.539 154.907 197.936 173.553Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M191.821 140.11 189.708 140.11 188.5 132.637 190.425 132.637 191.821 140.11Z" fill="#FEFEFE" transform="matrix(1.0002 0 0 1 849 108.416)"/><path d="M48.6914 495.029 327.478 67.3753 327.478 19.0614C327.478 16.1927 326.383 13.5883 324.421 11.6255 322.458 9.66279 319.816 8.56818 316.985 8.56818L294.677 8.56818 8.60592 447.357 8.60592 484.536C8.60592 485.819 8.79465 487.14 9.36083 488.462 9.88926 489.669 10.6819 490.877 11.6633 491.972 12.7579 492.953 13.9658 493.708 15.2491 494.237 16.4569 494.803 17.778 495.029 19.0991 495.029L48.6914 495.029Z" fill="#FF0000" transform="matrix(1.0002 0 0 1 849 108.416)"/></g></svg>`,
   },
 
-  // ─── R-305 Prohibido adelantar ───────────────────────────────
-  prohibido_adelantar: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r305.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.103 48.104">
-<path fill="#e41408" d="m0 24.053c0-13.283 10.768-24.053 24.051-24.053s24.052 10.77 24.052 24.053c0 13.284-10.769 24.052-24.052 24.052s-24.051-10.768-24.051-24.052"/>
-<path fill="#fff" d="m6.413 24.053c0-9.74 7.897-17.637 17.638-17.637 9.742 0 17.639 7.896 17.639 17.637 0 9.742-7.896 17.638-17.639 17.638-9.741-0.001-17.638-7.896-17.638-17.638"/>
-<path fill="#1c1d20" d="m29 19.781c-0.342 0-0.5 0.344-0.5 0.344l-1.188 3.063c-0.34 0.172-0.343 0.343-0.343 0.343-0.344 0.683-0.344 1.375-0.344 1.375 0 0.854 0.344 1.031 0.344 1.032-0.344 0.514 0.156 0.843 0.156 0.843v1.188c0 0.19 0.154 0.344 0.344 0.343h1.375c0.19 0 0.343-0.154 0.344-0.343v-1.375h6.843v1.375c0 0.19 0.155 0.344 0.344 0.343h1.344c0.189 0 0.343-0.154 0.343-0.343v-1.188s0.528-0.33 0.188-0.843c0 0 0.344-0.178 0.344-1.032 0 0-0.002-0.691-0.344-1.375 0 0-0.002-0.171-0.344-0.343l-1.187-3.063s-0.189-0.344-0.531-0.344h-7.188zm0.344 0.844h6.5c0.342 0 0.344 0.156 0.344 0.156l0.874 2.063c0.173 0.515-0.343 0.344-0.343 0.344-1.196-0.342-4.125-0.344-4.125-0.344s-2.897 0.002-4.094 0.344c0 0-0.517 0.171-0.344-0.344l0.844-2.063s0.001-0.156 0.344-0.156zm1.531 3.813h3.406v0.843h-3.406v-0.843z"/>
-<path fill="#e41408" d="m11.906 19.781c-0.343 0-0.5 0.344-0.5 0.344l-1.218 3.063c-0.3435 0.172-0.3442 0.343-0.3442 0.343-0.342 0.684-0.3438 1.375-0.3438 1.375 0 0.854 0.3438 1.032 0.3438 1.032-0.342 0.513 0.1872 0.843 0.1872 0.843v1.188c0 0.189 0.156 0.343 0.344 0.343h1.375c0.19 0.001 0.344-0.153 0.344-0.343v-1.375h6.812v1.375c0 0.189 0.155 0.343 0.344 0.343h1.375c0.189 0.001 0.344-0.153 0.344-0.343v-1.188s0.529-0.329 0.187-0.843c0-0.001 0.343-0.178 0.344-1.032 0 0-0.001-0.692-0.344-1.375 0 0-0.002-0.171-0.344-0.343l-1.218-3.063s-0.158-0.344-0.5-0.344h-7.188zm0.344 0.844h6.5c0.343 0 0.344 0.156 0.344 0.156l0.844 2.063c0.17 0.515-0.344 0.344-0.344 0.344-1.197-0.342-4.094-0.344-4.094-0.344s-2.898 0.002-4.094 0.344c0 0-0.514 0.171-0.344-0.344l0.844-2.063s0.003-0.156 0.344-0.156zm1.531 3.813h3.438v0.843h-3.438v-0.843z"/>
-</svg>`,
-  },
-
-  // ─── P-1a Curva peligrosa a la derecha ────────────────────────
-  curva_derecha: {
-    license: 'PD',
-    attribution: 'Spain_traffic_sign_p1a.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.828 192.41901">
-<path d="M 14.119,192.418 C 6.322,192.418 0,186.098 0,178.297 0,175.754 0.668,173.379 1.84,171.32 L 96.664,7.096 C 99.1,2.859 103.676,0 108.916,0 c 5.24,0 9.811,2.859 12.252,7.096 l 94.816,164.225 c 1.18,2.059 1.844,4.434 1.844,6.977 0,7.801 -6.32,14.121 -14.117,14.121 H 14.119" fill="#e41408"/>
-<path d="m 21.879,173.879 87.037,-150.699 87.037,150.699 -174.074,0" fill="#ffffff"/>
-<path d="m 108.916,63.557 -17.213,17.207 0,83.412 17.213,-17.211 17.209,17.211 0,-43.071 22.418,0 0,-14.476 -22.418,0 0,-25.865 -17.209,-17.207" fill="#1c1d20" fill-rule="evenodd"/>
-</svg>`,
-  },
-
-  // ─── P-5 Pavimento deslizante ────────────────────────────────
-  pavimento_deslizante: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p5.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.832 192.414">
-<path d="M 14.125,192.414 C 6.324,192.414 0,186.086 0,178.293 c 0,-2.551 0.672,-4.93 1.844,-6.988 L 96.668,7.088 C 99.105,2.848 103.676,0 108.918,0 c 5.242,0 9.809,2.848 12.25,7.088 l 94.824,164.217 c 1.176,2.059 1.84,4.438 1.84,6.988 0,7.793 -6.32,14.121 -14.121,14.121 H 14.125" fill="#e41408"/>
-<path d="m 21.883,173.875 87.035,-150.707 87.035,150.707 -174.07,0" fill="#ffffff"/>
-<path d="m 40.074,164.168 15.004,-26.477 h 16.77 v 17.645 c 0,0 2.188,0.086 4.445,-2.641 0,0 7.164,-7.789 14.09,0 0,0 4.906,6.313 10.586,0 0,0 2.352,-3.586 7.949,-3.586 5.594,0 7.945,3.586 7.945,3.586 5.684,6.313 10.59,0 10.59,0 6.93,-7.789 14.086,0 14.086,0 2.262,2.727 4.449,2.641 4.449,2.641 v -17.645 h 16.773 l 15.004,26.477 H 40.074" fill="#1c1d20"/>
-<path d="m 66.68,128.848 68.664,-39.649 5.136,8.887 -68.671,39.648 -5.129,-8.886" fill="#1c1d20"/>
-</svg>`,
-  },
-
-  // ─── P-17 Paso de peatones ───────────────────────────────────
-  paso_peatones: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p17.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.41">
-<path fill="#E41408" d="M14.125,192.41C6.32,192.41,0,186.086,0,178.289c0-2.543,0.672-4.926,1.84-6.984 L96.668,7.086C99.104,2.848,103.676,0,108.916,0c5.238,0,9.813,2.848,12.254,7.086l94.82,164.219 c1.172,2.059,1.844,4.441,1.844,6.984c0,7.797-6.32,14.121-14.125,14.121H14.125"/>
-<polyline fill="#FFFFFF" points="21.881,173.875 108.916,23.168 195.951,173.875 21.881,173.875 "/>
-<polyline fill="#1C1D20" points="90.385,164.168 90.385,122.684 100.973,105.031 100.973,74.141 85.084,74.141 85.084,101.5 74.496,119.152 74.496,164.168 90.385,164.168 "/>
-<polyline fill="#1C1D20" points="127.451,164.168 127.451,122.684 116.857,105.031 116.857,74.141 132.748,74.141 132.748,101.5 143.342,119.152 143.342,164.168 127.451,164.168 "/>
-</svg>`,
-  },
-
-  // ─── P-18 Niños (versión 2023) ───────────────────────────────
-  ninos: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_P-18_(2023).svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 321 281">
-<g transform="translate(-336 -56)"><path d="M301.971 281.534C303.21 281.534 304.485 281.351 305.723 280.987 307.144 280.623 308.601 280.113 310.022 279.384 311.297 278.656 312.718 277.781 313.957 276.506 315.232 275.45 316.288 273.992 317.199 272.572 317.927 271.151 318.62 269.329 318.984 267.726 319.348 266.306 319.53 264.885 319.53 263.246L319.53 262.699C319.53 261.278 319.166 259.858 318.802 258.4 318.255 256.98 317.745 255.741 317.199 254.648L175.448 8.96186C174.72 7.86895 174.028 6.81247 172.935 5.71956 171.842 4.48093 170.785 3.57017 169.365 2.69584 168.09 1.96724 166.669 1.23863 164.884 0.728607 163.426 0.364303 161.824 0 160.221 0L159.492 0C157.889 0 156.286 0.364303 154.829 0.728607 153.044 1.23863 151.623 1.96724 150.348 2.69584 148.927 3.57017 147.834 4.48093 146.778 5.71956 145.685 6.81247 144.993 7.86895 144.264 8.96186L2.33154 254.648C1.78509 255.741 1.23863 256.98 0.728607 258.4 0.364303 259.858 0 261.278 0 262.881L0 263.246C0 264.703 0.182152 266.306 0.546455 267.726 0.910758 269.329 1.60293 271.151 2.33154 272.572 3.2423 273.992 4.29878 275.45 5.71956 276.506 6.99462 277.781 8.41541 278.656 9.69047 279.384 11.1112 280.113 12.532 280.623 13.9892 280.987 15.2279 281.351 16.5029 281.534 17.7416 281.534L301.971 281.534Z" fill="#FF0000" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M33.5159 254.648 286.014 254.648 159.856 35.8474 33.5159 254.648Z" fill="#FFFF00" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M160.84 240.513 254.575 240.513C253.482 238.181 251.697 236.032 249.548 234.393 247.398 232.608 245.067 231.551 242.553 230.823 241.46 228.673 239.675 226.888 237.526 225.977 236.651 223.099 235.012 220.586 232.68 218.801 230.531 217.198 227.69 216.141 224.812 216.141 224.447 215.048 223.719 213.955 223.026 212.899 222.298 211.806 221.241 210.932 220.148 210.021 217.999 208.236 215.303 206.997 212.462 206.451 209.402 205.904 206.524 206.269 203.828 207.179 202.589 207.507 201.35 208.054 200.257 208.782 199.165 209.474 198.29 210.385 197.38 211.114L162.989 181.897 177.853 150.348C178.764 148.927 179.456 147.324 179.638 145.503 179.638 143.718 179.274 142.115 178.581 140.512L165.685 120.621C164.592 119.346 163.171 118.289 161.714 117.561 160.111 116.65 158.144 116.322 156.541 116.14L127.324 116.14C125.357 116.322 123.39 117.014 121.932 118.471 120.512 119.71 119.601 121.495 119.273 123.462L115.666 142.989 110.129 138.18C109.218 137.634 108.307 137.452 107.433 137.634 106.522 137.998 105.83 138.362 105.284 139.237 104.919 139.965 104.737 140.84 104.919 141.75 105.101 142.843 105.648 143.535 106.34 143.9L113.699 150.348C114.063 151.441 114.61 152.315 115.302 153.226 115.848 154.282 116.759 155.011 117.634 155.557L112.096 160.585C110.493 162.916 109.765 165.758 110.129 168.636L110.639 198.91 102.041 230.276C101.349 232.243 101.531 234.575 102.406 236.36 103.316 238.327 105.101 239.784 107.069 240.331 107.979 240.659 108.854 240.841 109.947 240.841 111.003 240.841 112.096 240.513 112.97 239.967 114.063 239.42 114.938 238.874 115.666 237.999 116.213 237.271 116.759 236.36 117.123 235.486L126.595 204.301C127.324 201.788 127.688 199.274 127.87 196.578L127.142 179.565 144.337 200.185 128.563 228.309C128.053 229.22 127.688 230.094 127.506 231.187 127.506 232.243 127.506 233.336 127.87 234.393 128.053 235.486 128.563 236.542 129.291 237.271 130.02 238.181 130.712 238.691 131.623 239.238 132.351 239.602 133.408 239.967 134.501 240.149 135.375 240.331 136.65 240.331 137.707 239.967 138.617 239.602 139.674 239.056 140.402 238.509 141.313 237.817 142.005 237.089 142.37 236.178L161.532 203.937C162.079 202.698 162.443 201.423 162.625 200.185 162.807 198.727 162.807 197.489 162.443 196.068 162.261 194.611 161.714 193.372 161.022 192.279 160.293 191.041 159.383 189.948 158.144 189.256L191.296 216.141C189.875 216.651 188.6 217.562 187.179 218.618 185.904 219.711 184.847 220.768 183.937 222.043 181.969 222.589 180.184 223.646 178.581 225.249 177.124 226.888 176.068 228.855 175.521 230.823 174.101 230.64 172.498 230.823 170.858 231.187 169.437 231.551 167.835 232.243 166.559 233.154 165.139 234.028 163.864 235.303 162.989 236.542 162.079 237.817 161.386 239.056 160.84 240.513ZM159.747 156.432 149.729 171.514 142.37 165.394 159.747 156.432ZM141.823 130.821 129.109 142.989 131.441 130.821 141.823 130.821Z" fill="#010101" transform="matrix(1 0 0 1.00173 336.207 56)"/><path d="M185.831 137.087C188.891 137.087 191.915 135.849 194.064 133.699 196.214 131.55 197.489 128.49 197.489 125.612 197.489 122.406 196.214 119.346 194.064 117.196 191.915 115.047 188.891 113.808 185.831 113.808 182.807 113.808 179.747 115.047 177.598 117.196 175.266 119.346 174.173 122.406 174.173 125.612 174.173 128.49 175.266 131.55 177.598 133.699 179.747 135.849 182.807 137.087 185.831 137.087Z" fill="#010101" transform="matrix(1 0 0 1.00173 336.207 56)"/></g>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 30 km/h ──────────────────────────
-  vel_max_30: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-30.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M-171.814,70.122c1.99,7.914,5.869,19.652,7.836,25.548c7.861,15.619,23.453,33.308,39.15,39.1c23.531,9.827,58.777,9.827,84.301,2.017c19.6-7.809,37.184-25.497,43.08-45.047c1.912-7.861,3.93-19.653,3.93-25.443c0-9.828-3.93-19.602-5.895-27.515c-5.947-7.81-15.699-13.704-23.533-17.583c5.896-1.915,13.705-7.81,19.602-13.707C4.465-4.352,6.482-23.849,0.588-39.52C-5.359-61.085-26.824-82.6-48.391-88.497c-19.6-5.896-47.01-5.896-66.611,0c-5.869,2.017-13.705,5.896-19.576,7.81c-19.652,11.791-35.246,37.34-35.246,60.769l52.91,5.844c-2.02-9.774,3.877-21.514,13.703-25.445c9.828-5.896,23.455-7.861,33.281-3.827c9.826,1.862,17.584,11.585,17.584,23.428c-1.939,5.844-5.869,11.74-11.715,13.706c-9.746,5.896-25.443,7.86-37.236,5.896v47.012c9.773-2.017,25.496-2.017,33.307,0c9.775,1.913,17.637,7.809,19.6,17.634c1.992,9.776-1.963,19.55-9.824,23.48c-5.846,3.931-13.705,5.897-21.541,5.897c-3.881,0-11.768-1.967-15.645-1.967c-11.688-3.931-21.514-15.618-21.514-29.375L-171.814,70.122"/>
-<path fill-rule="evenodd" d="M238.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C247.011,41.012,247.011,0.352,238.88-28.869z M190.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C193.355,6.888,193.355,32.88,190.128,52.375z"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 90 km/h ──────────────────────────
-  vel_max_90: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-90.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M230.569-21.61c-9.932-39.569-49.553-69.311-91.109-69.311c-41.607,0-79.189,29.742-91.133,69.311c-5.88,27.703-5.88,71.297,0,99c11.943,39.568,49.525,69.259,91.133,69.259c41.557,0,81.178-29.69,91.109-69.259C238.409,49.688,238.409,6.093,230.569-21.61z M181.017,59.619c-2.013,19.705-21.745,35.596-41.557,35.596c-19.783,0-37.687-15.891-41.607-35.596c-1.959-17.825-1.959-45.527,0-63.404c3.921-19.863,21.824-35.648,41.607-35.648c19.812,0,39.544,15.786,41.557,35.648C184.937,14.092,184.937,41.794,181.017,59.619z"/>
-<path fill-rule="evenodd" d="M-3.99-24.693c-5.394-16.128-16.139-35.856-28.711-46.602c-1.785-3.631-7.198-7.177-10.745-8.961c-10.776-5.414-28.7-10.798-41.27-10.798c-8.963,0-19.702,1.836-28.68,3.625c-8.972,1.759-19.752,8.957-26.946,16.134c-34.067,32.257-35.856,87.877-1.785,123.766c3.62,3.571,8.978,7.172,14.365,8.954c21.543,12.535,53.8,10.778,75.343-1.782c0,8.982-5.405,21.517-14.376,26.904c-8.972,7.2-21.495,8.982-32.287,5.358c-7.137-1.789-14.315-8.989-14.315-17.945l-48.426,19.787c5.382,16.075,17.928,32.234,30.504,39.401c26.9,14.397,62.761,14.397,89.645,0c3.616-1.759,8.972-5.356,10.798-8.956C-20.129,113.447-9.383,95.53-3.99,81.16C3.187,50.661,3.187,5.812-3.99-24.693z M-55.985-3.149C-57.822,11.195-70.346,23.73-86.5,23.73c-14.346,0-28.72-12.535-30.504-26.88c0-3.568,0-8.982,0-14.344c1.785-14.345,16.159-26.9,30.504-26.9c16.154,0,28.678,12.555,30.515,26.9C-54.222-12.132-54.222-6.718-55.985-3.149z"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 120 km/h ─────────────────────────
-  vel_max_120: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-120.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="844 192 336 336">
-<path d="M1180.67 360.133C1180.67 338.376 1176.37 316.486 1167.79 295.894 1159.64 275.335 1147.23 256.838 1131.23 241.435 1115.69 225.6 1096.9 213.191 1076.77 205.041 1056.21 196.458 1034.32 192 1012.4 192 990.21 192 968.32 196.458 947.728 205.041 927.601 213.191 908.672 225.6 893.269 241.435 877.434 256.838 865.457 275.335 856.874 295.894 848.292 316.486 844 338.376 844 360.133 844 382.455 848.292 404.379 856.874 424.505 865.457 445.065 877.434 463.428 893.269 479.263 908.672 494.799 927.601 507.208 947.728 515.791 968.32 524.241 990.21 528.532 1012.4 528.532 1034.32 528.532 1056.21 524.241 1076.77 515.791 1096.9 507.208 1115.69 494.799 1131.23 479.263 1147.23 463.428 1159.64 445.065 1167.79 424.505 1176.37 404.379 1180.67 382.455 1180.67 360.133Z" fill="#FF0000"/>
-<path d="M1135.52 359.967C1135.52 327.431 1122.81 296.193 1099.56 272.973 1076.47 249.885 1045.1 236.545 1012.4 236.545 979.398 236.545 948.193 249.885 925.106 272.973 901.852 296.193 888.977 327.431 888.977 359.967 888.977 392.968 901.852 424.505 925.106 447.593 948.193 470.68 979.398 483.555 1012.4 483.555 1045.1 483.555 1076.47 470.68 1099.56 447.593 1122.81 424.505 1135.52 392.968 1135.52 359.967Z" fill="#FEFEFE"/>
-<path d="M916.223 410.733 939.743 410.733 939.743 309.5 918.718 309.5 918.718 313.792C918.718 319.88 913.994 324.604 907.94 324.604L898.891 324.604 898.891 344.73 916.223 344.73 916.223 410.733Z"/>
-<path d="M955.013 410.733 1028.43 410.733 1028.43 389.708 996.331 389.708 1011.87 375.935C1013.5 374.771 1015.26 372.974 1016.89 371.644 1024.58 364.258 1028.87 354.478 1028.87 344.131 1028.87 336.447 1027.24 329.194 1022.94 322.674 1021.18 320.611 1019.12 318.383 1016.89 316.752 1014.83 314.989 1012.17 313.359 1009.64 312.029 1006.68 310.698 1003.58 309.5 1000.16 309.068 988.912 306.406 976.936 307.737 966.557 313.359 962.265 315.854 958.872 319.281 956.81 323.107 954.581 326.966 952.951 331.257 952.086 335.549 951.187 340.272 950.722 344.564 951.62 349.321L975.606 349.321C975.14 345.895 975.606 342.069 977.369 338.942 978.999 333.918 984.188 330.059 989.811 330.059 991.574 330.059 993.803 330.059 995.433 330.359 999.724 331.257 1003.58 334.65 1004.45 339.408 1005.35 344.564 1004.02 350.186 1000.62 354.478 998.992 356.573 996.764 359.069 994.701 360.865 992.472 363.061 990.243 364.691 988.014 366.62L957.242 389.708C956.81 390.14 955.911 390.606 955.479 391.504 955.479 391.937 955.013 392.669 955.013 393.567L955.013 410.733Z"/>
-<path d="M1044.2 382.023C1046.27 391.038 1051.89 398.756 1059.27 404.379 1066.53 409.834 1075.57 412.795 1084.59 412.795 1093.6 412.795 1102.49 409.834 1109.91 404.379 1117.16 398.756 1122.31 391.038 1124.84 382.023 1128.7 367.818 1128.7 352.881 1124.84 338.21 1122.31 329.627 1117.16 321.51 1109.91 315.888 1102.49 310.265 1093.6 307.305 1084.59 307.305 1075.57 307.305 1066.53 310.265 1059.27 315.888 1051.89 321.51 1046.27 329.627 1044.2 338.21 1039.91 352.881 1039.91 367.818 1044.2 382.023ZM1066.09 374.338C1064.46 364.857 1064.46 355.376 1066.09 346.061 1067.42 336.879 1075.57 330.392 1084.59 330.392 1093.6 330.392 1101.32 336.879 1102.95 346.061 1104.72 355.376 1104.72 364.857 1102.95 374.338 1101.32 383.354 1093.6 390.173 1084.59 390.173 1075.57 390.173 1067.42 383.354 1066.09 374.338Z"/>
-</svg>`,
-  },
-
-  // ─── R-101 Entrada prohibida ─────────────────────────────────
-  entrada_prohibida: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r101.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-<circle fill="#E41408" cx="24" cy="24" r="23"/>
-<path fill="#FFF" d="m7,19h34v10H7z"/>
-</svg>`,
-  },
-
-  // ─── P-1b Curva peligrosa a la izquierda ──────────────────────
-  curva_izquierda: {
-    license: 'PD',
-    attribution: 'Spain_traffic_sign_p1b.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.832 192.418">
-<path d="M 14.121,192.418 C 6.32,192.418 0,186.098 0,178.297 0,175.754 0.668,173.379 1.84,171.32 L 96.668,7.088 C 99.102,2.852 103.676,0 108.918,0 c 5.238,0 9.813,2.852 12.25,7.088 l 94.82,164.232 c 1.176,2.059 1.844,4.434 1.844,6.977 0,7.801 -6.324,14.121 -14.121,14.121 H 14.121" fill="#e41408"/>
-<path d="m 21.879,173.879 87.039,-150.707 87.035,150.707 -174.074,0" fill="#ffffff"/>
-<path d="m 108.918,63.549 17.207,17.207 0,83.42 -17.207,-17.211 -17.215,17.211 0,-43.078 -22.418,0 0,-14.469 22.418,0 0,-25.873 17.215,-17.207" fill="#1c1d20" fill-rule="evenodd"/>
-</svg>`,
-  },
-
-  // ─── P-7 Intersección ────────────────────────────────────────
-  interseccion_derecha: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p7.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.418">
-<path d="M 14.125,192.418 C 6.32,192.418 0,186.09 0,178.293 c 0,-2.539 0.672,-4.922 1.84,-6.98 L 96.668,7.084 C 99.104,2.855 103.676,0 108.916,0 c 5.238,0 9.813,2.855 12.254,7.084 l 94.82,164.229 c 1.172,2.059 1.844,4.441 1.844,6.98 0,7.797 -6.32,14.125 -14.125,14.125 H 14.125" fill="#e41408"/>
-<path d="m 21.881,173.879 87.035,-150.707 87.035,150.707 -174.07,0" fill="#ffffff"/>
-<path d="m 102.297,164.168 0,-63.996 6.619,-6.621 6.617,6.629 0,63.988 -13.236,0" fill="#1c1d20"/>
-<path d="m 79.789,164.168 0,-63.996 6.619,-6.621 6.619,6.629 0,63.988 -13.238,0" fill="#1c1d20"/>
-<path d="m 138.041,164.168 0,-63.996 -6.621,-6.621 -6.617,6.629 0,63.988 13.238,0" fill="#1c1d20"/>
-<path d="m 69.285,159.762 m 79.26,0 h -79.26 v -11.836 h 79.26 v 11.836 z" fill="#1c1d20"/>
-<path d="m 69.285,117.746 m 79.26,0 h -79.26 v -11.828 h 79.26 v 11.828 z" fill="#1c1d20"/>
-</svg>`,
-  },
-
-  // ─── S-17a Estacionamiento ───────────────────────────────────
+  // ─── S-17a Lugar de aparcamiento ─────────
   estacionamiento: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_s17a.svg (Wikimedia Commons, dominio público)',
+    attribution: 'S-17a Lugar de aparcamiento — fuente: archivo Wikimedia Commons (dominio público)',
     xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="82 369 336 336">
 <path d="M82.3775 686.048C82.3775 688.2 82.8306 690.616 83.6989 692.919 84.6805 695.222 86.1151 697.412 87.8517 699.148 89.7016 700.998 91.8912 702.433 94.1942 703.301 96.4971 704.283 98.9133 704.622 101.103 704.622L399.048 704.622C401.351 704.622 403.654 704.283 405.919 703.301 408.222 702.433 410.412 700.998 412.262 699.148 414.149 697.412 415.433 695.222 416.414 692.919 417.32 690.616 417.736 688.2 417.736 686.048L417.736 387.952C417.736 385.762 417.32 383.497 416.414 381.194 415.433 378.778 414.149 376.702 412.262 374.852 410.412 373.002 408.222 371.567 405.919 370.699 403.654 369.831 401.351 369.378 399.048 369.378L101.103 369.378C98.9133 369.378 96.4971 369.831 94.1942 370.699 91.8912 371.567 89.7016 373.002 87.8517 374.852 86.1151 376.702 84.6805 378.778 83.6989 381.194 82.8306 383.497 82.3775 385.762 82.3775 387.952L82.3775 686.048Z" fill="#FFFFFF"/>
 <path d="M90.6076 686.048C90.6076 687.218 90.7964 688.54 91.3627 689.861 91.8912 691.182 92.684 692.391 93.6656 693.372 94.7605 694.467 95.9685 695.222 97.2521 695.751 98.4602 696.204 99.7816 696.43 101.103 696.43L399.048 696.43C400.369 696.43 401.691 696.204 402.974 695.751 404.182 695.222 405.504 694.467 406.485 693.372 407.467 692.391 408.222 691.182 408.788 689.861 409.317 688.54 409.543 687.218 409.543 686.048L409.543 387.952C409.543 386.744 409.317 385.46 408.788 384.139 408.222 382.818 407.467 381.609 406.485 380.628 405.504 379.533 404.182 378.778 402.974 378.325 401.691 377.796 400.369 377.57 399.048 377.57L101.103 377.57C99.7816 377.57 98.4602 377.796 97.2521 378.325 95.9685 378.778 94.7605 379.533 93.6656 380.628 92.684 381.609 91.8912 382.818 91.3627 384.139 90.7964 385.46 90.6076 386.744 90.6076 387.952L90.6076 686.048Z" fill="#0055FF"/>
@@ -225,200 +1261,10 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 </svg>`,
   },
 
-  // ─── R-303 Prohibido girar a la izquierda ────────────────────
-  prohibido_girar_izquierda: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r303.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
-<circle fill="#ffffff" cx="400" cy="400" r="350"/>
-<path fill="#1c1d20" d="m 448.97077,333.39709 c 4.92368,0 8.89923,3.97555 8.89923,8.88262 l 0,306.73263 39.98837,-40.02162 40.00499,40.02162 0,-306.73263 c 0,-49.08723 -39.80539,-88.90923 -88.90923,-88.90923 l -253.37048,0 -39.98836,40.00499 39.98836,40.02162 253.38712,0"/>
-<path fill="#e41408" d="M 400.24952,0 C 179.28224,0 0,179.31552 0,400.24952 0,621.21678 179.28224,800 400.24952,800 621.21677,800 800,621.21678 800,400.24952 800,179.31552 621.21677,0 400.24952,0 Z M 400.24952,106.56131 c 162.04931,0 293.19248,131.67216 293.19248,293.69152 0,68.14988 -23.47069,130.62753 -62.37784,180.3801 l -419.49515,-405.456 c 51.06666,-42.8993 116.87112,-68.60896 188.68051,-68.60896 z m -231.82934,113.8404 419.49515,404.94033 c -50.83378,42.36703 -116.2224,68.09997 -187.66581,68.09997 -162.04933,0 -293.69153,-131.14318 -293.69153,-293.19249 0.003,-67.78392 23.18959,-130.11187 61.86219,-179.84781 z"/>
-</svg>`,
-  },
-
-  // ─── R-304 Prohibido cambio de sentido ────────────────────────
-  prohibido_cambio_sentido: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r304.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.104 48.103">
-<path fill="#fff" d="m6.414 24.052c0-9.741 7.896-17.638 17.637-17.638 9.742 0 17.639 7.897 17.639 17.638 0 9.742-7.896 17.637-17.639 17.637-9.741 0-17.637-7.895-17.637-17.637"/>
-<path fill="#1c1d20" d="m20.043 20.577c0-2.214 1.795-4.009 4.009-4.009s4.01 1.795 4.01 4.009v15.768l2.404-2.405 2.405 2.405v-15.768c0-4.869-3.949-8.819-8.819-8.819s-8.818 3.95-8.818 8.819v13.362l2.404 2.405 2.405-2.405v-13.362"/>
-<path fill="#e41408" d="m24.062 0c-13.282 0 -24.062 10.78 -24.062 24.062 0 13.284 10.78 24.032 24.062 24.032 13.284 0 24.032-10.748 24.032-24.032 0-13.282-10.748-24.062-24.032-24.062zm0 6.4062c9.742 0 17.626 7.9158 17.626 17.656 -0.001 4.097-1.411 7.853-3.75 10.844l-25.219-24.375c3.07-2.5792 7.026-4.1248 11.343-4.1248zm-13.937 6.8438l25.219 24.344c-3.056 2.547-6.987 4.094-11.282 4.094-9.74 0-17.656-7.884-17.656-17.626 0.0002-4.075 1.394-7.822 3.719-10.812z"/>
-</svg>`,
-  },
-
-  // ─── R-400a Sentido obligatorio (vista frontal arrow) ─────────
-  sentido_derecha: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r400a.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-530 -325)">
-<path d="M857.543 493.038C857.543 472.047 853.391 451.396 845.425 432.029 837.421 412.7 825.604 395.069 810.843 380.346 796.006 365.433 778.489 353.73 759.122 345.651 739.755 337.647 718.991 333.494 698.113 333.494 677.123 333.494 656.359 337.647 637.105 345.651 617.738 353.73 600.145 365.433 585.27 380.346 570.509 395.069 558.805 412.7 550.726 432.029 542.76 451.396 538.608 472.047 538.608 493.038 538.608 513.915 542.76 534.717 550.726 554.046 558.805 573.413 570.509 590.893 585.27 605.768 600.145 620.529 617.738 632.346 637.105 640.311 656.359 648.277 677.123 652.43 698.113 652.43 718.991 652.43 739.755 648.277 759.122 640.311 778.489 632.346 796.006 620.529 810.843 605.768 825.604 590.893 837.421 573.413 845.425 554.046 853.391 534.717 857.543 513.915 857.543 493.038Z" fill="#0055FF"/>
-<path d="M714.762 563.975C712.233 565.599 708.873 565.372 706.457 563.522 705.362 562.767 704.38 561.559 703.927 560.011 703.399 558.614 703.399 557.067 703.701 555.67L715.517 513.084 566.582 513.084 566.582 472.84 715.517 472.84 703.701 430.217C703.399 428.896 703.399 427.386 703.927 425.838 704.38 424.403 705.362 423.233 706.457 422.327 707.551 421.458 708.948 420.93 710.609 420.93 712.12 420.817 713.554 421.232 714.762 421.911L831.079 492.962 714.762 563.975Z" fill="#FEFEFE"/>
-</g></svg>`,
-  },
-
-  // ─── R-500 Fin de limitaciones ────────────────────────────────
-  fin_limitaciones: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r500.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 287 287">
-<g transform="translate(-2057 -1094)">
-<path d="M2069.5 1238C2069.5 1163.17 2128.15 1102.5 2200.5 1102.5 2272.85 1102.5 2331.5 1163.17 2331.5 1238 2331.5 1312.83 2272.85 1373.5 2200.5 1373.5 2128.15 1373.5 2069.5 1312.83 2069.5 1238Z" stroke="#666" stroke-width="6" fill="#FFFFFF"/>
-<path d="M2090.86 1319.15 2284.47 1125.44 2281.12 1122.09 2278.7 1124.51 2087.51 1315.7C2088.63 1316.92 2089.73 1318.02 2090.86 1319.15Z" fill="#010101"/>
-<path d="M2098.7 1326.99 2292.4 1133.37 2289.05 1130.02 2286.63 1132.34 2095.44 1323.63C2096.47 1324.76 2097.6 1325.89 2098.7 1326.99Z" fill="#010101"/>
-<path d="M2106.66 1334.85 2300.27 1141.21 2296.89 1137.86 2294.47 1140.31 2103.27 1331.47C2104.4 1332.6 2105.53 1333.73 2106.66 1334.85Z" fill="#010101"/>
-<path d="M2114.5 1342.79 2308.11 1149.08 2304.76 1145.69 2302.3 1148.14 2111.14 1339.34C2112.24 1340.53 2113.37 1341.66 2114.5 1342.79Z" fill="#010101"/>
-<path d="M2122.33 1350.62 2316.04 1157.01 2312.69 1153.66 2310.27 1155.98 2119.08 1347.27C2120.11 1348.4 2121.2 1349.49 2122.33 1350.62Z" fill="#010101"/>
-</g></svg>`,
-  },
-
-  // ─── P-10 Semáforos ───────────────────────────────────────────
-  semaforos: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p3.svg (Wikimedia Commons, dominio público) — 3 luces en triángulo',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.414">
-<path fill="#e41408" d="M 14.121,192.414 C 6.324,192.414 0,186.086 0,178.293 c 0,-2.551 0.668,-4.93 1.846,-6.988 L 96.664,7.088 C 99.105,2.848 103.678,0 108.916,0 c 5.238,0 9.813,2.848 12.246,7.088 l 94.828,164.217 c 1.172,2.059 1.844,4.438 1.844,6.988 0,7.793 -6.324,14.121 -14.121,14.121 H 14.121"/>
-<path fill="#ffffff" d="m 21.881,173.875 87.035,-150.707 87.035,150.707 -174.07,0"/>
-<circle fill="#13926c" cx="108.916" cy="150.93" r="13.236"/>
-<circle fill="#f4b70d" cx="108.916" cy="111.211" r="13.236"/>
-<circle fill="#e41408" cx="108.916" cy="71.488" r="13.236"/>
-</svg>`,
-  },
-
-  // ─── P-13a Viento lateral ─────────────────────────────────────
-  viento_lateral: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p13a.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.41">
-<path fill="#E41408" d="M14.121,192.41C6.324,192.41,0,186.09,0,178.289c0-2.535,0.668-4.918,1.846-6.973L96.664,7.09C99.105,2.855,103.678,0,108.916,0s9.813,2.855,12.246,7.09l94.828,164.227c1.172,2.055,1.844,4.438,1.844,6.973c0,7.801-6.324,14.121-14.121,14.121H14.121"/>
-<polyline fill="#FFFFFF" points="21.881,173.875 108.916,23.176 195.951,173.875 21.881,173.875"/>
-<path fill="#1C1D20" d="M132.303,87.379c-31.193,0-56.482,25.293-56.482,56.492v20.301l9.264-9.266l9.27,9.266v-20.301c0-20.961,16.992-37.953,37.949-37.953l9.27-9.27L132.303,87.379"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 100 km/h ─────────────────────────
-  vel_max_100: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-100.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="472 192 336 336">
-<g transform="translate(-472 -192)">
-<path d="M807.358 359.622C807.358 337.537 802.979 315.791 794.56 295.443 786.141 275.132 773.796 256.595 758.28 241.079 742.65 225.449 724.113 213.104 703.802 204.685 683.453 196.266 661.708 192 639.736 192 617.65 192 595.905 196.266 575.556 204.685 555.207 213.104 536.746 225.449 521.116 241.079 505.6 256.595 493.217 275.132 484.798 295.443 476.379 315.791 472 337.537 472 359.622 472 381.595 476.379 403.378 484.798 423.689 493.217 444.038 505.6 462.499 521.116 478.129 536.746 493.683 555.207 506.028 575.556 514.447 595.905 522.866 617.65 527.245 639.736 527.245 661.708 527.245 683.453 522.866 703.802 514.447 724.113 506.028 742.65 493.683 758.28 478.129 773.796 462.499 786.141 444.038 794.56 423.689 802.979 403.378 807.358 381.595 807.358 359.622Z" fill="#FF0000"/>
-<path d="M762.659 359.585C762.659 343.427 759.488 327.457 753.258 312.469 747.142 297.595 738.044 284.041 726.68 272.678 715.204 261.201 701.65 252.14 686.776 245.987 671.788 239.757 655.856 236.586 639.773 236.586 623.578 236.586 607.608 239.757 592.62 245.987 577.746 252.14 564.192 261.201 552.829 272.678 541.314 284.041 532.253 297.595 526.138 312.469 519.908 327.457 516.737 343.427 516.737 359.585 516.737 375.667 519.908 391.788 526.138 406.625 532.253 421.499 541.314 435.053 552.829 446.529 564.192 457.931 577.746 466.991 592.62 473.107 607.608 479.337 623.578 482.508 639.773 482.508 655.856 482.508 671.788 479.337 686.776 473.107 701.65 466.991 715.204 457.931 726.68 446.529 738.044 435.053 747.142 421.499 753.258 406.625 759.488 391.788 762.659 375.667 762.659 359.585Z" fill="#FFFFFF"/>
-<path d="M543.881 409.909 567.515 409.909 567.515 309.298 546.411 309.298 546.411 313.338C546.411 316.093 545.316 318.812 543.353 320.813 541.352 322.776 538.634 323.871 535.802 323.871L526.779 323.871 526.779 343.993 543.881 343.993Z" fill="#010101"/>
-<path d="M578.954 381.293C581.445 390.127 586.693 397.904 593.904 403.378 601.228 408.928 610.1 411.872 619.198 411.872 628.41 411.872 637.244 408.928 644.455 403.378 651.779 397.904 657.026 390.127 659.443 381.293 663.369 367.06 663.369 351.959 659.443 337.726 657.026 328.967 651.779 321.228 644.455 315.64 637.244 310.166 628.41 307.108 619.198 307.108 610.1 307.108 601.228 310.166 593.904 315.64 586.693 321.228 581.445 328.967 578.954 337.726 574.99 351.959 574.99 367.06 578.954 381.293ZM600.813 373.742C599.265 364.342 599.265 354.828 600.813 345.427 601.568 341.01 603.757 337.084 607.155 334.215 610.553 331.383 614.857 329.873 619.198 329.873 623.691 329.873 627.957 331.383 631.241 334.215 634.639 337.084 636.942 341.01 637.697 345.427 639.207 354.828 639.207 364.342 637.697 373.742 636.942 378.008 634.639 382.048 631.241 384.879 627.957 387.711 623.691 389.258 619.198 389.258 614.857 389.258 610.553 387.711 607.155 384.879 603.757 382.048 601.568 378.008 600.813 373.742Z" fill="#010101"/>
-<path d="M671.373 381.293C673.864 390.127 679.112 397.904 686.323 403.378 693.571 408.928 702.556 411.872 711.617 411.872 720.829 411.872 729.663 408.928 736.874 403.378 744.198 397.904 749.445 390.127 751.862 381.293 755.788 367.06 755.788 351.959 751.862 337.726 749.445 328.967 744.198 321.228 736.874 315.64 729.663 310.166 720.829 307.108 711.617 307.108 702.556 307.108 693.571 310.166 686.323 315.64 679.112 321.228 673.864 328.967 671.373 337.726 667.409 351.959 667.409 367.06 671.373 381.293ZM693.231 373.742C691.684 364.342 691.684 354.828 693.231 345.427 693.873 341.01 696.176 337.084 699.574 334.215 703.009 331.383 707.276 329.873 711.617 329.873 716.11 329.873 720.376 331.383 723.66 334.215 727.058 337.084 729.361 341.01 730.116 345.427 731.626 354.828 731.626 364.342 730.116 373.742 729.361 378.008 727.058 382.048 723.66 384.879 720.376 387.711 716.11 389.258 711.617 389.258 707.276 389.258 703.009 387.711 699.574 384.879 696.176 382.048 693.873 378.008 693.231 373.742Z" fill="#010101"/>
-</g></svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 40 km/h ──────────────────────────
-  vel_max_40: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-40.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M-17.92,55.642V-88.984h-65.016l-112.1,146.224v47.157h123.498v34.084h53.618v-34.084H9.705V55.642H-17.92z M-71.539,55.642h-60.116l60.116-79.646V55.642z"/>
-<path fill-rule="evenodd" d="M238.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C247.011,41.012,247.011,0.352,238.88-28.869z M190.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C193.355,6.888,193.355,32.88,190.128,52.375z"/>
-</svg>`,
-  },
-
-  // ─── R-401a Paso obligatorio por la derecha ──────────────────
-  paso_obligatorio_derecha: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r401a.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-289 -230)">
-<path d="M595.024 477.734C584.642 495.893 570.674 511.749 554.025 524.547 537.413 537.232 518.462 546.633 498.264 551.994 478.028 557.43 456.924 558.865 436.16 556.146 415.359 553.391 395.387 546.52 377.228 536.138 359.182 525.642 343.213 511.636 330.528 495.025 317.73 478.527 308.443 459.499 302.969 439.264 297.532 419.028 296.211 397.924 298.929 377.16 301.685 356.51 308.443 336.387 318.938 318.342 329.32 300.182 343.326 284.251 359.938 271.528 376.549 258.73 395.463 249.443 415.698 243.969 435.934 238.608 457.038 237.173 477.802 239.929 498.566 242.647 518.575 249.443 536.772 259.938 554.931 270.433 570.787 284.326 583.547 300.975 596.232 317.587 605.633 336.501 610.994 356.736 616.468 376.934 617.789 398.038 615.033 418.802 612.315 439.604 605.52 459.613 595.024 477.734Z" fill="#0055FF"/>
-<path d="M507.022 344.693C505.512 342.088 502.643 340.54 499.585 340.88 498.188 341.069 496.754 341.635 495.546 342.617 494.451 343.711 493.696 345.033 493.243 346.316L482.332 389.204 353.18 314.793 343.1 332.197 333.058 349.714 462.21 424.049 430.724 455.007C429.742 455.988 428.987 457.423 428.648 458.933 428.421 460.481 428.534 461.878 429.176 463.199 429.742 464.52 430.611 465.729 431.932 466.597 433.216 467.352 434.764 467.805 436.198 467.805L572.41 464.294 507.022 344.693Z" fill="#FEFEFE"/>
-</g></svg>`,
-  },
-
-  // ─── R-6 Calzada con prioridad (rombo) ──────────────────────
-  prioridad_sentido_contrario: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r6.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-455 -183)">
-<path d="M463.608 500.01C463.608 501.218 463.796 502.54 464.363 503.861 464.891 505.145 465.684 506.353 466.666 507.334 467.76 508.316 468.969 509.222 470.252 509.637 471.46 510.204 472.782 510.392 474.103 510.392L772.048 510.392C773.369 510.392 774.691 510.204 775.974 509.637 777.182 509.222 778.504 508.316 779.485 507.334 780.467 506.353 781.222 505.145 781.788 503.861 782.317 502.54 782.543 501.218 782.543 500.01L782.543 201.952C782.543 200.744 782.317 199.422 781.788 198.139 781.222 196.818 780.467 195.609 779.485 194.515 778.504 193.533 777.182 192.778 775.974 192.212 774.691 191.683 773.369 191.457 772.048 191.457L474.103 191.457C472.782 191.457 471.46 191.683 470.252 192.212 468.969 192.778 467.76 193.533 466.666 194.515 465.684 195.609 464.891 196.818 464.363 198.139 463.796 199.422 463.608 200.744 463.608 201.952Z" fill="#0055FF"/>
-<path d="M680.875 462.748 705.037 462.748 705.037 313.7 734.862 313.7 692.88 239.252 650.975 313.7 680.875 313.7 680.875 462.748Z" fill="#FFFFFF"/>
-<path d="M541.114 239.252 565.276 239.252 565.276 388.187 595.138 388.187 553.233 462.748 511.252 388.187 541.114 388.187 541.114 239.252Z" fill="#FF0000"/>
-</g></svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 20 km/h ──────────────────────────
-  vel_max_20: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-20.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M228.88-28.869c-9.768-40.66-48.752-69.882-91.009-69.882c-40.66,0-79.645,29.222-91.047,69.882c-8.132,29.22-8.132,69.88,0,97.505c11.402,40.623,50.387,69.844,91.047,69.844c42.257,0,81.241-29.221,91.009-69.844C237.011,41.012,237.011,0.352,228.88-28.869z M180.128,52.375c-3.268,19.492-21.127,34.123-42.257,34.123c-19.495,0-37.428-14.631-40.66-34.123c-3.268-19.495-3.268-45.487,0-63.385c3.232-21.126,21.165-35.757,40.66-35.757c21.13,0,38.989,14.63,42.257,35.757C183.355,6.888,183.355,32.88,180.128,52.375z"/>
-<path fill-rule="evenodd" d="M-161.117,135.415H2.195V87.321h-72.388l36.46-30.668c3.159-2.655,8.447-7.384,11.605-10.038C-7.311,31.316,3.259,5.93,3.259-15.737c0-14.286-5.283-33.832-12.668-46.501c-3.187-4.27-9.001-10.062-12.718-13.778c-4.222-3.668-11.076-8.445-16.359-11.101c-5.814-3.136-15.323-6.321-21.693-7.916c-23.236-6.321-54.969-2.653-76.084,9.508c-7.937,4.778-17.443,14.286-22.197,22.731c-9.001,15.877-13.755,40.708-11.632,58.685h52.845c-1.061-6.902,0-16.408,2.656-22.731c4.729-12.692,17.951-21.669,30.645-21.669c3.69,0,9.508,0.532,13.199,1.593c9.505,2.076,17.999,11.102,19.569,20.607c1.593,11.101-2.124,25.363-9.001,33.832c-6.854,8.978-18.507,21.139-27.461,27.99l-69.231,51.808c-2.653,2.124-4.246,5.817-4.246,9.001V135.415"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 60 km/h ──────────────────────────
-  vel_max_60: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-60.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M-28.752-4.75c-3.879-1.965-9.672-5.896-15.566-7.861c-21.592-13.705-54.873-11.688-76.414,1.966c0-11.74,7.836-21.567,15.645-29.376c7.809-5.896,21.514-7.861,31.34-3.931c7.838,2.069,13.705,9.827,15.723,17.636l47.012-19.602c-3.955-15.619-15.721-31.289-29.426-39.099c-25.471-15.722-62.709-15.722-90.119,0c-1.939,1.862-7.887,5.793-11.766,7.81c-9.826,11.688-21.516,29.324-25.393,44.995c-7.914,29.324-7.914,74.476,0,103.798c3.877,15.723,15.566,37.236,27.408,49.027c3.881,1.967,7.811,5.795,11.689,7.811c11.766,5.896,29.428,11.844,41.166,11.844c7.836,0,19.602-2.018,25.498-4.035c9.748-1.912,21.516-9.824,29.324-15.619C2.691,87.309,4.605,30.523-28.752-4.75z M-56.163,63.828C-58.026,79.5-69.868,91.24-85.489,91.24c-15.67,0-29.426-11.74-31.365-27.412c0-1.967,0-7.861,0-11.74c1.939-15.723,15.695-27.41,31.365-27.41c15.621,0,27.463,11.688,29.326,27.41C-54.147,55.967-54.147,61.861-56.163,63.828z"/>
-<path fill-rule="evenodd" d="M220.235-29.186c-11.458-40.833-50.649-70.245-93.163-70.245c-40.833,0-80.024,29.412-91.485,70.245c-4.888,29.411-4.888,70.245,0,98.015c11.461,40.834,50.652,70.245,91.485,70.245c42.514,0,81.705-29.411,93.163-70.245C226.771,41.06,226.771,0.226,220.235-29.186z M169.586,52.482c-3.244,19.595-21.278,34.3-40.834,34.3c-21.273,0-39.228-14.705-42.513-34.3c-3.248-19.598-3.248-45.723,0-63.714c3.285-21.202,21.239-35.907,42.513-35.907c19.556,0,37.59,14.705,40.834,35.907C172.873,6.759,172.873,32.885,169.586,52.482z"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 70 km/h ──────────────────────────
-  vel_max_70: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-70.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<polyline fill-rule="evenodd" points="-135.389,139.074 -78.205,139.074 -3.07,-45.535 -3.07,-89.614 -164.8,-89.614 -164.8,-40.605 -61.858,-40.605 -135.389,139.074"/>
-<path fill-rule="evenodd" d="M214.235-29.186c-11.458-40.833-50.649-70.245-93.163-70.245c-40.833,0-80.024,29.412-91.485,70.245c-4.888,29.411-4.888,70.245,0,98.015c11.461,40.834,50.652,70.245,91.485,70.245c42.514,0,81.705-29.411,93.163-70.245C220.771,41.06,220.771,0.226,214.235-29.186z M163.586,52.482c-3.244,19.595-21.278,34.3-40.834,34.3c-21.273,0-39.228-14.705-42.513-34.3c-3.248-19.598-3.248-45.723,0-63.714c3.285-21.202,21.239-35.907,42.513-35.907c19.556,0,37.59,14.705,40.834,35.907C166.873,6.759,166.873,32.885,163.586,52.482z"/>
-</svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 80 km/h ──────────────────────────
-  vel_max_80: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-80.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.791 -360.781 769.688 769.656">
-<path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
-<path fill="#FFFFFF" d="M-258.15,24.031c0-155.852,126.336-282.203,282.211-282.203c155.852,0,282.18,126.352,282.18,282.203c0,155.875-126.328,282.188-282.18,282.188C-131.814,306.219-258.15,179.906-258.15,24.031"/>
-<path fill-rule="evenodd" d="M230.569-21.61c-9.932-39.569-49.553-69.311-91.109-69.311c-41.607,0-79.189,29.742-91.133,69.311c-5.88,27.703-5.88,71.297,0,99c11.943,39.568,49.525,69.259,91.133,69.259c41.557,0,81.178-29.69,91.109-69.259C238.409,49.688,238.409,6.093,230.569-21.61z M181.017,59.619c-2.013,19.705-21.745,35.596-41.557,35.596c-19.783,0-37.687-15.891-41.607-35.596c-1.959-17.825-1.959-45.527,0-63.404c3.921-19.863,21.824-35.648,41.607-35.648c19.812,0,39.544,15.786,41.557,35.648C184.937,14.092,184.937,41.794,181.017,59.619z"/>
-<path fill-rule="evenodd" d="M2.482,57.073C0.619,49.161-3.412,41.353-9.205,35.455c-5.896-5.843-13.707-9.773-19.602-9.773c11.688-5.896,23.48-17.584,27.41-29.376C0.619-9.539,0.619-17.4,0.619-23.296c0-19.601-11.84-43.082-31.441-52.804c-29.324-17.687-72.459-17.687-103.748,0c-17.713,9.723-29.426,33.203-29.426,52.804c0,5.896,0,13.757,2.016,19.602c1.861,11.792,13.705,23.479,27.41,29.376c-7.811,0-15.723,3.931-19.65,9.773c-5.898,5.897-11.768,13.706-13.707,21.618c-7.809,29.429,5.947,60.665,31.342,76.389c31.367,17.583,76.439,17.583,107.779,0C-3.412,117.738,10.369,86.502,2.482,57.073z M-99.352-38.966c9.775-3.931,23.533-3.931,35.248,0c7.887,3.931,11.766,11.792,11.766,19.653c0,7.757-3.879,17.584-11.766,19.55c-11.715,3.93-25.473,3.93-35.248,0c-7.809-1.966-13.754-11.792-13.754-19.55C-113.105-27.175-107.16-35.036-99.352-38.966z M-64.104,96.224c-9.748,1.966-25.473,1.966-35.248,0c-9.824-1.964-17.635-11.74-17.635-21.514c0-11.844,7.811-19.653,17.635-23.532c9.775-2.017,25.5-2.017,35.248,0c9.828,3.879,15.695,11.688,15.695,23.532C-48.408,84.483-54.275,94.26-64.104,96.224z"/>
-</svg>`,
-  },
-
-  // ─── R-200 Dirección prohibida (entrada con barra horizontal) ─
-  direccion_prohibida: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r200.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-<circle cx="24" cy="24" r="20.7" stroke="#e41408" stroke-width="6.5" fill="#fff"/>
-<rect x="10" y="22" width="28" height="4" rx="2"/>
-</svg>`,
-  },
-
-  // ─── P-2 Doble curva peligrosa ───────────────────────────────
-  doble_curva: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p2.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.414">
-<path d="M 14.125,192.414 C 6.32,192.414 0,186.086 0,178.293 c 0,-2.551 0.672,-4.93 1.84,-6.988 L 96.668,7.088 C 99.104,2.848 103.676,0 108.916,0 c 5.238,0 9.813,2.848 12.254,7.088 l 94.82,164.217 c 1.172,2.059 1.844,4.438 1.844,6.988 0,7.793 -6.32,14.121 -14.125,14.121 H 14.125" fill="#e41408"/>
-<path d="m 21.881,173.875 87.035,-150.707 87.035,150.707 -174.07,0" fill="#ffffff"/>
-<path d="m 85.561,163.988 -14.86,-14.855 23.279,-23.36 -23.279,-23.335 14.86,-14.854 23.355,23.404 23.355,-23.404 14.86,14.854 -23.281,23.335 23.281,23.36 -14.86,14.855 -23.355,-23.281 -23.355,23.281" fill="#1c1d20"/>
-</svg>`,
-  },
-
-  // ─── S-28 Zona peatonal ──────────────────────────────────────
+  // ─── S-28 Zona residencial / calle peatonal prioritaria ─────────
   zona_peatonal: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_s28.svg (Wikimedia Commons, dominio público)',
+    attribution: 'S-28 Zona residencial / calle peatonal prioritaria — fuente: archivo Wikimedia Commons (dominio público)',
     xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="651 364 505 336">
 <g transform="translate(-651 -364)">
 <path d="M0.377528 317.01C0.377528 319.2 0.830562 321.503 1.69888 323.919 2.56719 326.184 4.0018 328.261 5.85169 330.148 7.70157 331.998 9.89124 333.433 12.1942 334.301 14.4971 335.283 16.8 335.622 18.9897 335.622L484.633 335.622C486.936 335.622 489.239 335.283 491.542 334.301 493.844 333.433 496.034 331.998 497.884 330.148 499.734 328.261 501.055 326.184 502.037 323.919 502.905 321.503 503.358 319.2 503.358 317.01L503.358 18.9519C503.358 16.7622 502.905 14.4593 502.037 12.0431 501.055 9.77798 499.734 7.58831 497.884 5.81393 496.034 3.96404 493.844 2.56719 491.542 1.66112 489.239 0.679551 486.936 0.377528 484.633 0.377528L18.9897 0.377528C16.8 0.377528 14.4971 0.679551 12.1942 1.66112 9.89124 2.56719 7.70157 3.96404 5.85169 5.81393 4.0018 7.58831 2.56719 9.77798 1.69888 12.0431 0.830562 14.4593 0.377528 16.7622 0.377528 18.9519L0.377528 317.01Z" fill="#0055FF" transform="matrix(1.00032 0 0 1 651.834 364)"/>
@@ -427,10 +1273,10 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 </g></svg>`,
   },
 
-  // ─── S-29 Carril reservado para bicicletas ───────────────────
+  // ─── S-29 Carril reservado para ciclistas ─────────
   carril_bici: {
     license: 'PD',
-    attribution: 'Spain_traffic_signal_s29.svg (Wikimedia Commons, dominio público)',
+    attribution: 'S-29 Carril reservado para ciclistas — fuente: archivo Wikimedia Commons (dominio público)',
     xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="649 11 504 336">
 <g transform="translate(-649 -11)">
 <path d="M8.60593 316.947C8.60593 318.155 8.79466 319.476 9.36084 320.797 9.77604 322.081 10.6819 323.289 11.6633 324.27 12.6447 325.365 13.928 326.12 15.1359 326.686 16.457 327.139 17.778 327.327 18.9859 327.327L484.537 327.327C485.858 327.327 487.179 327.139 488.5 326.686 489.708 326.12 490.878 325.365 491.973 324.27 492.954 323.289 493.747 322.081 494.275 320.797 494.841 319.476 495.03 318.155 495.03 316.947L495.03 18.9482C495.03 17.7403 494.841 16.4192 494.275 15.1359 493.747 13.8148 492.954 12.6069 491.973 11.6256 490.878 10.5309 489.708 9.77604 488.5 9.20986 487.179 8.79466 485.858 8.56819 484.537 8.56819L18.9859 8.56819C17.778 8.56819 16.457 8.79466 15.1359 9.20986 13.928 9.77604 12.6447 10.5309 11.6633 11.6256 10.6819 12.6069 9.77604 13.8148 9.36084 15.1359 8.79466 16.4192 8.60593 17.7403 8.60593 18.9482L8.60593 316.947Z" fill="#0055FF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
@@ -439,133 +1285,4 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 <path d="M19.2879 173.742C18.7594 174.836 18.3065 176.006 18.0045 177.441 17.6648 178.762 17.4383 180.158 17.3251 181.593 17.3251 184.537 17.8913 187.594 19.2124 190.463 20.4957 193.181 22.4585 195.596 24.7609 197.446 25.9688 198.314 27.1766 199.069 28.3845 199.748 29.7056 200.277 30.8757 200.73 32.0835 201.069L52.315 169.778 52.8435 217.111 28.611 252.214C23.3644 257.989 20.6089 265.538 20.8354 273.201 21.1751 280.976 24.459 288.299 30.1208 293.659L73.3014 229.454 73.3014 289.733C73.1882 290.941 73.4146 292.262 73.6411 293.545 73.9431 294.753 74.396 296.074 74.9245 297.395 76.2456 300 78.2083 302.416 80.8505 304.039 83.3417 305.813 86.3236 306.794 89.2677 307.02 90.6643 307.134 91.9854 307.02 93.3064 306.794 94.6275 306.568 95.8354 306.152 96.8922 305.699L96.8922 178.649C99.3079 182.461 102.818 185.405 106.857 187.292 110.896 189.142 115.387 189.783 119.766 189.255 124.22 188.576 128.41 186.726 131.769 183.895 135.166 181.064 137.733 177.214 139.016 172.949L99.0815 152.944 100.856 129.58C100.403 123.993 97.9869 118.747 94.2878 114.595 90.4755 110.443 85.4177 107.612 79.8691 106.593 77.3402 106.178 74.6225 106.064 71.7539 106.517 69.0362 106.819 66.2053 107.687 63.6764 109.008 61.0719 110.443 58.7695 112.179 56.8067 114.255 54.844 116.218 53.4096 118.52 52.315 120.936L19.2879 173.742Z" fill="#FFFFFF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
 </g></svg>`,
   },
-
-  // ─── R-302 Prohibido girar a la derecha ──────────────────────
-  prohibido_girar_derecha: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r302.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.104 48.103">
-<path d="m0.779 21.617c0 4.623-3.7516 8.374-8.3742 8.374-4.6228 0-8.3738-3.751-8.3738-8.374 0-4.622 3.751-8.374 8.3738-8.374 4.6226 0 8.3742 3.752 8.3742 8.374z" transform="matrix(2.1163 0 0 2.1163 40.126 -21.696)" fill="#fff"/>
-<path d="m21.112 20.043c-0.295 0-0.535 0.239-0.535 0.534v18.44l-2.404-2.406-2.406 2.406v-18.44c0-2.951 2.393-5.345 5.345-5.345h15.233l2.405 2.405-2.405 2.406h-15.233" fill="#1c1d20"/>
-<path d="m24.062 0c-13.284 0-24.062 10.78-24.062 24.062 0 13.284 10.778 24.032 24.062 24.032s24.032-10.748 24.032-24.032c0-13.282-10.748-24.062-24.032-24.062zm0 6.4062c4.31 0 8.252 1.5544 11.313 4.1248l-25.219 24.344c-2.3343-2.987-3.7498-6.727-3.7498-10.813 0-9.74 7.9138-17.656 17.656-17.656zm13.907 6.8438c2.321 2.991 3.719 6.735 3.719 10.812 0 9.742-7.884 17.626-17.626 17.626-4.31 0-8.245-1.561-11.312-4.126l25.219-24.312z" fill="#e41408"/>
-</svg>`,
-  },
-
-  // ─── R-307 Prohibido adelantar a camiones ────────────────────
-  prohibido_adelantar_camiones: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r307.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-431 -371)">
-<path d="M766.358 538.622C766.358 516.537 761.979 494.791 753.56 474.443 745.141 454.132 732.796 435.595 717.28 420.079 701.65 404.449 683.113 392.104 662.802 383.685 642.453 375.266 620.708 371 598.736 371 576.65 371 554.905 375.266 534.556 383.685 514.207 392.104 495.746 404.449 480.116 420.079 464.6 435.595 452.217 454.132 443.798 474.443 435.379 494.791 431 516.537 431 538.622 431 560.595 435.379 582.378 443.798 602.689 452.217 623.038 464.6 641.499 480.116 657.129 495.746 672.683 514.207 685.028 534.556 693.447 554.905 701.866 576.65 706.245 598.736 706.245 620.708 706.245 642.453 701.866 662.802 693.447 683.113 685.028 701.65 672.683 717.28 657.129 732.796 641.499 745.141 623.038 753.56 602.689 761.979 582.378 766.358 560.595 766.358 538.622Z" fill="#FF0000"/>
-<path d="M721.659 538.585C721.659 522.427 718.488 506.457 712.258 491.469 706.142 476.595 697.044 463.041 685.68 451.678 674.204 440.201 660.65 431.14 645.776 424.987 630.788 418.757 614.856 415.586 598.773 415.586 582.578 415.586 566.608 418.757 551.62 424.987 536.746 431.14 523.192 440.201 511.829 451.678 500.314 463.041 491.253 476.595 485.138 491.469 478.908 506.457 475.737 522.427 475.737 538.585 475.737 554.667 478.908 570.788 485.138 585.625 491.253 600.499 500.314 614.053 511.829 625.529 523.192 636.931 536.746 645.991 551.62 652.107 566.608 658.337 582.578 661.508 598.773 661.508 614.856 661.508 630.788 658.337 645.776 652.107 660.65 645.991 674.204 636.931 685.68 625.529 697.044 614.053 706.142 600.499 712.258 585.625 718.488 570.788 721.659 554.667 721.659 538.585Z" fill="#0055FF"/>
-<path d="M500.012 618.621 518.586 637.346 697.497 458.473 678.809 439.861 500.012 618.621Z" fill="#FF0000"/>
-<path d="M500.012 458.473 518.586 439.861 697.497 618.621 678.809 637.346 500.012 458.473Z" fill="#FF0000"/>
-</g></svg>`,
-  },
-
-  // ─── R-400b Sentido obligatorio (izquierda) ──────────────────
-  sentido_izquierda: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r400b.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-52 -271)">
-<path d="M60.5699 439.038C60.5699 418.047 64.7227 397.396 72.6885 378.029 80.8054 358.7 92.471 341.069 107.232 326.346 122.107 311.433 139.738 299.73 158.954 291.651 178.321 283.647 199.085 279.494 220.076 279.494 240.953 279.494 261.717 283.647 281.084 291.651 300.376 299.73 317.969 311.433 332.843 326.346 347.604 341.069 359.308 358.7 367.387 378.029 375.353 397.396 379.506 418.047 379.506 439.038 379.506 459.915 375.353 480.717 367.387 500.046 359.308 519.413 347.604 536.893 332.843 551.768 317.969 566.529 300.376 578.346 281.084 586.311 261.717 594.277 240.953 598.43 220.076 598.43 199.085 598.43 178.321 594.277 158.954 586.311 139.738 578.346 122.107 566.529 107.232 551.768 92.471 536.893 80.8054 519.413 72.6885 500.046 64.7227 480.717 60.5699 459.915 60.5699 439.038Z" fill="#0055FF"/>
-<path d="M203.389 509.975C205.994 511.599 209.278 511.372 211.694 509.522 212.789 508.767 213.771 507.559 214.337 506.011 214.752 504.614 214.752 503.067 214.413 501.67L202.634 459.084 351.644 459.084 351.644 438.962 351.644 418.84 202.634 418.84 214.413 376.217C214.752 374.896 214.752 373.386 214.337 371.838 213.771 370.403 212.789 369.233 211.694 368.327 210.6 367.458 209.165 366.93 207.542 366.93 205.994 366.817 204.597 367.232 203.389 367.911L87.0346 438.962 203.389 509.975Z" fill="#FEFEFE"/>
-</g></svg>`,
-  },
-
-  // ─── R-401b Paso obligatorio por la izquierda ────────────────
-  paso_obligatorio_izquierda: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r401b.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 336">
-<g transform="translate(-396 -214)">
-<path d="M425.9 461.734C436.282 479.893 450.289 495.749 466.9 508.547 483.511 521.232 502.425 530.633 522.661 535.994 542.896 541.43 564 542.865 584.764 540.146 605.528 537.391 625.537 530.52 643.734 520.138 661.893 509.642 677.749 495.636 690.51 479.025 703.195 462.527 712.595 443.499 717.956 423.264 723.43 403.028 724.751 381.924 721.995 361.16 719.277 340.51 712.482 320.387 702.1 302.342 691.604 284.182 677.636 268.251 660.987 255.528 644.376 242.73 625.424 233.443 605.226 227.969 584.991 222.608 563.887 221.173 543.123 223.929 522.321 226.647 502.35 233.443 484.191 243.938 466.145 254.433 450.175 268.326 437.49 284.975 424.692 301.587 415.405 320.501 409.931 340.736 404.494 360.934 403.173 382.038 405.891 402.802 408.647 423.604 415.405 443.613 425.9 461.734Z" fill="#0055FF"/>
-<path d="M584.802 451.805C587.86 451.805 590.691 450.031 591.899 447.199 592.466 445.878 592.692 444.481 592.352 442.933 592.013 441.423 591.258 439.988 590.276 439.007L558.79 408.049 687.905 333.714 677.825 316.197 667.896 298.793 538.668 373.204 527.72 330.316C527.418 329.033 526.625 327.711 525.454 326.617 524.246 325.635 522.812 325.069 521.377 324.88 519.98 324.767 518.546 324.993 517.111 325.635 515.714 326.39 514.733 327.485 513.94 328.693L448.552 448.294 584.802 451.805Z" fill="#FEFEFE"/>
-</g></svg>`,
-  },
-
-  // ─── R-301 Velocidad máxima 110 km/h ─────────────────────────
-  vel_max_110: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r301-110.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1155">
-<g transform="translate(-1609 -660)">
-<path d="M2751.45 1230.47C2751.45 1156.65 2736.88 1082.33 2707.76 1012.53 2680.14 942.724 2637.95 879.952 2583.72 827.726 2530.99 773.993 2467.22 731.811 2398.92 704.191 2329.12 675.065 2254.8 660 2180.47 660 2105.15 660 2030.83 675.065 1961.02 704.191 1892.73 731.811 1828.45 773.993 1776.22 827.726 1722.49 879.952 1681.82 942.724 1652.69 1012.53 1623.56 1082.33 1609 1156.65 1609 1230.47 1609 1306.3 1623.56 1380.62 1652.69 1448.92 1681.82 1518.72 1722.49 1580.99 1776.22 1634.72 1828.45 1687.45 1892.73 1729.63 1961.02 1758.76 2030.83 1787.38 2105.15 1801.94 2180.47 1801.94 2254.8 1801.94 2329.12 1787.38 2398.92 1758.76 2467.22 1729.63 2530.99 1687.45 2583.72 1634.72 2637.95 1580.99 2680.14 1518.72 2707.76 1448.92 2736.88 1380.62 2751.45 1306.3 2751.45 1230.47Z" fill="#FF0000"/>
-<path d="M2598.28 1229.97C2598.28 1119.49 2555.1 1013.53 2476.25 934.689 2397.92 856.35 2291.45 811.154 2180.47 811.154 2068.49 811.154 1962.53 856.35 1884.19 934.689 1805.35 1013.53 1761.66 1119.49 1761.66 1229.97 1761.66 1341.95 1805.35 1448.92 1884.19 1527.25 1962.53 1605.59 2068.49 1649.28 2180.47 1649.28 2291.45 1649.28 2397.92 1605.59 2476.25 1527.25 2555.1 1448.92 2598.28 1341.95 2598.28 1229.97Z" fill="#FEFEFE"/>
-<g transform="matrix(1 0 0 1.00106 1857.02 1056)">
-<path d="M382.198 251.873C375.598 227.578 372.625 203.283 372.625 177.9 372.625 153.097 375.598 128.221 382.198 104.433 386.767 89.7113 392.858 74.9891 401.489 62.37 410.119 49.6784 420.2 38.5098 432.384 28.9368 444.568 19.7988 458.274 12.6916 472.417 7.61494 487.139 2.53831 502.369 0 517.526 0 532.756 0 547.986 2.53831 562.635 7.61494 576.85 12.6916 590.557 19.7988 602.668 28.9368 614.852 38.5098 625.513 49.6784 633.636 62.37 642.193 74.9891 648.793 89.7113 652.347 104.433 658.946 128.221 662.5 153.097 662.5 177.9 662.5 203.283 658.946 227.578 652.347 251.873 648.793 266.595 642.193 280.81 633.636 293.502 625.513 306.121 614.852 317.289 602.668 326.427 590.557 336.073 576.85 343.108 562.635 348.184 547.986 353.261 532.756 355.291 517.526 355.291 502.369 355.291 487.139 353.261 472.417 348.184 458.274 343.108 444.568 336.073 432.384 326.427 420.2 317.289 410.119 306.121 401.489 293.502 392.858 280.81 386.767 266.595 382.198 251.873ZM455.736 130.252C450.66 161.654 450.66 194.145 455.736 226.055 457.259 233.162 459.797 240.27 463.351 246.869 466.832 252.889 471.401 258.981 476.985 263.55 483.077 268.118 489.169 272.18 496.277 274.718 503.384 277.256 510.419 278.272 517.526 278.272 525.141 278.272 532.248 277.256 539.355 274.718 546.463 272.18 552.482 268.118 558.066 263.55 564.158 258.981 568.727 252.889 572.281 246.869 575.835 240.27 578.373 233.162 579.388 226.055 584.973 194.145 584.973 161.654 579.388 130.252 578.373 122.637 575.835 116.11 572.281 109.51 568.727 103.418 564.158 97.3262 558.066 92.7572 552.482 87.6806 546.463 83.6193 539.355 81.081 532.248 78.5427 525.141 77.0197 517.526 77.0197 510.419 77.0197 503.384 78.5427 496.277 81.081 489.169 83.6193 483.077 87.6806 476.985 92.7572 471.401 97.3262 466.832 103.418 463.351 109.51 459.797 116.11 457.259 122.637 455.736 130.252Z"/>
-<path d="M141.493 360.368 59.9042 360.368 59.9042 129.236 0.0725233 129.236 0.0725233 57.801 31.4751 57.801C40.1054 57.801 49.751 54.7551 56.3506 47.1401 63.9655 40.5405 66.4313 30.8949 66.4313 22.3372L66.4313 6.09195 141.493 6.09195 141.493 360.368Z"/>
-<path d="M334.042 360.368 253.469 360.368 253.469 129.236 193.202 129.236 193.202 57.801 224.605 57.801C233.742 57.801 242.88 54.7551 249.407 47.1401 257.022 40.5405 260.068 30.8949 260.068 22.3372L260.068 6.09195 334.042 6.09195 334.042 360.368Z"/>
-</g></g></svg>`,
-  },
-
-  // ─── P-50 Peligro genérico (signo de exclamación) ────────────
-  peligro: {
-    license: 'PD',
-    attribution: 'Spain_traffic_sign_p50.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.83 192.418">
-<path fill="#E41408" d="M14.125,192.418C6.324,192.418,0,186.09,0,178.293c0-2.539,0.672-4.922,1.84-6.98L96.668,7.084C99.104,2.855,103.68,0,108.916,0c5.242,0,9.813,2.855,12.25,7.084l94.828,164.229c1.172,2.059,1.836,4.441,1.836,6.98c0,7.797-6.32,14.125-14.117,14.125H14.125"/>
-<polyline fill="#FFFFFF" points="21.881,173.879 108.916,23.172 195.955,173.879 21.881,173.879"/>
-<path fill="#1C1D20" d="M97.885,153.137c0-6.098,4.939-11.039,11.031-11.039c6.094,0,11.031,4.941,11.031,11.039c0,6.094-4.938,11.031-11.031,11.031C102.824,164.168,97.885,159.23,97.885,153.137"/>
-<path fill="#1C1D20" d="M119.51,68.84l-3.531,61.789c0,3.898-3.164,7.059-7.063,7.059c-3.9,0-7.059-3.16-7.059-7.059L98.324,68.84c0-5.844,4.744-10.584,10.592-10.584C114.768,58.256,119.51,62.996,119.51,68.84"/>
-</svg>`,
-  },
-
-  // ─── P-15 Perfil irregular / Resaltos ────────────────────────
-  calzada_irregular: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p15.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217.834 192.418">
-<path fill="#E41408" d="M14.125,192.418C6.32,192.418,0,186.09,0,178.297c0-2.547,0.672-4.926,1.84-6.98L96.668,7.09C99.104,2.855,103.676,0,108.916,0c5.238,0,9.813,2.855,12.254,7.09l94.82,164.227c1.172,2.055,1.844,4.434,1.844,6.98c0,7.793-6.32,14.121-14.125,14.121H14.125"/>
-<polyline fill="#FFFFFF" points="21.881,173.879 108.916,23.176 195.951,173.879 21.881,173.879"/>
-<path fill="#1C1D20" d="M161.877,142.988c-7.949,0-13.238-7.063-13.238-7.063c-5.297-7.063-13.242-6.176-13.242-6.176s-7.945-0.887-13.242,6.176c0,0-5.297,7.063-13.238,7.063c-7.943,0-13.24-7.063-13.24-7.063c-5.291-7.063-13.24-6.176-13.24-6.176s-7.939-0.887-13.238,6.176c0,0-5.297,7.063-13.236,7.063v21.184h105.916V142.988"/>
-</svg>`,
-  },
-
-  // ─── R-409 Uso obligatorio de cadenas ────────────────────────
-  cadenas: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_r409.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="396 214 336 336">
-<g transform="translate(-396 -214)">
-<path d="M425.9 461.734C436.282 479.893 450.289 495.749 466.9 508.547 483.511 521.232 502.425 530.633 522.661 535.994 542.896 541.43 564 542.865 584.764 540.146 605.528 537.391 625.537 530.52 643.734 520.138 661.893 509.642 677.749 495.636 690.51 479.025 703.195 462.527 712.595 443.499 717.956 423.264 723.43 403.028 724.751 381.924 721.995 361.16 719.277 340.51 712.482 320.387 702.1 302.342 691.604 284.182 677.636 268.251 660.987 255.528 644.376 242.73 625.424 233.443 605.226 227.969 584.991 222.608 563.887 221.173 543.123 223.929 522.321 226.647 502.35 233.443 484.191 243.938 466.145 254.433 450.175 268.326 437.49 284.975 424.692 301.587 415.405 320.501 409.931 340.736 404.494 360.934 403.173 382.038 405.891 402.802 408.647 423.604 415.405 443.613 425.9 461.734Z" fill="#0055FF"/>
-<path d="M584.802 451.805C587.86 451.805 590.691 450.031 591.899 447.199 592.466 445.878 592.692 444.481 592.352 442.933 592.013 441.423 591.258 439.988 590.276 439.007L558.79 408.049 687.905 333.714 677.825 316.197 667.896 298.793 538.668 373.204 527.72 330.316C527.418 329.033 526.625 327.711 525.454 326.617 524.246 325.635 522.812 325.069 521.377 324.88 519.98 324.767 518.546 324.993 517.111 325.635 515.714 326.39 514.733 327.485 513.94 328.693L448.552 448.294 584.802 451.805Z" fill="#FEFEFE"/>
-</g></svg>`,
-  },
-
-  // ─── P-22a Animales sueltos (versión 2023) ────────────────────
-  animales_domesticos: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_p22-a_2023.svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425.12 374.5">
-<path fill="red" fill-rule="evenodd" d="m 401.2,374.5 a 21.28,21.28 0 0 0 5.5,-0.7 21.94,21.94 0 0 0 5.7,-2.1 30.58,30.58 0 0 0 5.3,-3.8 27.9,27.9 0 0 0 4.2,-5.4 24.37,24.37 0 0 0 2.5,-6.3 20.91,20.91 0 0 0 0.7,-6.5 28.93,28.93 0 0 0 -1,-6 25.22,25.22 0 0 0 -2.2,-5 L 233.2,11.9 a 21.37,21.37 0 0 0 -3.2,-4.4 30.44,30.44 0 0 0 -4.7,-3.9 23.18,23.18 0 0 0 -6,-2.6 21.32,21.32 0 0 0 -6.7,-1 22.4,22.4 0 0 0 -6.8,1 24.06,24.06 0 0 0 -5.9,2.6 26.34,26.34 0 0 0 -4.7,3.9 22,22 0 0 0 -3.3,4.4 L 3.2,338.7 a 32.77,32.77 0 0 0 -2.2,5 28.93,28.93 0 0 0 -1,6 29.37,29.37 0 0 0 0.7,6.5 24.37,24.37 0 0 0 2.5,6.3 27.9,27.9 0 0 0 4.2,5.4 30.58,30.58 0 0 0 5.3,3.8 21.94,21.94 0 0 0 5.7,2.1 21.28,21.28 0 0 0 5.5,0.7 h 377.3"/>
-<polyline fill="#fff" fill-rule="evenodd" points="44.5 338.7 380.6 338.7 212.6 47.7 44.5 338.7"/>
-<path fill="#010101" fill-rule="evenodd" d="m 215.3,148.1 c 0,3.20001 1.3,6.2 3.5,8.5 2.3,2.2 5.3,3.50001 8.5,3.50001 3.2,0 6.2,-1.30001 8.5,-3.50001 2.2,-2.3 3.5,-5.29999 3.5,-8.5 0,-3.2 -1.3,-6.2 -3.5,-8.5 -2.3,-2.2 -5.3,-3.49999 -8.5,-3.49999 -3.2,0 -6.2,1.29999 -8.5,3.49999 -2.2,2.3 -3.5,5.3 -3.5,8.5"/>
-<path fill="#010101" fill-rule="evenodd" d="m 198.29999,227.40001 21.60001,45.3 9.2,-16.60001 -12,-26.09999 c -0.10001,-0.3 -0.2,-0.70001 -0.2,-1.1 -0.1,-0.40001 0,-0.9 0.2,-1.3 0.1,-0.40001 0.4,-0.70001 0.7,-1.00001 0.3,-0.3 0.69999,-0.49999 0.99999,-0.6 L 246.3,215.90001 c 0.99999,-0.40001 2,-0.9 3,-1.7 0.9,-0.80001 1.69999,-1.70001 2.29999,-2.8 0.6,-1.1 1.00001,-2.30001 1.2,-3.40001 0.2,-1.2 0.2,-2.4 0,-3.49999 l -6.4,-34.30001 c -0.69999,-4 -3.6,-7.3 -7.5,-8.5 -1.8,-0.6 -3.79999,-0.8 -5.89999,-0.3 -2,0.50001 -3.8,1.5 -5.1,2.8 l -37.2,36.10001 c -1.00001,1.39999 -1.5,3.09999 -1.5,4.8 0,1.69999 0.49999,3.39999 1.5,4.8 0.9,1.3 2.29999,2.4 3.99999,3 1.70001,0.6 3.50001,0.6 5.1,0.1 l 21.4,-20.40001 7.40001,12.80001 -25.3,9.6 c -1.10001,0.4 -2.1,1 -3,1.9 -1.00001,0.9 -1.70001,2 -2.20001,3.2 -0.49999,1.3 -0.7,2.59999 -0.7,3.9 0.1,1.2 0.4,2.4 0.9,3.4"/>
-</svg>`,
-  },
-
-  // ─── P-20 Obras (versión 2023) ────────────────────────────────
-  obras: {
-    license: 'PD',
-    attribution: 'Spain_traffic_signal_P-20b_(2023).svg (Wikimedia Commons, dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425.12 374.5">
-<g><path fill="#FF0000" fill-rule="evenodd" d="M401.2,374.5a26.44,26.44,0,0,0,5.5-.6,26.75,26.75,0,0,0,5.7-2.2,26,26,0,0,0,5.3-3.8,24.54,24.54,0,0,0,4.2-5.3,25,25,0,0,0,2.5-6.4,20.91,20.91,0,0,0,.7-6.5,28.93,28.93,0,0,0-1-6,25.22,25.22,0,0,0-2.2-5L233.2,11.9A24.44,24.44,0,0,0,230,7.5a22.32,22.32,0,0,0-4.7-3.8,20.42,20.42,0,0,0-6-2.7,21.32,21.32,0,0,0-6.7-1,22.4,22.4,0,0,0-6.8,1,21.06,21.06,0,0,0-5.9,2.7,22.32,22.32,0,0,0-4.7,3.8,25.24,25.24,0,0,0-3.3,4.4L3.2,338.7a32.77,32.77,0,0,0-2.2,5,28.93,28.93,0,0,0-1,6,29.37,29.37,0,0,0,.7,6.5,25,25,0,0,0,2.5,6.4,24.54,24.54,0,0,0,4.2,5.3,26,26,0,0,0,5.3,3.8,26.75,26.75,0,0,0,5.7,2.2,26.44,26.44,0,0,0,5.5.6H401.2"/>
-<polyline fill="#fff" fill-rule="evenodd" points="44.6 338.7 380.6 338.7 212.6 47.7 44.6 338.7"/>
-<polyline fill="#010101" fill-rule="evenodd" points="87.4 320 104.8 320 125.4 266.1 111.1 266.1 87.4 320"/>
-<polyline fill="#010101" fill-rule="evenodd" points="120.6 320 138.1 320 152.3 266.1 138.1 266.1 120.6 320"/>
-<polyline fill="#010101" fill-rule="evenodd" points="287 320 304.5 320 287 266.1 272.8 266.1 287 320"/>
-<polyline fill="#010101" fill-rule="evenodd" points="320.3 320 337.8 320 314 266.1 299.7 266.1 320.3 320"/>
-<path fill="#010101" fill-rule="evenodd" d="M207.8,148.8a16.41,16.41,0,0,0,6.1-1.1,19.27,19.27,0,0,0,5.7-3.7,17.48,17.48,0,0,0,3.7-5.7,16.41,16.41,0,0,0,1.1-6.1,16.72,16.72,0,0,0-4.8-11.8,17,17,0,0,0-11.8-4.9,16.55,16.55,0,0,0-6.1,1.2,17.48,17.48,0,0,0-5.7,3.7,19.27,19.27,0,0,0-3.7,5.7,16.41,16.41,0,0,0-1.1,6.1,16.39,16.39,0,0,0,16.6,16.6"/>
-<path fill="#010101" fill-rule="evenodd" d="M207.8,149.2a17.29,17.29,0,0,0,6.2-1.1,16.77,16.77,0,0,0,5.7-3.8,17.79,17.79,0,0,0,3.8-5.7,17.29,17.29,0,0,0,1.1-6.2,16.9,16.9,0,0,0-16.8-16.9,17.47,17.47,0,0,0-6.2,1.2,17.79,17.79,0,0,0-5.7,3.8,16.77,16.77,0,0,0-3.8,5.7,17.29,17.29,0,0,0-1.1,6.2,16.73,16.73,0,0,0,16.8,16.8"/>
-<path fill="#010101" fill-rule="evenodd" d="M164.5,307.1a19.88,19.88,0,0,0,24.7-13.5l6.7-28.9,11.9-22.4a2.67,2.67,0,0,1,4.8,0l8,25.6,29.2,38.5a17.48,17.48,0,0,0,5.8-24.3l-16.7-22.2-10.2-41.7.9-38.5,16.7,12.9v24a2.21,2.21,0,0,0,1,2,1.5,1.5,0,0,0,1.1.4,2,2,0,0,0,1.1-.1l5.5-2.6a7.53,7.53,0,0,0,4.1-6.4v-27l-35.3-31.1a7.84,7.84,0,0,0-4.6-2.1,8,8,0,0,0-5,1.1l-17.6,9.7-43.3,57.7a1.82,1.82,0,0,0-.3,2.2,2,2,0,0,0,.8.8,1.39,1.39,0,0,0,1.1.2h5.4a5.43,5.43,0,0,0,4.2-1.6l28.9-28.9,3.2,27.3L178,253.5l-13.5,53.6"/>
-<path fill="#010101" fill-rule="evenodd" d="M172.4,312.9a24.93,24.93,0,0,1-7.2-.4,22.35,22.35,0,0,1-6.7-2.4l11-44H165L153.9,320h17.5l1-7.1"/>
-<path fill="#010101" fill-rule="evenodd" d="M188.5,304.9,187.2,320h17.4l1.6-53.9H201l-.2.4-6.7,28.4a24.2,24.2,0,0,1-5.6,10"/>
-<polyline fill="#010101" fill-rule="evenodd" points="219.1 274.4 220.5 320 237.9 320 235.8 296.4 219.1 274.4"/>
-<path fill="#010101" fill-rule="evenodd" d="M259.8,279.2a24,24,0,0,1,3.2,8,24.86,24.86,0,0,1-.2,9.4,22.54,22.54,0,0,1-4,8.4,16,16,0,0,1-3,3.3,27.85,27.85,0,0,1-3.4,2.6l1.4,9.1h17.4l-11.1-53.9H250l9.8,13.1"/></g>
-</svg>`,
-  },
-
 };

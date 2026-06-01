@@ -255,7 +255,7 @@ function SignCard({ sign, theme }: { sign: CatalogSign; theme: ReturnType<typeof
   const [expanded, setExpanded] = useState(false);
   const typeColors: Record<SignType, string> = {
     peligro: '#E63946', prohibicion: '#C62828', obligacion: '#1565C0',
-    indicacion: '#006633', semaforo: '#E65100', marca: '#37474F',
+    indicacion: '#006633',
   };
   const color = typeColors[sign.type];
 
