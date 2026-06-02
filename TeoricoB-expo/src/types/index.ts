@@ -7,6 +7,7 @@ export interface Question {
   legalRef?: string;   // e.g. "Art. 132 RGC"
   category: string;
   signId?: string;     // ID de señal SVG a mostrar (de TrafficSign.tsx)
+  sceneId?: string;    // ID de escenario SVG a mostrar (de TrafficScene.tsx)
 }
 
 export interface Lesson {

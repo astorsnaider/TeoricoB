@@ -11,6 +11,7 @@ import { useStore } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { TrafficSign } from './TrafficSign';
+import { TrafficScene } from './TrafficScene';
 import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { shuffleQuestion } from '../utils/shuffleQuestion';
@@ -455,9 +456,19 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
             </View>
           )}
 
+          {/* Traffic scene diagram (casos prácticos: intersecciones, rotondas, etc.) */}
+          {q.sceneId && (
+            <View style={[qs.signContainer, { backgroundColor: theme.bg2 }]}>
+              <TrafficScene sceneId={q.sceneId} size={180} />
+              {q.legalRef && (
+                <Text style={[qs.legalRef, { color: theme.textTertiary }]}>{q.legalRef}</Text>
+              )}
+            </View>
+          )}
+
           {/* Question */}
           <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
-            <Text style={[qs.question, { color: theme.textPrimary }, q.signId && { fontSize: 16 }]}>{q.text}</Text>
+            <Text style={[qs.question, { color: theme.textPrimary }, (q.signId || q.sceneId) && { fontSize: 16 }]}>{q.text}</Text>
           </Animated.View>
 
           {/* Answer options */}
