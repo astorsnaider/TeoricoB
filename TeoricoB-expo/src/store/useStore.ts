@@ -358,12 +358,15 @@ export const useStore = create<AppStore>()(
           const frozen = !!s.user.streakFreezeActiveUntil &&
                          new Date(s.user.streakFreezeActiveUntil) > new Date();
           let newStreak: number;
+          let consumedFreeze = false;
           if (last === yesterday) {
             // Estudió ayer → racha avanza normal
             newStreak = s.user.streak + 1;
           } else if (frozen && last === twoDaysAgo) {
             // Saltó UN día pero tenía freeze activo → mantiene racha sin incrementar
+            // y CONSUME el freeze para que no salve días futuros (sería ilimitado)
             newStreak = s.user.streak;
+            consumedFreeze = true;
           } else {
             // Reset
             newStreak = 1;
@@ -374,7 +377,16 @@ export const useStore = create<AppStore>()(
           if (newStreak >= 30 && !newAchievements.includes('streak_30')) newAchievements.push('streak_30');
           const addedId = newAchievements.find(id => !s.user.achievements.includes(id));
           const newAchievement = addedId ? ACHIEVEMENTS.find(a => a.id === addedId) ?? null : s.newAchievement;
-          return { user: { ...s.user, streak: newStreak, lastActiveDate: new Date().toISOString(), achievements: newAchievements }, newAchievement };
+          return {
+            user: {
+              ...s.user,
+              streak: newStreak,
+              lastActiveDate: new Date().toISOString(),
+              achievements: newAchievements,
+              streakFreezeActiveUntil: consumedFreeze ? undefined : s.user.streakFreezeActiveUntil,
+            },
+            newAchievement,
+          };
         });
       },
 
@@ -425,21 +437,17 @@ export const useStore = create<AppStore>()(
 
       // ── Mistakes / repaso ─────────────────────────────────────────
       recordMistake: (questionId, category) => set(s => {
-        const list = [...(s.user.mistakes ?? [])];
-        const existing = list.find(m => m.questionId === questionId);
-        if (existing) {
-          existing.attempts += 1;
-          existing.failedAt = new Date().toISOString();
-          existing.recoveriesNeeded = RECOVERIES_TO_CLEAR;
-        } else {
-          list.push({
-            questionId,
-            category,
-            failedAt: new Date().toISOString(),
-            attempts: 1,
-            recoveriesNeeded: RECOVERIES_TO_CLEAR,
-          });
-        }
+        const now = new Date().toISOString();
+        const current = s.user.mistakes ?? [];
+        const existing = current.find(m => m.questionId === questionId);
+        const list = existing
+          // Devolver nuevos objetos (immutable) — no mutar los del snapshot anterior
+          ? current.map(m =>
+              m.questionId === questionId
+                ? { ...m, attempts: m.attempts + 1, failedAt: now, recoveriesNeeded: RECOVERIES_TO_CLEAR }
+                : m
+            )
+          : [...current, { questionId, category, failedAt: now, attempts: 1, recoveriesNeeded: RECOVERIES_TO_CLEAR }];
         return { user: { ...s.user, mistakes: list } };
       }),
 
