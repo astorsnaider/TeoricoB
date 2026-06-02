@@ -86,6 +86,8 @@ export interface UserState {
   streakFreezeActiveUntil?: string;        // ISO date hasta cuándo dura el freeze actual
   streakFreezesUsedThisMonth: number;      // contador resetable cada mes (límite 3)
   streakFreezesMonthKey: string;           // 'YYYY-MM' para detectar cambio de mes
+  dailyQuestStreak: number;                // días seguidos con TODAS las quests completadas
+  lastDailyQuestStreakDate?: string;       // YYYY-MM-DD del último día con quests completas
 }
 
 export interface Achievement {
@@ -93,6 +95,8 @@ export interface Achievement {
   name: string;
   description: string;
   emoji: string;
+  rewardGems?: number;  // gemas que se otorgan al desbloquear
+  rewardXP?: number;    // XP extra (opcional)
 }
 
 export interface LeagueStanding {

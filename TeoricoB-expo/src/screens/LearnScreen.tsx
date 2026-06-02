@@ -141,8 +141,8 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
           questions={activeLesson.questions}
           title={activeLesson.title}
           onClose={() => setActiveLesson(null)}
-          onComplete={(xp, perfect) => {
-            completeLesson(activeLesson.id, topic.id, xp, perfect);
+          onComplete={(xp, perfect, bestCombo) => {
+            completeLesson(activeLesson.id, topic.id, xp, perfect, bestCombo);
             setActiveLesson(null);
           }}
         />

@@ -22,7 +22,7 @@ interface Props {
   isExam?: boolean;
   isPractice?: boolean;
   onClose: () => void;
-  onComplete: (xpEarned: number, perfect: boolean) => void;
+  onComplete: (xpEarned: number, perfect: boolean, bestCombo?: number) => void;
 }
 
 type AnswerState = 'idle' | 'correct' | 'wrong' | 'dimmed';
@@ -365,7 +365,7 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect)}>
+            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect, bestCombo)}>
               <LinearGradient colors={[theme.primary, theme.primary + 'CC']} style={rs.btn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <Text style={rs.btnTxt}>Continuar</Text>
                 <Ionicons name="arrow-forward" size={18} color="#fff" />

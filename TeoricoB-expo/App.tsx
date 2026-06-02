@@ -7,6 +7,7 @@ import { useStore } from './src/store/useStore';
 import { useTheme } from './src/hooks/useTheme';
 import { useSoundEffect } from './src/audio/useSoundEffect';
 import { requestPermissions as requestNotifPermissions, syncNotifications } from './src/notifications/scheduler';
+import { AchievementUnlockModal } from './src/components/AchievementUnlockModal';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
@@ -195,21 +196,8 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      {/* Achievement toast */}
-      {newAchievement && (
-        <View style={[styles.toast, { backgroundColor: theme.card }]}>
-          <View style={[styles.toastIcon, { backgroundColor: theme.primary + '20' }]}>
-            <Ionicons name="star" size={22} color={theme.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.toastTitle, { color: theme.textSecondary }]}>Logro desbloqueado</Text>
-            <Text style={[styles.toastName, { color: theme.textPrimary }]}>{newAchievement.name}</Text>
-          </View>
-          <TouchableOpacity onPress={clearNewAchievement} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="close" size={20} color={theme.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Achievement modal animado */}
+      <AchievementUnlockModal achievement={newAchievement} onClose={clearNewAchievement} />
 
       <View style={{ flex: 1, backgroundColor: theme.bg }}>
         {renderScreen()}
@@ -251,14 +239,4 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', gap: 3 },
   tabLabel: { fontSize: 10 },
-  toast: {
-    position: 'absolute', top: 56, left: 16, right: 16, zIndex: 999,
-    borderRadius: 16, padding: 14,
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
-  },
-  toastIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  toastTitle: { fontSize: 11 },
-  toastName: { fontSize: 14, fontWeight: '700', marginTop: 1 },
 });
