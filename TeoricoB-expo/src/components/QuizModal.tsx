@@ -13,12 +13,14 @@ import { SHADOWS } from '../theme';
 import { TrafficSign } from './TrafficSign';
 import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
 import { useSoundEffect } from '../audio/useSoundEffect';
+import { shuffleQuestion } from '../utils/shuffleQuestion';
 
 interface Props {
   visible: boolean;
   questions: Question[];
   title: string;
   isExam?: boolean;
+  isPractice?: boolean;
   onClose: () => void;
   onComplete: (xpEarned: number, perfect: boolean) => void;
 }
@@ -27,24 +29,32 @@ type AnswerState = 'idle' | 'correct' | 'wrong' | 'dimmed';
 
 const EXAM_TIME_LIMIT_SEC = 30 * 60; // 30 minutos (formato DGT)
 const EXAM_MAX_ERRORS = 3;
+const NORMAL_XP_PER_CORRECT = 10;
+const PRACTICE_XP_PER_CORRECT = 5;
 type AnswerRecord = { qIndex: number; selectedIndex: number; isCorrect: boolean };
 
-export default function QuizModal({ visible, questions, title, isExam, onClose, onComplete }: Props) {
+export default function QuizModal({ visible, questions, title, isExam, isPractice, onClose, onComplete }: Props) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [correct, setCorrect] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
   const [done, setDone] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [currentHearts, setCurrentHearts] = useState(5);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
   const [showReview, setShowReview] = useState(false);
+  // Preguntas barajadas (opciones aleatorias) — se regenera al abrir el modal
+  const [shuffled, setShuffled] = useState<Question[]>([]);
 
   const user = useStore(s => s.user);
   const recordAnswer = useStore(s => s.recordAnswer);
   const loseHeart = useStore(s => s.loseHeart);
+  const recordMistake = useStore(s => s.recordMistake);
+  const registerMistakeRecovery = useStore(s => s.registerMistakeRecovery);
   const buyHeartWithGems = useStore(s => s.buyHeartWithGems);
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
   const requestManualChapter = useStore(s => s.requestManualChapter);
@@ -64,8 +74,11 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     if (!visible) return;
     setIndex(0); setSelected(null); setShowFeedback(false);
     setCorrect(false); setCorrectCount(0); setWrongCount(0);
+    setCombo(0); setBestCombo(0);
     setDone(false); setElapsed(0); setAnswers([]); setShowReview(false);
     setCurrentHearts(user.hearts);
+    // Barajar opciones por pregunta (no mutar el array original)
+    setShuffled(questions.map(shuffleQuestion));
     savedExamRef.current = false;
     lastTimerTickRef.current = null;
     timerRef.current = setInterval(() => {
@@ -81,7 +94,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [visible, isExam]);
+  }, [visible, isExam, questions]);
 
   useEffect(() => {
     if (!visible || !isExam || done || !soundsEnabled) return;
@@ -103,7 +116,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   if (!questions.length) return null;
 
   // No hearts screen
-  if (visible && currentHearts <= 0 && !done && index === 0 && selected === null && !isExam) {
+  if (visible && currentHearts <= 0 && !done && index === 0 && selected === null && !isExam && !isPractice) {
     const mins = minutesToNextHeart();
     return (
       <Modal visible={visible} animationType="slide">
@@ -143,7 +156,8 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     );
   }
 
-  const q = questions[index];
+  // Usar la versión barajada si está lista; fallback al original en el primer render
+  const q = shuffled[index] ?? questions[index];
 
   const shake = () => {
     Animated.sequence([
@@ -164,13 +178,21 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setAnswers(prev => [...prev, { qIndex: index, selectedIndex: idx, isCorrect }]);
     if (isCorrect) {
       setCorrectCount(c => c + 1);
+      setCombo(c => {
+        const nextCombo = c + 1;
+        setBestCombo(best => Math.max(best, nextCombo));
+        return nextCombo;
+      });
+      registerMistakeRecovery(q.id);
       playSound('correct');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       setWrongCount(w => w + 1);
+      setCombo(0);
+      recordMistake(q.id, q.category);
       playSound('wrong');
       // En examen NO se pierden vidas (es solo un test)
-      if (!isExam) {
+      if (!isExam && !isPractice) {
         setCurrentHearts(h => Math.max(0, h - 1));
         loseHeart();
       }
@@ -185,7 +207,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const next = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     feedbackAnim.setValue(0);
-    if (!isExam && currentHearts <= 0) { clearInterval(timerRef.current); setDone(true); return; }
+    if (!isExam && !isPractice && currentHearts <= 0) { clearInterval(timerRef.current); setDone(true); return; }
     // En examen: si ya he superado el máximo de errores, termino aquí
     if (isExam && wrongCount > EXAM_MAX_ERRORS) { clearInterval(timerRef.current); setDone(true); return; }
     if (index < questions.length - 1) {
@@ -195,10 +217,11 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     }
   };
 
-  const xpEarned = correctCount * 10 + (wrongCount === 0 ? 20 : 0) + (elapsed < questions.length * 8 ? 10 : 0);
+  const xpPerCorrect = isPractice ? PRACTICE_XP_PER_CORRECT : NORMAL_XP_PER_CORRECT;
+  const xpEarned = correctCount * xpPerCorrect + (isPractice ? 0 : (wrongCount === 0 ? 20 : 0) + (elapsed < questions.length * 8 ? 10 : 0));
   const perfect = wrongCount === 0 && index === questions.length - 1;
   const examPassed = isExam ? wrongCount <= 3 : null;
-  const noHeartsEarly = !isExam && currentHearts <= 0 && index < questions.length - 1;
+  const noHeartsEarly = !isExam && !isPractice && currentHearts <= 0 && index < questions.length - 1;
 
   const answerState = (idx: number): AnswerState => {
     if (selected === null) return 'idle';
@@ -257,7 +280,8 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                   <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '700', color: theme.textPrimary }}>¡Sin fallos!</Text>
                 </View>
               ) : wrongAnswers.map((a, i) => {
-                const q = questions[a.qIndex];
+                // Usar el shuffled para que selectedIndex coincida con lo que vio el user
+                const q = shuffled[a.qIndex] ?? questions[a.qIndex];
                 return (
                   <View key={i} style={{ backgroundColor: theme.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: theme.border, gap: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -316,6 +340,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                 { label: 'Fallos', value: `${wrongCount}${isExam ? `/${EXAM_MAX_ERRORS}` : ''}`, color: wrongCount > 0 ? theme.wrong : theme.textSecondary, show: true },
                 { label: 'Porcentaje', value: `${pct}%`, color: theme.textPrimary, show: true },
                 { label: 'Tiempo', value: `${mmExam}:${ssExam.toString().padStart(2, '0')}`, color: theme.textPrimary, show: isExam },
+                { label: 'Mejor combo', value: `${bestCombo}`, color: theme.orange, show: !isExam },
                 { label: 'Calificación', value: grade, color: theme.textPrimary, show: !isExam },
                 { label: 'XP ganados', value: `+${xpEarned} XP`, color: theme.yellow, show: !isExam },
               ].filter(s => s.show).map(({ label, value, color }) => (
@@ -389,8 +414,13 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                 </View>
               </View>
             </>
+          ) : isPractice ? (
+            <View style={[qs.practicePill, { backgroundColor: theme.blue + '15' }]}>
+              <Ionicons name="fitness-outline" size={14} color={theme.blue} />
+              <Text style={[qs.practiceTxt, { color: theme.blue }]}>Repaso</Text>
+              {combo >= 2 && <Text style={[qs.practiceTxt, { color: theme.orange }]}>x{combo}</Text>}
+            </View>
           ) : (
-            /* Hearts en modo normal */
             <View style={qs.hearts}>
               {Array.from({ length: user.maxHearts }).map((_, i) => (
                 <Ionicons
@@ -471,9 +501,15 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
             ]}>
               <View style={[qs.feedbackBar, { backgroundColor: correct ? theme.correct : theme.wrong }]} />
               <View style={{ flex: 1 }}>
+                {isPractice ? (
+                  <Text style={[qs.feedbackTitle, { color: correct ? theme.correct : theme.wrong }]}>
+                    {correct ? `Correcto  +${xpPerCorrect} XP${combo >= 1 ? `  Combo x${combo}` : ''}` : 'Incorrecto'}
+                  </Text>
+                ) : (
                 <Text style={[qs.feedbackTitle, { color: correct ? theme.correct : theme.wrong }]}>
                   {correct ? `Correcto  +10 XP` : `Incorrecto${!isExam && currentHearts <= 0 ? ' · Sin vidas' : ''}`}
                 </Text>
+                )}
                 <Text style={[qs.feedbackExp, { color: theme.textSecondary }]}>{q.explanation}</Text>
                 {!correct && (
                   <Text style={[qs.feedbackCorrect, { color: theme.textSecondary }]}>
@@ -517,7 +553,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               >
                 <Text style={qs.continueTxt}>
-                  {(!isExam && currentHearts <= 0) || index === questions.length - 1 ? 'Ver resultado' : 'Continuar'}
+                  {(!isExam && !isPractice && currentHearts <= 0) || index === questions.length - 1 ? 'Ver resultado' : 'Continuar'}
                 </Text>
                 <Ionicons name="arrow-forward" size={18} color="#fff" />
               </LinearGradient>
@@ -563,6 +599,8 @@ const qs = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 0.5 },
   closeBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   hearts: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 5 },
+  practicePill: { flex: 1, alignSelf: 'center', maxWidth: 130, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  practiceTxt: { fontSize: 12, fontWeight: '800' },
   counter: { fontSize: 13, fontWeight: '700', minWidth: 36, textAlign: 'right' },
   examCenter: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 8 },
   timerPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },

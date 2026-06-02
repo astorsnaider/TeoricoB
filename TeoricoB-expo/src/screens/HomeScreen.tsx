@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,8 +14,16 @@ export default function HomeScreen() {
   const user = useStore(s => s.user);
   const topics = useStore(s => s.topics);
   const dailyChallenge = useStore(s => s.dailyChallenge);
+  const dailyQuests = useStore(s => s.dailyQuests);
+  const generateDailyQuests = useStore(s => s.generateDailyQuests);
+  const claimQuestReward = useStore(s => s.claimQuestReward);
   const completeDailyChallenge = useStore(s => s.completeDailyChallenge);
   const getExamQuestions = useStore(s => s.getExamQuestions);
+  const getMistakeQuestions = useStore(s => s.getMistakeQuestions);
+  const mistakeCount = useStore(s => s.mistakeCount);
+  const canBuyStreakFreeze = useStore(s => s.canBuyStreakFreeze);
+  const buyStreakFreeze = useStore(s => s.buyStreakFreeze);
+  const isStreakFrozen = useStore(s => s.isStreakFrozen);
   const progressForTopic = useStore(s => s.progressForTopic);
   const addXP = useStore(s => s.addXP);
   const theme = useTheme();
@@ -23,11 +31,20 @@ export default function HomeScreen() {
 
   const [dailyOpen, setDailyOpen] = useState(false);
   const [examOpen, setExamOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [examQs, setExamQs] = useState<any[]>([]);
+  const [practiceQs, setPracticeQs] = useState<any[]>([]);
+
+  useEffect(() => {
+    generateDailyQuests();
+  }, [generateDailyQuests]);
 
   const league = getLeagueInfo(user.league);
   const level = Math.floor(user.xp / 100) + 1;
   const xpPct = (user.xp % 100) / 100;
+  const mistakesTotal = mistakeCount();
+  const streakFrozen = isStreakFrozen();
+  const canFreeze = canBuyStreakFreeze();
 
   const streakMsg =
     user.streak === 0 ? 'Empieza tu racha hoy' :
@@ -116,6 +133,86 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
+        {dailyQuests && (
+          <View style={[s.card, { backgroundColor: theme.card }]}>
+            <View style={s.sectionHeader}>
+              <Text style={[s.dailyTitle, { color: theme.textPrimary }]}>Misiones de hoy</Text>
+              <Ionicons name="diamond" size={16} color="#9C27B0" />
+            </View>
+            <View style={s.questList}>
+              {dailyQuests.quests.map(quest => {
+                const done = quest.progress >= quest.goal;
+                const pct = Math.min(1, quest.progress / quest.goal);
+                return (
+                  <View key={quest.id} style={[s.questRow, { borderColor: theme.border, backgroundColor: theme.bg2 }]}>
+                    <Text style={s.questEmoji}>{quest.emoji}</Text>
+                    <View style={{ flex: 1, gap: 5 }}>
+                      <View style={s.questTop}>
+                        <Text style={[s.questLabel, { color: theme.textPrimary }]} numberOfLines={1}>{quest.label}</Text>
+                        <Text style={[s.questReward, { color: '#9C27B0' }]}>+{quest.rewardGems}</Text>
+                      </View>
+                      <View style={[s.questBarBg, { backgroundColor: theme.border }]}>
+                        <View style={[s.questBarFill, { width: `${pct * 100}%`, backgroundColor: done ? theme.correct : theme.primary }]} />
+                      </View>
+                    </View>
+                    {quest.claimed ? (
+                      <Ionicons name="checkmark-circle" size={22} color={theme.correct} />
+                    ) : done ? (
+                      <TouchableOpacity
+                        style={[s.claimBtn, { backgroundColor: theme.correct }]}
+                        onPress={() => { if (claimQuestReward(quest.id)) playSound('achievement'); }}
+                      >
+                        <Text style={s.claimTxt}>Cobrar</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={[s.questProgress, { color: theme.textSecondary }]}>{quest.progress}/{quest.goal}</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        <View style={s.utilityGrid}>
+          <TouchableOpacity
+            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }, mistakesTotal === 0 && { opacity: 0.65 }]}
+            onPress={() => {
+              const qs = getMistakeQuestions(10);
+              if (qs.length === 0) return;
+              playSound('tap');
+              setPracticeQs(qs);
+              setPracticeOpen(true);
+            }}
+            activeOpacity={0.85}
+          >
+            <View style={[s.utilityIcon, { backgroundColor: theme.wrong + '18' }]}>
+              <Ionicons name="refresh-circle" size={24} color={theme.wrong} />
+            </View>
+            <Text style={[s.utilityTitle, { color: theme.textPrimary }]}>Repasar fallos</Text>
+            <Text style={[s.utilitySub, { color: theme.textSecondary }]}>
+              {mistakesTotal > 0 ? `${mistakesTotal} pendiente${mistakesTotal === 1 ? '' : 's'}` : 'Sin fallos'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }, (!canFreeze && !streakFrozen) && { opacity: 0.65 }]}
+            onPress={() => {
+              if (streakFrozen) return;
+              if (buyStreakFreeze()) playSound('achievement');
+            }}
+            activeOpacity={0.85}
+          >
+            <View style={[s.utilityIcon, { backgroundColor: theme.blue + '18' }]}>
+              <Ionicons name={streakFrozen ? 'shield-checkmark' : 'shield-outline'} size={24} color={theme.blue} />
+            </View>
+            <Text style={[s.utilityTitle, { color: theme.textPrimary }]}>Streak Freeze</Text>
+            <Text style={[s.utilitySub, { color: theme.textSecondary }]}>
+              {streakFrozen ? 'Activo 24h' : canFreeze ? 'Comprar por 30 gemas' : 'No disponible'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Recent topics */}
         <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Seguir estudiando</Text>
         <View style={s.topicsGrid}>
@@ -170,6 +267,14 @@ export default function HomeScreen() {
         onClose={() => setExamOpen(false)}
         onComplete={(xp) => { addXP(xp); setExamOpen(false); }}
       />
+      <QuizModal
+        visible={practiceOpen}
+        questions={practiceQs}
+        title="Repaso de fallos"
+        isPractice
+        onClose={() => setPracticeOpen(false)}
+        onComplete={(xp) => { addXP(xp); setPracticeOpen(false); }}
+      />
     </SafeAreaView>
   );
 }
@@ -199,6 +304,23 @@ const s = StyleSheet.create({
   dailyIcon: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   dailyTitle: { fontSize: 15, fontWeight: '700' },
   dailySub: { fontSize: 12, marginTop: 2 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  questList: { gap: 8 },
+  questRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, padding: 10 },
+  questEmoji: { fontSize: 20, width: 26, textAlign: 'center' },
+  questTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  questLabel: { flex: 1, fontSize: 12, fontWeight: '700' },
+  questReward: { fontSize: 11, fontWeight: '800' },
+  questBarBg: { height: 5, borderRadius: 3, overflow: 'hidden' },
+  questBarFill: { height: 5, borderRadius: 3 },
+  questProgress: { minWidth: 34, fontSize: 11, fontWeight: '700', textAlign: 'right' },
+  claimBtn: { borderRadius: 9, paddingHorizontal: 10, paddingVertical: 6 },
+  claimTxt: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  utilityGrid: { flexDirection: 'row', gap: 10 },
+  utilityCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 12, gap: 6, ...SHADOWS.small },
+  utilityIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  utilityTitle: { fontSize: 13, fontWeight: '800' },
+  utilitySub: { fontSize: 11, lineHeight: 15 },
   sectionTitle: { fontSize: 16, fontWeight: '700' },
   topicsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   topicCard: { width: '47%', borderRadius: 14, padding: 14, gap: 6 },

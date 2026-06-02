@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
 import { useTheme } from './src/hooks/useTheme';
 import { useSoundEffect } from './src/audio/useSoundEffect';
+import { requestPermissions as requestNotifPermissions, syncNotifications } from './src/notifications/scheduler';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
@@ -38,6 +39,8 @@ export default function App() {
   const disclaimerAccepted = useStore(s => s.disclaimerAccepted);
   const generateLeagueStandings = useStore(s => s.generateLeagueStandings);
   const generateDailyChallenge = useStore(s => s.generateDailyChallenge);
+  const generateDailyQuests = useStore(s => s.generateDailyQuests);
+  const tickHeartRegen = useStore(s => s.tickHeartRegen);
   const dailyChallenge = useStore(s => s.dailyChallenge);
   const newAchievement = useStore(s => s.newAchievement);
   const clearNewAchievement = useStore(s => s.clearNewAchievement);
@@ -50,9 +53,23 @@ export default function App() {
   useEffect(() => {
     if (isOnboardingComplete && disclaimerAccepted) {
       generateLeagueStandings();
-      if (!dailyChallenge) generateDailyChallenge();
+      const today = new Date().toISOString().slice(0, 10);
+      if (!dailyChallenge || dailyChallenge.date.slice(0, 10) !== today) generateDailyChallenge();
+      generateDailyQuests();
+      tickHeartRegen();
     }
-  }, [isOnboardingComplete, disclaimerAccepted]);
+  }, [isOnboardingComplete, disclaimerAccepted, dailyChallenge, generateDailyChallenge, generateDailyQuests, generateLeagueStandings, tickHeartRegen]);
+
+  useEffect(() => {
+    if (!isOnboardingComplete || !disclaimerAccepted) return;
+    const timer = setInterval(() => {
+      const today = new Date().toISOString().slice(0, 10);
+      tickHeartRegen();
+      generateDailyQuests();
+      if (!dailyChallenge || dailyChallenge.date.slice(0, 10) !== today) generateDailyChallenge();
+    }, 60 * 1000);
+    return () => clearInterval(timer);
+  }, [isOnboardingComplete, disclaimerAccepted, dailyChallenge, generateDailyChallenge, generateDailyQuests, tickHeartRegen]);
 
   // Si una pantalla solicita abrir un capítulo del manual, cambia al tab Manual
   useEffect(() => {
@@ -99,6 +116,42 @@ export default function App() {
     }
     prevStreakRef.current = user.streak;
   }, [user.streak, playSound]);
+
+  // ── Notificaciones locales (solo móvil; en web los stubs no hacen nada) ──
+  const notifications = useStore(s => s.notifications);
+  const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
+  const notifPermissionAskedRef = useRef(false);
+
+  // Pedir permisos UNA vez cuando el user habilita notifs por primera vez
+  useEffect(() => {
+    if (!isOnboardingComplete || !disclaimerAccepted) return;
+    if (!notifications.enabled) return;
+    if (notifPermissionAskedRef.current) return;
+    notifPermissionAskedRef.current = true;
+    requestNotifPermissions().catch(() => undefined);
+  }, [isOnboardingComplete, disclaimerAccepted, notifications.enabled]);
+
+  // Re-sincronizar el plan de notificaciones cuando cambia la config o el
+  // estado relevante (racha, vidas faltantes).
+  useEffect(() => {
+    if (!isOnboardingComplete || !disclaimerAccepted) return;
+    const minutesUntilFull = user.hearts >= user.maxHearts
+      ? 0
+      : (user.maxHearts - user.hearts) * 30 - (30 - minutesToNextHeart());
+    syncNotifications({
+      config: notifications,
+      streak: user.streak,
+      minutesUntilHeartsFull: Math.max(0, minutesUntilFull),
+    }).catch(() => undefined);
+  }, [
+    isOnboardingComplete,
+    disclaimerAccepted,
+    notifications,
+    user.streak,
+    user.hearts,
+    user.maxHearts,
+    minutesToNextHeart,
+  ]);
 
   // Disclaimer first — legally required acceptance before any use
   if (!disclaimerAccepted) {

@@ -36,7 +36,14 @@
       "backgroundColor": "#FFFFFF"
     },
     "plugins": [
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "color": "#E63946",
+          "defaultChannel": "default"
+        }
+      ]
     ]
   }
 }

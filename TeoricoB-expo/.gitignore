@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# expo dev logs (sale del --tee de start)
+expo-web.log
+expo-web.err
+expo-*.log
+expo-*.err

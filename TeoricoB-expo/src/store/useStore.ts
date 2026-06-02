@@ -46,12 +46,14 @@ export const getTopics = (): Topic[] => ALL_TOPICS;
 interface AppStore {
   user: UserState;
   isOnboardingComplete: boolean;
+  tutorialSeen: boolean;
   topics: Topic[];
   leagueStandings: LeagueStanding[];
   dailyChallenge: DailyChallenge | null;
   newAchievement: Achievement | null;
 
   completeOnboarding: (name: string, avatar: string) => void;
+  completeTutorial: () => void;
   addXP: (amount: number) => void;
   loseHeart: () => void;
   restoreHeart: () => void;
@@ -72,6 +74,8 @@ interface AppStore {
   resetProgress: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  soundsEnabled: boolean;
+  toggleSounds: () => void;
   disclaimerAccepted: boolean;
   acceptDisclaimer: () => void;
   setProfilePhoto: (uri: string | undefined) => void;
@@ -80,6 +84,26 @@ interface AppStore {
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
   saveExamResult: (result: import('../types').ExamResult) => void;
+
+  // ── Mistakes / repaso ───────────────────────────────
+  recordMistake: (questionId: string, category: string) => void;
+  registerMistakeRecovery: (questionId: string) => void;
+  getMistakeQuestions: (limit?: number) => import('../types').Question[];
+  mistakeCount: () => number;
+
+  // ── Streak freeze ───────────────────────────────────
+  canBuyStreakFreeze: () => boolean;
+  buyStreakFreeze: () => boolean;
+  isStreakFrozen: () => boolean;
+
+  // ── Daily Quests ────────────────────────────────────
+  dailyQuests: import('../types').DailyQuests | null;
+  generateDailyQuests: () => void;
+  claimQuestReward: (questId: import('../types').DailyQuestId) => boolean;
+
+  // ── Notifications config ────────────────────────────
+  notifications: import('../types').NotificationsConfig;
+  setNotificationsConfig: (patch: Partial<import('../types').NotificationsConfig>) => void;
 }
 
 const defaultUser: UserState = {
@@ -103,14 +127,53 @@ const defaultUser: UserState = {
   friends: MOCK_FRIENDS,
   topicStats: {},
   examHistory: [],
+  mistakes: [],
+  streakFreezesUsedThisMonth: 0,
+  streakFreezesMonthKey: new Date().toISOString().slice(0, 7),
 };
+
+const RECOVERIES_TO_CLEAR = 2;        // aciertos consecutivos para limpiar fallo
+const STREAK_FREEZE_COST = 30;        // gemas
+const STREAK_FREEZES_PER_MONTH = 3;
+const PRACTICE_XP_PER_CORRECT = 5;    // vs 10 en modo normal
+
+const DEFAULT_NOTIFICATIONS: import('../types').NotificationsConfig = {
+  enabled: false,
+  reminderHour: 19,
+  reminderMinute: 0,
+  reminderEnabled: true,
+  streakDangerEnabled: true,
+  heartsFullEnabled: true,
+  questsEnabled: true,
+};
+
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function monthKey(): string {
+  return new Date().toISOString().slice(0, 7);  // YYYY-MM
+}
+
+function generateQuestsForToday(): import('../types').DailyQuests {
+  return {
+    date: todayKey(),
+    quests: [
+      { id: 'xp_30',      label: 'Gana 30 XP hoy',        emoji: '⚡', goal: 30, progress: 0, rewardGems: 15, claimed: false },
+      { id: 'lesson_1',   label: 'Completa 1 lección',    emoji: '📚', goal: 1,  progress: 0, rewardGems: 10, claimed: false },
+      { id: 'correct_15', label: 'Acierta 15 preguntas',  emoji: '🎯', goal: 15, progress: 0, rewardGems: 20, claimed: false },
+    ],
+  };
+}
 
 export const useStore = create<AppStore>()(
   persist(
     (set, get) => ({
       user: defaultUser,
       isOnboardingComplete: false,
+      tutorialSeen: false,
       isDarkMode: false,
+      soundsEnabled: true,
       disclaimerAccepted: false,
       acceptDisclaimer: () => set({ disclaimerAccepted: true }),
       setProfilePhoto: (uri) => set(s => ({ user: { ...s.user, profilePhotoUri: uri } })),
@@ -122,12 +185,17 @@ export const useStore = create<AppStore>()(
       leagueStandings: [],
       dailyChallenge: null,
       newAchievement: null,
+      dailyQuests: null,
+      notifications: DEFAULT_NOTIFICATIONS,
 
       completeOnboarding: (name, avatar) => {
         set(s => ({ user: { ...s.user, name, avatarEmoji: avatar }, isOnboardingComplete: true }));
         get().generateLeagueStandings();
         get().generateDailyChallenge();
+        get().generateDailyQuests();
       },
+
+      completeTutorial: () => set({ tutorialSeen: true }),
 
       addXP: (amount) => {
         set(s => {
@@ -143,7 +211,21 @@ export const useStore = create<AppStore>()(
           if (newLeague === 'Oro' && !newAchievements.includes('gold_league')) newAchievements.push('gold_league');
           const addedId = newAchievements.find(id => !s.user.achievements.includes(id));
           const newAchievement = addedId ? ACHIEVEMENTS.find(a => a.id === addedId) ?? null : s.newAchievement;
-          return { user: { ...s.user, xp: newXP, leagueXP: newLeagueXP, weeklyXP: s.user.weeklyXP + amount, league: newLeague, achievements: newAchievements }, newAchievement };
+          // Avanzar quest "Gana 30 XP hoy" si está activo y no reclamado
+          const today = todayKey();
+          const dq = s.dailyQuests && s.dailyQuests.date === today ? {
+            ...s.dailyQuests,
+            quests: s.dailyQuests.quests.map(q =>
+              q.id === 'xp_30' && !q.claimed
+                ? { ...q, progress: Math.min(q.goal, q.progress + amount) }
+                : q
+            ),
+          } : s.dailyQuests;
+          return {
+            user: { ...s.user, xp: newXP, leagueXP: newLeagueXP, weeklyXP: s.user.weeklyXP + amount, league: newLeague, achievements: newAchievements },
+            newAchievement,
+            dailyQuests: dq,
+          };
         });
         get().generateLeagueStandings();
       },
@@ -194,13 +276,24 @@ export const useStore = create<AppStore>()(
           const prev = stats[category] ?? { correct: 0, total: 0 };
           stats[category] = { correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 };
         }
+        // Avanzar quest "Acierta 15 preguntas" si correct
+        const today = todayKey();
+        const dq = correct && s.dailyQuests && s.dailyQuests.date === today ? {
+          ...s.dailyQuests,
+          quests: s.dailyQuests.quests.map(q =>
+            q.id === 'correct_15' && !q.claimed
+              ? { ...q, progress: Math.min(q.goal, q.progress + 1) }
+              : q
+          ),
+        } : s.dailyQuests;
         return {
           user: {
             ...s.user,
             totalAnswered: s.user.totalAnswered + 1,
             totalCorrect: s.user.totalCorrect + (correct ? 1 : 0),
             topicStats: stats,
-          }
+          },
+          dailyQuests: dq,
         };
       }),
 
@@ -227,7 +320,22 @@ export const useStore = create<AppStore>()(
           if (allDone && !newAchievements.includes('topic_complete')) newAchievements.push('topic_complete');
           const addedId = newAchievements.find(id => !s.user.achievements.includes(id));
           const newAchievement = addedId ? ACHIEVEMENTS.find(a => a.id === addedId) ?? null : s.newAchievement;
-          return { user: { ...s.user, completedLessons, completedTopics, achievements: newAchievements }, newAchievement };
+          // Avanzar quest "Completa 1 lección"
+          const today = todayKey();
+          const isNewCompletion = !s.user.completedLessons.includes(lessonId);
+          const dq = isNewCompletion && s.dailyQuests && s.dailyQuests.date === today ? {
+            ...s.dailyQuests,
+            quests: s.dailyQuests.quests.map(q =>
+              q.id === 'lesson_1' && !q.claimed
+                ? { ...q, progress: Math.min(q.goal, q.progress + 1) }
+                : q
+            ),
+          } : s.dailyQuests;
+          return {
+            user: { ...s.user, completedLessons, completedTopics, achievements: newAchievements },
+            newAchievement,
+            dailyQuests: dq,
+          };
         });
         get().addXP(xpEarned);
         get().updateStreak();
@@ -244,8 +352,22 @@ export const useStore = create<AppStore>()(
           const today = new Date().toDateString();
           const last = new Date(s.user.lastActiveDate).toDateString();
           const yesterday = new Date(Date.now() - 86400000).toDateString();
+          const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toDateString();
           if (today === last) return {};
-          const newStreak = last === yesterday ? s.user.streak + 1 : 1;
+          // ¿Hay streak freeze activo y se saltó UN día (no más)?
+          const frozen = !!s.user.streakFreezeActiveUntil &&
+                         new Date(s.user.streakFreezeActiveUntil) > new Date();
+          let newStreak: number;
+          if (last === yesterday) {
+            // Estudió ayer → racha avanza normal
+            newStreak = s.user.streak + 1;
+          } else if (frozen && last === twoDaysAgo) {
+            // Saltó UN día pero tenía freeze activo → mantiene racha sin incrementar
+            newStreak = s.user.streak;
+          } else {
+            // Reset
+            newStreak = 1;
+          }
           const newAchievements = [...s.user.achievements];
           if (newStreak >= 3  && !newAchievements.includes('streak_3'))  newAchievements.push('streak_3');
           if (newStreak >= 7  && !newAchievements.includes('streak_7'))  newAchievements.push('streak_7');
@@ -297,13 +419,147 @@ export const useStore = create<AppStore>()(
 
       isLessonCompleted: (lessonId) => get().user.completedLessons.includes(lessonId),
       isTopicCompleted: (topicId) => get().user.completedTopics.includes(topicId),
-      resetProgress: () => set({ user: { ...defaultUser, friends: MOCK_FRIENDS }, isOnboardingComplete: false }),
+      resetProgress: () => set({ user: { ...defaultUser, friends: MOCK_FRIENDS }, isOnboardingComplete: false, tutorialSeen: false, dailyQuests: null }),
       toggleDarkMode: () => set(s => ({ isDarkMode: !s.isDarkMode })),
+      toggleSounds: () => set(s => ({ soundsEnabled: !s.soundsEnabled })),
+
+      // ── Mistakes / repaso ─────────────────────────────────────────
+      recordMistake: (questionId, category) => set(s => {
+        const list = [...(s.user.mistakes ?? [])];
+        const existing = list.find(m => m.questionId === questionId);
+        if (existing) {
+          existing.attempts += 1;
+          existing.failedAt = new Date().toISOString();
+          existing.recoveriesNeeded = RECOVERIES_TO_CLEAR;
+        } else {
+          list.push({
+            questionId,
+            category,
+            failedAt: new Date().toISOString(),
+            attempts: 1,
+            recoveriesNeeded: RECOVERIES_TO_CLEAR,
+          });
+        }
+        return { user: { ...s.user, mistakes: list } };
+      }),
+
+      registerMistakeRecovery: (questionId) => set(s => {
+        const list = (s.user.mistakes ?? []).flatMap(m => {
+          if (m.questionId !== questionId) return [m];
+          const remaining = m.recoveriesNeeded - 1;
+          return remaining <= 0 ? [] : [{ ...m, recoveriesNeeded: remaining }];
+        });
+        return { user: { ...s.user, mistakes: list } };
+      }),
+
+      getMistakeQuestions: (limit = 10) => {
+        const { user } = get();
+        const mistakes = user.mistakes ?? [];
+        if (mistakes.length === 0) return [];
+        // Indexar todas las preguntas por id
+        const byId = new Map<string, import('../types').Question>();
+        for (const t of ALL_TOPICS) {
+          for (const l of t.lessons) {
+            for (const q of l.questions) byId.set(q.id, q);
+          }
+        }
+        // Ordenar: más fallos primero, más reciente desempata
+        const sorted = [...mistakes].sort((a, b) => {
+          if (b.attempts !== a.attempts) return b.attempts - a.attempts;
+          return new Date(b.failedAt).getTime() - new Date(a.failedAt).getTime();
+        });
+        const out: import('../types').Question[] = [];
+        for (const m of sorted) {
+          const q = byId.get(m.questionId);
+          if (q) out.push(q);
+          if (out.length >= limit) break;
+        }
+        return out;
+      },
+
+      mistakeCount: () => (get().user.mistakes ?? []).length,
+
+      // ── Streak freeze ─────────────────────────────────────────────
+      canBuyStreakFreeze: () => {
+        const { user } = get();
+        const thisMonth = monthKey();
+        const usedThisMonth = user.streakFreezesMonthKey === thisMonth ? user.streakFreezesUsedThisMonth : 0;
+        if (usedThisMonth >= STREAK_FREEZES_PER_MONTH) return false;
+        if (user.gems < STREAK_FREEZE_COST) return false;
+        // No tiene sentido comprar si ya hay uno activo
+        if (user.streakFreezeActiveUntil && new Date(user.streakFreezeActiveUntil) > new Date()) return false;
+        return true;
+      },
+
+      buyStreakFreeze: () => {
+        if (!get().canBuyStreakFreeze()) return false;
+        const until = new Date();
+        until.setHours(until.getHours() + 24);
+        set(s => {
+          const thisMonth = monthKey();
+          const usedThisMonth = s.user.streakFreezesMonthKey === thisMonth ? s.user.streakFreezesUsedThisMonth + 1 : 1;
+          return {
+            user: {
+              ...s.user,
+              gems: s.user.gems - STREAK_FREEZE_COST,
+              streakFreezeActiveUntil: until.toISOString(),
+              streakFreezesUsedThisMonth: usedThisMonth,
+              streakFreezesMonthKey: thisMonth,
+            }
+          };
+        });
+        return true;
+      },
+
+      isStreakFrozen: () => {
+        const { user } = get();
+        return !!user.streakFreezeActiveUntil && new Date(user.streakFreezeActiveUntil) > new Date();
+      },
+
+      // ── Daily Quests ──────────────────────────────────────────────
+      generateDailyQuests: () => set(s => {
+        const today = todayKey();
+        if (s.dailyQuests && s.dailyQuests.date === today) return {};
+        return { dailyQuests: generateQuestsForToday() };
+      }),
+
+      claimQuestReward: (questId) => {
+        const { dailyQuests } = get();
+        if (!dailyQuests) return false;
+        const quest = dailyQuests.quests.find(q => q.id === questId);
+        if (!quest || quest.claimed || quest.progress < quest.goal) return false;
+        set(s => {
+          if (!s.dailyQuests) return {};
+          const updatedQuests = s.dailyQuests.quests.map(q =>
+            q.id === questId ? { ...q, claimed: true } : q
+          );
+          return {
+            dailyQuests: { ...s.dailyQuests, quests: updatedQuests },
+            user: { ...s.user, gems: s.user.gems + quest.rewardGems },
+          };
+        });
+        return true;
+      },
+
+      // ── Notifications config ──────────────────────────────────────
+      setNotificationsConfig: (patch) => set(s => ({
+        notifications: { ...(s.notifications ?? DEFAULT_NOTIFICATIONS), ...patch },
+      })),
     }),
     {
       name: 'teoricob-v2',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ user: s.user, isOnboardingComplete: s.isOnboardingComplete, dailyChallenge: s.dailyChallenge, isDarkMode: s.isDarkMode, disclaimerAccepted: s.disclaimerAccepted }),
+      partialize: (s) => ({
+        user: s.user,
+        isOnboardingComplete: s.isOnboardingComplete,
+        tutorialSeen: s.tutorialSeen,
+        dailyChallenge: s.dailyChallenge,
+        dailyQuests: s.dailyQuests,
+        notifications: s.notifications,
+        isDarkMode: s.isDarkMode,
+        soundsEnabled: s.soundsEnabled,
+        disclaimerAccepted: s.disclaimerAccepted,
+      }),
       merge: (persisted: any, current) => ({
         ...current,
         ...persisted,

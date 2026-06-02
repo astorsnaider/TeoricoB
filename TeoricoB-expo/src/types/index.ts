@@ -52,6 +52,14 @@ export interface ExamResult {
   passed: boolean;        // true si <= 3 fallos y termino a tiempo
 }
 
+export interface MistakeEntry {
+  questionId: string;
+  category: string;
+  failedAt: string;     // ISO timestamp del último fallo
+  attempts: number;     // veces que ha fallado esta pregunta
+  recoveriesNeeded: number; // aciertos consecutivos restantes para limpiar (default 2)
+}
+
 export interface UserState {
   name: string;
   avatarEmoji: string;     // hex color (legacy field name)
@@ -74,6 +82,10 @@ export interface UserState {
   friends: Friend[];
   topicStats: Record<string, TopicStat>;  // accuracy por categoria de pregunta
   examHistory: ExamResult[];               // ultimos 50 examenes
+  mistakes: MistakeEntry[];                // preguntas falladas para repaso (spaced repetition simple)
+  streakFreezeActiveUntil?: string;        // ISO date hasta cuándo dura el freeze actual
+  streakFreezesUsedThisMonth: number;      // contador resetable cada mes (límite 3)
+  streakFreezesMonthKey: string;           // 'YYYY-MM' para detectar cambio de mes
 }
 
 export interface Achievement {
@@ -96,4 +108,32 @@ export interface DailyChallenge {
   questions: Question[];
   isCompleted: boolean;
   xpReward: number;
+}
+
+export type DailyQuestId = 'xp_30' | 'lesson_1' | 'correct_15';
+
+export interface DailyQuest {
+  id: DailyQuestId;
+  label: string;        // texto del quest, ej. "Gana 30 XP hoy"
+  emoji: string;
+  goal: number;
+  progress: number;
+  rewardGems: number;
+  claimed: boolean;
+}
+
+export interface DailyQuests {
+  date: string;         // 'YYYY-MM-DD' del día en que se generó
+  quests: DailyQuest[];
+}
+
+// Configuración de notificaciones
+export interface NotificationsConfig {
+  enabled: boolean;
+  reminderHour: number;       // 0-23
+  reminderMinute: number;     // 0-59
+  reminderEnabled: boolean;
+  streakDangerEnabled: boolean;
+  heartsFullEnabled: boolean;
+  questsEnabled: boolean;
 }

@@ -26,6 +26,8 @@ function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; on
   const toggleDarkMode = useStore(s => s.toggleDarkMode);
   const soundsEnabled = useStore(s => s.soundsEnabled);
   const toggleSounds = useStore(s => s.toggleSounds);
+  const notifications = useStore(s => s.notifications);
+  const setNotificationsConfig = useStore(s => s.setNotificationsConfig);
   const setProfilePhoto = useStore(s => s.setProfilePhoto);
   const setAvatarColor = useStore(s => s.setAvatarColor);
   const theme = useTheme();
@@ -224,6 +226,90 @@ function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; on
             />
           </View>
           <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+          <View style={s.settingRow}>
+            <Ionicons name="notifications-outline" size={20} color={theme.textSecondary} />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Notificaciones</Text>
+              <Text style={[s.settingSub, { color: theme.textSecondary }]}>
+                Recordatorio diario {notifications.reminderHour.toString().padStart(2, '0')}:{notifications.reminderMinute.toString().padStart(2, '0')}
+              </Text>
+            </View>
+            <Switch
+              value={notifications.enabled}
+              onValueChange={(enabled) => setNotificationsConfig({ enabled })}
+              trackColor={{ false: theme.border, true: theme.primary + '80' }}
+              thumbColor={notifications.enabled ? theme.primary : theme.textTertiary}
+            />
+          </View>
+          {notifications.enabled && (
+            <>
+              <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+              <View style={s.settingRow}>
+                <Ionicons name="alarm-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Recordatorio de estudio</Text>
+                <Switch
+                  value={notifications.reminderEnabled}
+                  onValueChange={(reminderEnabled) => setNotificationsConfig({ reminderEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.reminderEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+              {notifications.reminderEnabled && (
+                <>
+                  <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+                  <View style={s.settingRow}>
+                    <Ionicons name="time-outline" size={20} color={theme.textSecondary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Hora del recordatorio</Text>
+                      <Text style={[s.settingSub, { color: theme.textSecondary }]}>
+                        Recibirás un aviso todos los días a esta hora
+                      </Text>
+                    </View>
+                    <View style={s.timeStepper}>
+                      <TouchableOpacity
+                        style={[s.timeBtn, { backgroundColor: theme.bg2 }]}
+                        onPress={() => setNotificationsConfig({ reminderHour: (notifications.reminderHour + 23) % 24 })}
+                      >
+                        <Ionicons name="remove" size={14} color={theme.textPrimary} />
+                      </TouchableOpacity>
+                      <Text style={[s.timeText, { color: theme.textPrimary }]}>
+                        {notifications.reminderHour.toString().padStart(2, '0')}:{notifications.reminderMinute.toString().padStart(2, '0')}
+                      </Text>
+                      <TouchableOpacity
+                        style={[s.timeBtn, { backgroundColor: theme.bg2 }]}
+                        onPress={() => setNotificationsConfig({ reminderHour: (notifications.reminderHour + 1) % 24 })}
+                      >
+                        <Ionicons name="add" size={14} color={theme.textPrimary} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </>
+              )}
+              <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+              <View style={s.settingRow}>
+                <Ionicons name="flame-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Aviso de racha en riesgo</Text>
+                <Switch
+                  value={notifications.streakDangerEnabled}
+                  onValueChange={(streakDangerEnabled) => setNotificationsConfig({ streakDangerEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.streakDangerEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+              <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+              <View style={s.settingRow}>
+                <Ionicons name="heart-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Aviso de vidas llenas</Text>
+                <Switch
+                  value={notifications.heartsFullEnabled}
+                  onValueChange={(heartsFullEnabled) => setNotificationsConfig({ heartsFullEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.heartsFullEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+            </>
+          )}
+          <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
           <TouchableOpacity style={s.settingRow} onPress={() => { playSound('tap'); onShowStats(); }} activeOpacity={0.7}>
             <Ionicons name="stats-chart-outline" size={20} color={theme.textSecondary} />
             <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Estadísticas detalladas</Text>
@@ -293,6 +379,10 @@ const s = StyleSheet.create({
   settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   settingDivider: { height: 0.5, marginHorizontal: 16 },
   settingLabel: { flex: 1, fontSize: 15, fontWeight: '500' },
+  settingSub: { fontSize: 11, marginTop: 2 },
+  timeStepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timeBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  timeText: { fontSize: 15, fontWeight: '800', minWidth: 50, textAlign: 'center' },
   resetBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, borderWidth: 1.5, padding: 14 },
   resetTxt: { fontSize: 15, fontWeight: '600' },
 });
