@@ -45,6 +45,14 @@ export default function HomeScreen() {
   const mistakesTotal = mistakeCount();
   const streakFrozen = isStreakFrozen();
   const canFreeze = canBuyStreakFreeze();
+  const freezeUsefull = user.streak >= 1; // si no tienes racha, no tiene sentido congelarla
+  const freezeDisabled = streakFrozen || !canFreeze || !freezeUsefull;
+  // Horas restantes del freeze activo
+  const freezeHoursLeft = streakFrozen && user.streakFreezeActiveUntil
+    ? Math.max(1, Math.ceil((new Date(user.streakFreezeActiveUntil).getTime() - Date.now()) / 3600000))
+    : 0;
+  // Estado del bloque Daily Quests
+  const allQuestsClaimed = !!dailyQuests && dailyQuests.quests.every(q => q.claimed);
 
   const streakMsg =
     user.streak === 0 ? 'Empieza tu racha hoy' :
@@ -137,7 +145,14 @@ export default function HomeScreen() {
           <View style={[s.card, { backgroundColor: theme.card }]}>
             <View style={s.sectionHeader}>
               <Text style={[s.dailyTitle, { color: theme.textPrimary }]}>Misiones de hoy</Text>
-              <Ionicons name="diamond" size={16} color="#9C27B0" />
+              {allQuestsClaimed ? (
+                <View style={s.questsDoneBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color={theme.correct} />
+                  <Text style={[s.questsDoneTxt, { color: theme.correct }]}>Completadas</Text>
+                </View>
+              ) : (
+                <Ionicons name="diamond" size={16} color="#9C27B0" />
+              )}
             </View>
             <View style={s.questList}>
               {dailyQuests.quests.map(quest => {
@@ -196,9 +211,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }, (!canFreeze && !streakFrozen) && { opacity: 0.65 }]}
+            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }, freezeDisabled && !streakFrozen && { opacity: 0.55 }]}
+            disabled={freezeDisabled}
             onPress={() => {
-              if (streakFrozen) return;
               if (buyStreakFreeze()) playSound('achievement');
             }}
             activeOpacity={0.85}
@@ -208,7 +223,13 @@ export default function HomeScreen() {
             </View>
             <Text style={[s.utilityTitle, { color: theme.textPrimary }]}>Streak Freeze</Text>
             <Text style={[s.utilitySub, { color: theme.textSecondary }]}>
-              {streakFrozen ? 'Activo 24h' : canFreeze ? 'Comprar por 30 gemas' : 'No disponible'}
+              {streakFrozen
+                ? `Activo · ${freezeHoursLeft}h restantes`
+                : !freezeUsefull
+                  ? 'Necesitas racha activa'
+                  : canFreeze
+                    ? 'Comprar por 30 💎'
+                    : user.gems < 30 ? 'Faltan gemas' : 'Límite mensual'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -305,6 +326,8 @@ const s = StyleSheet.create({
   dailyTitle: { fontSize: 15, fontWeight: '700' },
   dailySub: { fontSize: 12, marginTop: 2 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  questsDoneBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  questsDoneTxt: { fontSize: 11, fontWeight: '800' },
   questList: { gap: 8 },
   questRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, padding: 10 },
   questEmoji: { fontSize: 20, width: 26, textAlign: 'center' },
