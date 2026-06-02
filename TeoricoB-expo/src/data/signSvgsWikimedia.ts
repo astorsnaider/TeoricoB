@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Señales de tráfico españolas — SVGs originales de Wikimedia Commons.
  *
  * Las representaciones SVG están licenciadas como dominio público o
@@ -38,10 +38,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   cruce_prioridad_derecha: {
     license: 'PD',
     attribution: 'P-2 Cruce con prioridad de paso a quien viene por la derecha — fuente: p2.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
+    xml: `<svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -100,10 +97,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   cruce_tranvia: {
     license: 'PD',
     attribution: 'P-6 Cruce de tranvía — fuente: p6.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
+    xml: `<svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -209,10 +203,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   paso_nivel_con_barreras: {
     license: 'PD',
     attribution: 'P-7 Paso a nivel con barreras cercano — fuente: p7.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
+    xml: `<svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -274,10 +265,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   paso_nivel_proximo_300: {
     license: 'PD',
     attribution: 'P-9a Paso a nivel cercano (señalización a 300 m) — fuente: p9a.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
+    xml: `<svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -354,34 +342,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   paso_nivel_proximo_200: {
     license: 'PD',
     attribution: 'P-9b Paso a nivel cercano (señalización a 200 m) — fuente: p9b.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="278.1431 514.811" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="278.1431 514.811" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="41.062" height="192.035" viewBox="0 0 41.062 192.035" overflow="visible" enable-background="new 0 0 41.062 192.035"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="278.143" y="322.776" width="41.062" height="192.035" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -434,9 +407,9 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 				<clipPath id="XMLID_3_">
 					<use xlink:href="#XMLID_1_" />
 				</clipPath>
-				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,55.753 40.662,32.605 40.662,16.505 
+				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,55.753 40.662,32.605 40.662,16.505
 					0.4,39.648 0.4,55.753 "/>
-				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,87.964 40.662,64.804 40.662,48.701 
+				<polyline i:knockout="Off" clip-path="url(#XMLID_3_)" fill="#E41408" points="0.4,87.964 40.662,64.804 40.662,48.701
 					0.4,71.857 0.4,87.964 "/>
 			</g>
 			<path i:knockout="Off" fill="none" stroke="#1C1D20" stroke-width="0.8" stroke-miterlimit="3.864" d="M40.662,191.634H0.4V5.433
@@ -449,34 +422,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   curva_peligrosa_derecha: {
     license: 'PD',
     attribution: 'P-13a Curva peligrosa hacia la derecha — fuente: p13a.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.9238 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.9238 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.834" height="192.41" viewBox="0 0 217.834 192.41" overflow="visible" enable-background="new 0 0 217.834 192.41"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.924" y="323.208" width="217.834" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -533,34 +491,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   curva_peligrosa_izquierda: {
     license: 'PD',
     attribution: 'P-13b Curva peligrosa hacia la izquierda — fuente: p13b.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.4707 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.4707 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.836" height="192.41" viewBox="0 0 217.836 192.41" overflow="visible" enable-background="new 0 0 217.836 192.41"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.471" y="323.208" width="217.836" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -617,34 +560,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   varias_curvas: {
     license: 'PD',
     attribution: 'P-14a Varias curvas peligrosas (primera hacia la derecha) — fuente: p14a.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="190.0195 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="190.0195 515.6182" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.832" height="192.41" viewBox="0 0 217.832 192.41" overflow="visible" enable-background="new 0 0 217.832 192.41"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="190.02" y="323.208" width="217.832" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -725,34 +653,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   obras: {
     license: 'PD',
     attribution: 'P-18 Obras en la vía — fuente: p18.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="190.0195 515.2041" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="190.0195 515.2041" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.832" height="192.41" viewBox="0 0 217.832 192.41" overflow="visible" enable-background="new 0 0 217.832 192.41"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="190.02" y="322.794" width="217.832" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -809,7 +722,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 			<path i:knockout="Off" fill="#1C1D20" d="M115.098,84.727c0-4.387,3.555-7.938,7.941-7.938c4.391,0,7.945,3.551,7.945,7.938
 				c0,4.391-3.555,7.945-7.945,7.945C118.652,92.672,115.098,89.117,115.098,84.727"/>
 			<polyline i:knockout="Off" fill="#FFFFFF" points="95.68,114.738 104.504,109.438 100.973,118.266 95.68,114.738 "/>
-			<polyline i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="85.969,97.969 87.73,90.027 
+			<polyline i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="85.969,97.969 87.73,90.027
 				93.914,90.027 85.969,97.969 "/>
 		</g>
 	</svg>`,
@@ -819,34 +732,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   pavimento_deslizante: {
     license: 'PD',
     attribution: 'P-19 Pavimento deslizante (calzada resbala) — fuente: p19.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.5664 515.2041" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.5664 515.2041" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.832" height="192.41" viewBox="0 0 217.832 192.41" overflow="visible" enable-background="new 0 0 217.832 192.41"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.566" y="322.794" width="217.832" height="192.41" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -903,7 +801,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 				c-0.828-0.516-1.082-1.605-0.566-2.434l3.746-5.984L89.695,99.879l-3.738,5.992c-0.52,0.824-1.613,1.074-2.438,0.559
 				l-5.988-3.738c-0.824-0.52-1.074-1.605-0.559-2.434l3.273-5.242c0,0-1.309-2.895,1.586-4.211c0,0-1.027-1.68,1.313-5.422
 				c0,0,1.871-2.996,5.234-5.055c0,0,0.469-0.75,2.434-0.563l13.66-10.199c0,0,1.688-1.031,3.184-0.09L139.094,89.121"/>
-			<polyline i:knockout="Off" fill="#FFFFFF" points="103.227,94.883 118.195,104.242 115.855,107.984 100.887,98.633 
+			<polyline i:knockout="Off" fill="#FFFFFF" points="103.227,94.883 118.195,104.242 115.855,107.984 100.887,98.633
 				103.227,94.883 "/>
 			<path i:knockout="Off" fill="#FFFFFF" d="M135.262,91.926c1.492,0.934,1.023,1.684,1.023,1.684l-1.867,11.32
 				c-0.656,2.715-2.434,0.563-2.434,0.563c-4.305-4.77-17.027-12.727-17.027-12.727s-12.73-7.949-18.902-9.727
@@ -923,34 +821,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   ninos: {
     license: 'PD',
     attribution: 'P-21 Niños cerca (zona escolar) — fuente: p21.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.9238 514.999" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.9238 514.999" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.834" height="192.414" viewBox="0 0 217.834 192.414" overflow="visible" enable-background="new 0 0 217.834 192.414"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.924" y="322.585" width="217.834" height="192.414" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -999,7 +882,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 			<polyline i:knockout="Off" fill="#FFFFFF" points="21.881,173.879 108.916,23.176 195.951,173.879 21.881,173.879 "/>
 			<path i:knockout="Off" fill="#1C1D20" d="M78.24,98.824c0-3.695,2.996-6.695,6.693-6.695c3.699,0,6.695,3,6.695,6.695
 				s-2.996,6.695-6.695,6.695C81.236,105.52,78.24,102.52,78.24,98.824"/>
-			<polyline i:knockout="Off" fill="#1C1D20" points="69.592,123.262 85.369,133.129 78.576,143.996 62.797,134.137 69.592,123.262 
+			<polyline i:knockout="Off" fill="#1C1D20" points="69.592,123.262 85.369,133.129 78.576,143.996 62.797,134.137 69.592,123.262
 				"/>
 			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#1C1D20" d="M87.969,107.309L77.93,123.266
 				c0,0-1.404,2.18,0.539,3.348c0.08,0.156,2.18,1.715,3.74-0.543c0-0.078,5.527-8.176,5.527-8.176l6.072,7.242l-3.035,6.148
@@ -1009,7 +892,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
 				c0.078,0.078-1.082-1.324-1.082-1.324l0.77-1.246l-5.525-6.461l-2.256-9.027c0,0-0.156-1.016,0.857-0.703
 				c0.078,0.082,7.549,3.188,7.549,3.188s2.41,1.016,3.508-1.32c-0.082,0,1.238-2.645-1.25-3.66c0,0.082-17.123-6.609-17.123-6.609
 				S91.004,102.637,87.969,107.309"/>
-			<polyline i:knockout="Off" fill="#1C1D20" points="143.311,127.551 151.568,124.824 155.615,130.977 143.311,134.633 
+			<polyline i:knockout="Off" fill="#1C1D20" points="143.311,127.551 151.568,124.824 155.615,130.977 143.311,134.633
 				143.311,127.551 "/>
 			<path i:knockout="Off" fill="#1C1D20" d="M128.057,104.355c0-3.316,2.684-6,5.996-6c3.309,0,5.992,2.684,5.992,6
 				c0,3.309-2.684,5.992-5.992,5.992C130.74,110.348,128.057,107.664,128.057,104.355"/>
@@ -1036,34 +919,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   ciclistas: {
     license: 'PD',
     attribution: 'P-22 Lugar frecuentado por ciclistas — fuente: p22.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.4707 514.999" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.4707 514.999" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.836" height="192.414" viewBox="0 0 217.836 192.414" overflow="visible" enable-background="new 0 0 217.836 192.414"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.471" y="322.585" width="217.836" height="192.414" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -1145,34 +1013,19 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   desprendimientos: {
     license: 'PD',
     attribution: 'P-26 Desprendimientos (piedras u obstáculos en la calzada) — fuente: p26.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
-	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
-	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
-	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
-]>
-<svg 
-	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="189.8438 515.4443" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
-	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+    xml: `<svg
+	 xmlns:x="" xmlns:i="" xmlns:graph="" i:viewOrigin="189.8438 515.4443" i:rulerOrigin="0 0" i:pageBounds="0 841.8896 595.2754 0"
+	 xmlns="" xmlns:xlink="" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
 	 width="217.832" height="192.418" viewBox="0 0 217.832 192.418" overflow="visible" enable-background="new 0 0 217.832 192.418"
 	 xml:space="preserve">
 	<metadata>
-		<variableSets  xmlns="&ns_vars;">
+		<variableSets  xmlns="">
 			<variableSet  varSetName="binding1" locked="none">
 				<variables></variables>
-				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+				<v:sampleDataSets  xmlns="" xmlns:v=""></v:sampleDataSets>
 			</variableSet>
 		</variableSets>
-		<sfw  xmlns="&ns_sfw;">
+		<sfw  xmlns="">
 			<slices></slices>
 			<sliceSourceBounds  x="189.844" y="323.026" width="217.832" height="192.418" bottomLeftOrigin="true"></sliceSourceBounds>
 		</sfw>
@@ -1348,9 +1201,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   vel_max_50: {
     license: 'PD',
     attribution: 'R-301 Velocidad máxima 50 km/h — fuente: vel_max_50.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
-<svg version="1.1" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xml: `<svg version="1.1" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 	 x="0px" y="0px" width="769.688px" height="769.656px" viewBox="-360.791 -360.781 769.688 769.656" xml:space="preserve">
 <path fill="#E41408" d="M-360.791,24.031c0-212.523,172.305-384.812,384.852-384.812c212.508,0,384.836,172.289,384.836,384.812
 	c0,212.531-172.328,384.844-384.836,384.844C-188.486,408.875-360.791,236.562-360.791,24.031"/>
@@ -1508,9 +1359,7 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   prohibido_adelantar_camiones: {
     license: 'PD',
     attribution: 'R-306 Prohibido adelantar para camiones >3.500 kg — fuente: r306.svg (Wikimedia Commons, dominio público)',
-    xml: `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 11.0, SVG Export Plug-In . SVG Version: 6.0.0 Build 78)  -->
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
 <path fill="#E41408" d="M0,24.053C0,10.77,10.769,0,24.053,0c13.282,0,24.052,10.77,24.052,24.053
 	c0,13.284-10.77,24.052-24.052,24.052C10.769,48.104,0,37.337,0,24.053"/>
 <path fill="#FFF" d="M6.415,24.053c0-9.74,7.896-17.637,17.638-17.637c9.741,0,17.637,7.896,17.637,17.637
@@ -1648,25 +1497,14 @@ export const WIKIMEDIA_SIGNS: Partial<Record<string, WikimediaSvgEntry>> = {
   // ─── S-28 Zona residencial / calle peatonal prioritaria ─────────
   zona_peatonal: {
     license: 'PD',
-    attribution: 'S-28 Zona residencial / calle peatonal prioritaria — fuente: archivo Wikimedia Commons (dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="651 364 505 336">
-<g transform="translate(-651 -364)">
-<path d="M0.377528 317.01C0.377528 319.2 0.830562 321.503 1.69888 323.919 2.56719 326.184 4.0018 328.261 5.85169 330.148 7.70157 331.998 9.89124 333.433 12.1942 334.301 14.4971 335.283 16.8 335.622 18.9897 335.622L484.633 335.622C486.936 335.622 489.239 335.283 491.542 334.301 493.844 333.433 496.034 331.998 497.884 330.148 499.734 328.261 501.055 326.184 502.037 323.919 502.905 321.503 503.358 319.2 503.358 317.01L503.358 18.9519C503.358 16.7622 502.905 14.4593 502.037 12.0431 501.055 9.77798 499.734 7.58831 497.884 5.81393 496.034 3.96404 493.844 2.56719 491.542 1.66112 489.239 0.679551 486.936 0.377528 484.633 0.377528L18.9897 0.377528C16.8 0.377528 14.4971 0.679551 12.1942 1.66112 9.89124 2.56719 7.70157 3.96404 5.85169 5.81393 4.0018 7.58831 2.56719 9.77798 1.69888 12.0431 0.830562 14.4593 0.377528 16.7622 0.377528 18.9519L0.377528 317.01Z" fill="#0055FF" transform="matrix(1.00032 0 0 1 651.834 364)"/>
-<path d="M19.2917 173.776C18.7631 174.871 18.3101 176.041 18.0081 177.476 17.6683 178.797 17.4418 180.194 17.3285 181.629 17.3285 184.573 17.8948 187.631 19.2162 190.501 20.4998 193.219 22.4629 195.635 24.7658 197.485 25.9739 198.353 27.182 199.108 28.3901 199.788 29.7115 200.316 30.8818 200.769 32.0899 201.109L52.3254 169.812 52.8539 217.154 28.6166 252.264C23.369 258.04 20.613 265.591 20.8396 273.255 21.1793 281.032 24.4638 288.356 30.1267 293.717L73.3159 229.499 73.3159 289.791C73.2027 290.999 73.4292 292.32 73.6557 293.604 73.9577 294.812 74.4108 296.133 74.9393 297.454 76.2607 300.059 78.2238 302.475 80.8665 304.099 83.3582 305.873 86.3407 306.855 89.2854 307.081 90.6822 307.195 92.0036 307.081 93.3249 306.855 94.6463 306.628 95.8544 306.213 96.9115 305.76L96.9115 178.684C99.3276 182.497 102.839 185.442 106.878 187.329 110.918 189.179 115.41 189.821 119.79 189.293 124.244 188.613 128.435 186.763 131.795 183.932 135.193 181.1 137.76 177.249 139.044 172.983L99.1011 152.974 100.876 129.605C100.422 124.018 98.0063 118.77 94.3065 114.618 90.4935 110.465 85.4346 107.633 79.8849 106.614 77.3555 106.199 74.6373 106.085 71.7681 106.538 69.0499 106.84 66.2184 107.709 63.689 109.03 61.084 110.465 58.7811 112.201 56.818 114.278 54.8548 116.241 53.4202 118.544 52.3254 120.96L19.2917 173.776Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/>
-<path d="M106.274 84.5663C106.274 79.0921 104.084 73.9577 100.234 70.107 96.3829 66.2939 91.2485 64.1043 85.8876 64.1043 80.4135 64.1043 75.2791 66.2939 71.4661 70.107 67.6153 73.9577 65.4256 79.0921 65.4256 84.5663 65.4256 89.9272 67.6153 95.1748 71.4661 99.0256 75.2791 102.839 80.4135 105.028 85.8876 105.028 91.2485 105.028 96.3829 102.839 100.234 99.0256 104.084 95.1748 106.274 89.9272 106.274 84.5663Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/>
-</g></svg>`,
+    attribution: 'S-28 Zona residencial / calle peatonal prioritaria — fuente: s28.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="505" height="336" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><defs><clipPath id="clip0"><rect x="651" y="364" width="505" height="336"/></clipPath></defs><g clip-path="url(#clip0)" transform="translate(-651 -364)"><path d="M0.377528 317.01C0.377528 319.2 0.830562 321.503 1.69888 323.919 2.56719 326.184 4.0018 328.261 5.85169 330.148 7.70157 331.998 9.89124 333.433 12.1942 334.301 14.4971 335.283 16.8 335.622 18.9897 335.622L484.633 335.622C486.936 335.622 489.239 335.283 491.542 334.301 493.844 333.433 496.034 331.998 497.884 330.148 499.734 328.261 501.055 326.184 502.037 323.919 502.905 321.503 503.358 319.2 503.358 317.01L503.358 18.9519C503.358 16.7622 502.905 14.4593 502.037 12.0431 501.055 9.77798 499.734 7.58831 497.884 5.81393 496.034 3.96404 493.844 2.56719 491.542 1.66112 489.239 0.679551 486.936 0.377528 484.633 0.377528L18.9897 0.377528C16.8 0.377528 14.4971 0.679551 12.1942 1.66112 9.89124 2.56719 7.70157 3.96404 5.85169 5.81393 4.0018 7.58831 2.56719 9.77798 1.69888 12.0431 0.830562 14.4593 0.377528 16.7622 0.377528 18.9519L0.377528 317.01Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M0.377528 316.973C0.377528 321.918 2.37843 326.637 5.85169 330.148 9.40045 333.622 14.0818 335.622 19.0274 335.622" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M18.9897 335.585 484.595 335.585" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M484.595 335.622C489.654 335.622 494.335 333.622 497.884 330.148 501.357 326.637 503.358 321.918 503.358 316.973" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M503.32 316.973 503.32 18.9519" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M503.358 18.9897C503.358 14.0818 501.357 9.32494 497.884 5.81393 494.335 2.34067 489.654 0.377528 484.595 0.377528" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M484.595 0.377528 18.9897 0.377528" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M19.0274 0.377528C14.0818 0.377528 9.40045 2.34067 5.85169 5.81393 2.37843 9.32494 0.377528 14.0818 0.377528 18.9897" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M0.377528 18.9519 0.377528 316.973" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M8.60764 317.01C8.60764 318.218 8.7964 319.54 9.3627 320.861 9.77798 322.145 10.684 323.353 11.6656 324.334 12.6472 325.429 13.9308 326.184 15.1389 326.751 16.4602 327.204 17.7816 327.392 18.9897 327.392L484.633 327.392C485.954 327.392 487.275 327.204 488.597 326.751 489.805 326.184 490.975 325.429 492.07 324.334 493.052 323.353 493.844 322.145 494.373 320.861 494.939 319.54 495.128 318.218 495.128 317.01L495.128 18.9519C495.128 17.7438 494.939 16.4225 494.373 15.1389 493.844 13.8175 493.052 12.6094 492.07 11.6279 490.975 10.533 489.805 9.77798 488.597 9.21169 487.275 8.7964 485.954 8.56989 484.633 8.56989L18.9897 8.56989C17.7816 8.56989 16.4602 8.7964 15.1389 9.21169 13.9308 9.77798 12.6472 10.533 11.6656 11.6279 10.684 12.6094 9.77798 13.8175 9.3627 15.1389 8.7964 16.4225 8.60764 17.7438 8.60764 18.9519L8.60764 317.01Z" fill="#0055FF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M19.2917 173.776C18.7631 174.871 18.3101 176.041 18.0081 177.476 17.6683 178.797 17.4418 180.194 17.3285 181.629 17.3285 184.573 17.8948 187.631 19.2162 190.501 20.4998 193.219 22.4629 195.635 24.7658 197.485 25.9739 198.353 27.182 199.108 28.3901 199.788 29.7115 200.316 30.8818 200.769 32.0899 201.109L52.3254 169.812 52.8539 217.154 28.6166 252.264C23.369 258.04 20.613 265.591 20.8396 273.255 21.1793 281.032 24.4638 288.356 30.1267 293.717L73.3159 229.499 73.3159 289.791C73.2027 290.999 73.4292 292.32 73.6557 293.604 73.9577 294.812 74.4108 296.133 74.9393 297.454 76.2607 300.059 78.2238 302.475 80.8665 304.099 83.3582 305.873 86.3407 306.855 89.2854 307.081 90.6822 307.195 92.0036 307.081 93.3249 306.855 94.6463 306.628 95.8544 306.213 96.9115 305.76L96.9115 178.684C99.3276 182.497 102.839 185.442 106.878 187.329 110.918 189.179 115.41 189.821 119.79 189.293 124.244 188.613 128.435 186.763 131.795 183.932 135.193 181.1 137.76 177.249 139.044 172.983L99.1011 152.974 100.876 129.605C100.422 124.018 98.0063 118.77 94.3065 114.618 90.4935 110.465 85.4346 107.633 79.8849 106.614 77.3555 106.199 74.6373 106.085 71.7681 106.538 69.0499 106.84 66.2184 107.709 63.689 109.03 61.084 110.465 58.7811 112.201 56.818 114.278 54.8548 116.241 53.4202 118.544 52.3254 120.96L19.2917 173.776Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M106.274 84.5663C106.274 79.0921 104.084 73.9577 100.234 70.107 96.3829 66.2939 91.2485 64.1043 85.8876 64.1043 80.4135 64.1043 75.2791 66.2939 71.4661 70.107 67.6153 73.9577 65.4256 79.0921 65.4256 84.5663 65.4256 89.9272 67.6153 95.1748 71.4661 99.0256 75.2791 102.839 80.4135 105.028 85.8876 105.028 91.2485 105.028 96.3829 102.839 100.234 99.0256 104.084 95.1748 106.274 89.9272 106.274 84.5663Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M205.64 291.338C205.64 289.677 205.3 287.941 204.658 286.204 204.016 284.543 202.921 282.882 201.6 281.447 200.165 280.126 198.542 279.031 196.768 278.389 195.144 277.747 193.408 277.408 191.633 277.408 188.047 277.408 184.422 278.842 181.818 281.447 179.137 284.128 177.74 287.714 177.74 291.338 177.74 295.038 179.137 298.662 181.818 301.267 184.422 303.91 188.047 305.307 191.633 305.307 195.371 305.307 198.957 303.91 201.6 301.267 204.205 298.662 205.64 295.038 205.64 291.338Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M267.063 302.136C267.705 303.797 268.8 305.194 270.31 306.213 271.745 307.27 273.595 307.723 275.369 307.61 277.106 307.61 278.842 306.968 280.277 305.873 281.711 304.778 282.693 303.231 283.222 301.494L283.222 269.404 290.244 269.404C290.168 270.423 290.357 271.631 290.81 272.726 291.263 273.934 292.018 275.029 293 275.784 294.094 276.69 295.189 277.219 296.511 277.445 297.681 277.785 298.776 277.672 299.871 277.445L336.944 273.293C334.339 266.799 328.978 261.891 322.296 259.815L306.1 259.815 296.171 238.824 296.813 232.255 299.455 232.255 312.027 247.545C313.122 248.111 314.33 248.527 315.727 248.64 317.161 248.753 318.596 248.527 319.993 247.998 321.314 247.356 322.522 246.337 323.391 245.242 324.146 244.185 324.712 242.977 324.901 241.769L313.537 225.044C312.555 222.175 310.706 219.57 308.101 217.607 305.458 215.644 302.4 214.662 299.455 214.549L288.092 214.549C281.032 217.947 273.066 218.929 265.402 217.381L236.446 246.337 236.446 250.188C240.901 253.586 246.828 254.567 252.076 252.604L264.987 241.769 267.063 241.769 267.063 302.136Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M293.226 200.316C293.226 196.503 291.678 192.766 288.96 190.048 286.204 187.329 282.466 185.782 278.653 185.782 276.879 185.782 275.029 186.008 273.179 186.763 271.405 187.518 269.668 188.613 268.234 190.048 266.837 191.482 265.742 193.106 264.987 194.955 264.307 196.843 263.968 198.58 263.968 200.316 263.968 204.318 265.516 208.018 268.234 210.736 270.99 213.492 274.689 215.002 278.653 215.002 282.466 215.002 286.204 213.492 288.96 210.736 291.678 208.018 293.226 204.318 293.226 200.316Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M354.084 218.74 455.148 288.356 462.661 270.348 362.691 200.807C356.802 195.333 351.441 189.444 346.42 182.875 341.512 176.381 337.133 169.397 333.395 162.073 329.695 154.635 326.751 147.085 324.334 139.195 322.031 131.342 320.521 123.452 319.615 115.486L301.796 115.486C301.494 120.28 301.381 125.226 301.72 130.247 302.022 135.155 302.589 140.214 303.57 145.235 305.533 155.277 308.931 165.018 313.613 174.418 318.332 183.743 324.221 192.162 331.205 199.712 334.603 203.525 338.341 206.923 342.154 210.094 345.967 213.266 349.931 216.21 354.084 218.74Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M161.771 63.8778 161.771 99.0256 167.132 103.82 167.132 124.282 187.896 124.282 187.896 103.82 248.829 103.82 248.829 123.074 268.271 123.074 268.271 103.82 274.312 98.7991 274.312 65.0858 271.896 61.5748 268.271 61.5748 253.51 33.6 180.005 33.6 169.85 60.5933 164.489 60.5933 161.771 63.8778ZM180.005 61.2728 188.764 43.8688 247.621 43.8688 256.908 61.2728 180.005 61.2728ZM183.177 79.7717C183.177 80.9798 182.648 82.1879 181.78 83.0562 180.911 83.9245 179.703 84.4908 178.382 84.4908 177.174 84.4908 175.966 83.9245 175.098 83.0562 174.229 82.1879 173.663 80.9798 173.663 79.7717 173.663 78.4503 174.229 77.2422 175.098 76.3739 175.966 75.5056 177.174 74.9771 178.382 74.9771 179.703 74.9771 180.911 75.5056 181.78 76.3739 182.648 77.2422 183.177 78.4503 183.177 79.7717ZM263.137 80.2247C263.137 81.3951 262.722 82.6031 261.853 83.5092 260.947 84.3775 259.777 84.7928 258.569 84.7928 257.361 84.7928 256.153 84.3775 255.284 83.5092 254.416 82.6031 253.963 81.3951 253.963 80.2247 253.963 79.0166 254.416 77.8085 255.284 77.0535 256.153 76.1474 257.361 75.6189 258.569 75.6189 259.777 75.6189 260.947 76.1474 261.853 77.0535 262.722 77.8085 263.137 79.0166 263.137 80.2247Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M358.236 78.2993 358.236 180.043 456.016 180.043 456.016 81.0553 486.294 81.0553 407.995 28.2391 392.478 39.6027 392.478 31.1838 376.811 31.1838 376.811 46.8135 327.053 78.2993 358.236 78.2993ZM369.034 164.187 369.034 75.0526 407.466 44.4351 445.294 77.431 445.294 163.319 421.548 163.319 421.548 123.603 393.346 123.603 393.346 164.187 369.034 164.187Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M377.151 110.163 403.2 110.163 403.2 76.7892 377.151 76.7892 377.151 110.163Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M410.146 110.163 436.234 110.163 436.234 76.7892 410.146 76.7892 410.146 110.163Z" fill="#FFFFFF" transform="matrix(1.00032 0 0 1 651.834 364)"/><path d="M516.647 47.0778 527.293 298.134" stroke="#3465A4" stroke-width="1.06546" stroke-linejoin="round" fill="none" transform="matrix(1.00032 0 0 1 651.834 364)"/></g></svg>`,
   },
 
-  // ─── S-29 Carril reservado para ciclistas ─────────
+  // ─── R-407a Vía reservada para ciclos (carril bici exclusivo) ─────────
   carril_bici: {
     license: 'PD',
-    attribution: 'S-29 Carril reservado para ciclistas — fuente: archivo Wikimedia Commons (dominio público)',
-    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="649 11 504 336">
-<g transform="translate(-649 -11)">
-<path d="M8.60593 316.947C8.60593 318.155 8.79466 319.476 9.36084 320.797 9.77604 322.081 10.6819 323.289 11.6633 324.27 12.6447 325.365 13.928 326.12 15.1359 326.686 16.457 327.139 17.778 327.327 18.9859 327.327L484.537 327.327C485.858 327.327 487.179 327.139 488.5 326.686 489.708 326.12 490.878 325.365 491.973 324.27 492.954 323.289 493.747 322.081 494.275 320.797 494.841 319.476 495.03 318.155 495.03 316.947L495.03 18.9482C495.03 17.7403 494.841 16.4192 494.275 15.1359 493.747 13.8148 492.954 12.6069 491.973 11.6256 490.878 10.5309 489.708 9.77604 488.5 9.20986 487.179 8.79466 485.858 8.56819 484.537 8.56819L18.9859 8.56819C17.778 8.56819 16.457 8.79466 15.1359 9.20986 13.928 9.77604 12.6447 10.5309 11.6633 11.6256 10.6819 12.6069 9.77604 13.8148 9.36084 15.1359 8.79466 16.4192 8.60593 17.7403 8.60593 18.9482L8.60593 316.947Z" fill="#0055FF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
-<path d="M106.253 84.5495C106.253 79.0765 104.064 73.9431 100.214 70.0931 96.3638 66.2808 91.2304 64.0916 85.8706 64.0916 80.3975 64.0916 75.2642 66.2808 71.4519 70.0931 67.6019 73.9431 65.4126 79.0765 65.4126 84.5495 65.4126 89.9094 67.6019 95.156 71.4519 99.006 75.2642 102.818 80.3975 105.007 85.8706 105.007 91.2304 105.007 96.3638 102.818 100.214 99.006 104.064 95.156 106.253 89.9094 106.253 84.5495Z" fill="#FFFFFF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
-<path d="M205.599 291.281C205.599 289.62 205.259 287.884 204.617 286.147 203.976 284.487 202.881 282.826 201.56 281.391 200.126 280.07 198.503 278.976 196.729 278.334 195.106 277.692 193.369 277.353 191.595 277.353 188.009 277.353 184.386 278.787 181.781 281.391 179.102 284.071 177.705 287.657 177.705 291.281 177.705 294.98 179.102 298.603 181.781 301.208 184.386 303.85 188.009 305.246 191.595 305.246 195.332 305.246 198.918 303.85 201.56 301.208 204.164 298.603 205.599 294.98 205.599 291.281Z" fill="#FFFFFF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
-<path d="M19.2879 173.742C18.7594 174.836 18.3065 176.006 18.0045 177.441 17.6648 178.762 17.4383 180.158 17.3251 181.593 17.3251 184.537 17.8913 187.594 19.2124 190.463 20.4957 193.181 22.4585 195.596 24.7609 197.446 25.9688 198.314 27.1766 199.069 28.3845 199.748 29.7056 200.277 30.8757 200.73 32.0835 201.069L52.315 169.778 52.8435 217.111 28.611 252.214C23.3644 257.989 20.6089 265.538 20.8354 273.201 21.1751 280.976 24.459 288.299 30.1208 293.659L73.3014 229.454 73.3014 289.733C73.1882 290.941 73.4146 292.262 73.6411 293.545 73.9431 294.753 74.396 296.074 74.9245 297.395 76.2456 300 78.2083 302.416 80.8505 304.039 83.3417 305.813 86.3236 306.794 89.2677 307.02 90.6643 307.134 91.9854 307.02 93.3064 306.794 94.6275 306.568 95.8354 306.152 96.8922 305.699L96.8922 178.649C99.3079 182.461 102.818 185.405 106.857 187.292 110.896 189.142 115.387 189.783 119.766 189.255 124.22 188.576 128.41 186.726 131.769 183.895 135.166 181.064 137.733 177.214 139.016 172.949L99.0815 152.944 100.856 129.58C100.403 123.993 97.9869 118.747 94.2878 114.595 90.4755 110.443 85.4177 107.612 79.8691 106.593 77.3402 106.178 74.6225 106.064 71.7539 106.517 69.0362 106.819 66.2053 107.687 63.6764 109.008 61.0719 110.443 58.7695 112.179 56.8067 114.255 54.844 116.218 53.4096 118.52 52.315 120.936L19.2879 173.742Z" fill="#FFFFFF" transform="matrix(1 0 0 1.0002 649.23 11)"/>
-</g></svg>`,
+    attribution: 'R-407a Vía reservada para ciclos (carril bici exclusivo) — fuente: r407a.svg (Wikimedia Commons, dominio público)',
+    xml: `<svg width="336" height="336" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><g transform="translate(-574 -354)"><path d="M909.736 522.038C909.736 499.952 905.356 478.207 896.938 457.858 888.519 437.547 876.173 419.01 860.657 403.494 845.027 387.864 826.491 375.519 806.18 367.1 785.831 358.681 764.085 354.415 742.113 354.415 720.028 354.415 698.282 358.681 677.933 367.1 657.585 375.519 639.124 387.864 623.494 403.494 607.978 419.01 595.595 437.547 587.176 457.858 578.757 478.207 574.378 499.952 574.378 522.038 574.378 544.01 578.757 565.793 587.176 586.104 595.595 606.453 607.978 624.914 623.494 640.544 639.124 656.098 657.585 668.443 677.933 676.862 698.282 685.281 720.028 689.66 742.113 689.66 764.085 689.66 785.831 685.281 806.18 676.862 826.491 668.443 845.027 656.098 860.657 640.544 876.173 624.914 888.519 606.453 896.938 586.104 905.356 565.793 909.736 544.01 909.736 522.038Z" fill="#FFFFFF"/><path d="M909.736 522.038C909.736 499.915 905.356 478.169 896.938 457.82 888.519 437.509 876.173 419.01 860.657 403.494 845.027 387.864 826.529 375.519 806.218 367.1 785.869 358.681 764.123 354.415 742.113 354.415" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none"/><path d="M742.151 354.415C720.066 354.415 698.32 358.681 677.971 367.1 657.622 375.519 639.161 387.864 623.532 403.494 608.015 419.01 595.632 437.509 587.214 457.82 578.757 478.169 574.378 499.915 574.378 522.038" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none"/><path d="M574.378 522C574.378 543.972 578.757 565.755 587.214 586.067 595.632 606.415 608.015 624.876 623.532 640.506 639.161 656.06 657.622 668.405 677.971 676.824 698.32 685.281 720.066 689.66 742.151 689.66" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none"/><path d="M742.113 689.66C764.123 689.66 785.869 685.281 806.218 676.824 826.529 668.405 845.027 656.06 860.657 640.506 876.173 624.876 888.519 606.415 896.938 586.067 905.356 565.755 909.736 543.972 909.736 522" stroke="#343434" stroke-width="0.755056" stroke-linejoin="round" fill="none"/><path d="M901.543 522.038C901.543 501.047 897.391 480.396 889.425 461.029 881.421 441.7 869.604 424.069 854.843 409.346 840.006 394.433 822.489 382.73 803.122 374.651 783.755 366.647 762.991 362.494 742.113 362.494 721.123 362.494 700.359 366.647 681.105 374.651 661.738 382.73 644.145 394.433 629.27 409.346 614.509 424.069 602.805 441.7 594.726 461.029 586.76 480.396 582.608 501.047 582.608 522.038 582.608 542.915 586.76 563.717 594.726 583.046 602.805 602.413 614.509 619.893 629.27 634.768 644.145 649.529 661.738 661.346 681.105 669.311 700.359 677.277 721.123 681.43 742.113 681.43 762.991 681.43 783.755 677.277 803.122 669.311 822.489 661.346 840.006 649.529 854.843 634.768 869.604 619.893 881.421 602.413 889.425 583.046 897.391 563.717 901.543 542.915 901.543 522.038Z" fill="#0055FF"/><path d="M751.551 551.787 780.508 551.787C780.621 554.203 781.074 556.695 781.603 559.224 782.282 561.716 783.151 564.132 784.245 566.662 786.548 571.569 789.795 576.175 793.948 579.988 798.214 583.801 803.046 586.671 808.181 588.52 810.71 589.389 813.202 590.031 815.844 590.37 818.336 590.823 820.866 590.937 823.282 590.937 825.887 590.937 828.529 590.71 831.248 590.144 833.853 589.729 836.609 588.973 839.327 587.879 844.688 585.689 849.822 582.404 854.088 578.138 858.467 573.872 861.639 568.851 863.828 563.377 864.923 560.621 865.678 558.016 866.131 555.298 866.66 552.542 866.886 549.937 866.886 547.294 866.886 544.35 866.66 541.178 865.905 537.894 865.263 534.609 864.055 531.325 862.507 528.003 860.884 524.756 858.92 521.698 856.391 518.716 853.862 515.884 850.917 513.279 847.746 511.089 844.461 509.013 841.101 507.239 837.364 506.031 833.777 504.86 830.153 504.067 826.453 503.841 822.829 503.652 819.318 503.841 816.033 504.407 812.786 505.049 809.691 505.955 806.973 507.125L796.364 488.438 802.178 479.792 810.37 479.792C811.012 479.792 811.805 479.604 812.333 478.924 812.975 478.396 813.202 477.603 813.202 476.961L813.202 466.919C813.089 466.352 812.786 465.824 812.333 465.258 811.88 464.842 811.239 464.389 810.597 464.163 809.917 464.049 809.162 463.936 808.52 464.163 807.954 464.276 807.426 464.616 806.973 464.956L783.906 473.563C782.471 474.016 781.489 475.338 781.603 476.848 781.603 477.603 781.942 478.282 782.471 478.811 783.037 479.49 783.679 479.679 784.472 479.792L791.456 479.792 786.624 487.041 702.775 487.041 706.173 480.585 702.888 467.221 727.39 467.221C728.824 467.221 730.108 466.692 731.089 465.711 732.071 464.729 732.637 463.408 732.637 462.086 732.637 460.765 732.071 459.481 731.089 458.387 729.995 457.292 728.598 456.839 727.39 456.839L705.304 456.839C704.323 457.065 703.228 457.405 702.133 457.82 701 458.273 700.019 458.915 699.037 459.708 696.961 461.331 695.3 463.521 694.318 466.05 693.223 468.655 693.035 471.373 693.45 473.903 693.676 475.224 694.016 476.319 694.545 477.414 694.998 478.509 695.526 479.49 696.206 480.245L680.878 508.56C678.047 507.125 674.989 506.031 671.591 505.276 668.193 504.52 664.682 504.067 660.869 504.067 657.169 504.181 653.319 504.747 649.506 505.842 645.693 506.937 641.955 508.447 638.557 510.636 635.084 512.713 632.026 515.242 629.27 518.187 626.552 521.018 624.362 524.19 622.626 527.587 620.851 530.872 619.643 534.307 618.775 537.667 618.02 540.952 617.567 544.236 617.567 547.294 617.567 549.937 617.793 552.542 618.246 555.298 618.775 558.016 619.53 560.734 620.625 563.377 622.701 568.851 625.986 573.872 630.365 578.138 634.631 582.404 639.652 585.689 645.126 587.879 647.769 588.973 650.487 589.729 653.205 590.144 655.961 590.71 658.566 590.937 661.209 590.937 663.701 590.937 666.457 590.71 669.062 590.144 671.818 589.729 674.536 588.973 677.292 587.879 682.615 585.689 687.787 582.404 692.015 578.138 696.281 573.872 699.566 568.851 701.793 563.377 702.775 560.734 703.643 558.016 704.096 555.298 704.662 552.542 704.851 549.937 704.851 547.294 704.851 540.839 703.341 534.496 700.359 528.682 697.489 522.868 693.223 517.847 687.976 514.034L694.318 502.557 749.815 551.145C750.23 551.56 750.872 551.787 751.551 551.787ZM683.068 521.018C685.597 523.095 687.976 525.738 689.939 528.682 691.94 531.665 693.337 534.949 694.318 538.46 695.3 541.933 695.64 545.558 695.526 549.144 695.3 552.655 694.658 556.053 693.563 559.111 692.355 562.282 690.845 565.34 688.655 568.172 686.579 570.928 683.936 573.533 680.991 575.609 677.933 577.685 674.649 579.233 671.251 580.328 667.853 581.31 664.493 581.838 661.209 581.838 659.133 581.838 657.056 581.612 654.867 581.196 652.79 580.857 650.6 580.215 648.411 579.46 644.145 577.685 640.218 575.08 636.707 571.683 633.31 568.285 630.818 564.359 629.044 559.979 628.175 557.903 627.647 555.713 627.194 553.637 626.892 551.447 626.665 549.371 626.665 547.294 626.665 544.878 626.892 542.386 627.42 539.744 627.949 537.139 628.968 534.383 630.252 531.778 631.573 529.098 633.196 526.606 635.273 524.303 637.387 522 639.765 519.924 642.521 518.187 645.126 516.526 647.958 515.242 651.053 514.336 653.998 513.355 656.943 512.939 659.888 512.939 662.832 512.826 665.702 513.166 668.307 513.694 670.949 514.261 673.328 515.129 675.517 516.224L660.227 540.197C658.264 540.537 656.49 541.631 655.282 543.255 654.111 544.803 653.432 546.766 653.658 548.729 653.772 550.692 654.527 552.542 655.961 553.977 657.358 555.373 659.246 556.28 661.209 556.468 664.267 556.695 667.212 555.185 668.76 552.542 669.401 551.221 669.854 549.824 669.741 548.276 669.741 546.653 669.175 545.218 668.307 544.01L683.068 521.018ZM753.968 542.915 700.359 495.875 783.453 495.875 758.007 542.915 753.968 542.915ZM799.007 511.203C793.533 514.449 788.927 519.169 785.642 524.643 782.358 530.192 780.621 536.459 780.395 542.915L768.163 542.915 791.985 498.82 799.007 511.203ZM824.037 538.875 810.786 515.242C812.975 514.336 815.391 513.581 818.034 513.166 820.639 512.713 823.357 512.6 826.227 512.826 829.058 513.053 831.889 513.581 834.872 514.563 837.703 515.544 840.422 516.979 842.951 518.602 845.443 520.377 847.746 522.453 849.709 524.756 851.596 527.021 853.22 529.551 854.428 532.118 855.636 534.723 856.504 537.365 857.033 539.857 857.599 542.5 857.826 544.991 857.826 547.294 857.826 549.371 857.599 551.447 857.146 553.637 856.844 555.713 856.164 557.903 855.409 559.979 853.673 564.359 851.03 568.285 847.632 571.683 844.272 575.08 840.195 577.685 835.929 579.46 833.853 580.215 831.701 580.857 829.511 581.196 827.435 581.612 825.358 581.838 823.282 581.838 821.394 581.838 819.431 581.725 817.468 581.536 815.391 581.196 813.428 580.743 811.465 579.988 807.426 578.667 803.575 576.477 800.29 573.533 797.044 570.588 794.288 567.077 792.438 563.377 791.569 561.414 790.777 559.564 790.248 557.563 789.72 555.6 789.38 553.637 789.266 551.787L819.431 551.787C820.526 551.447 821.621 550.805 822.489 549.824 823.471 548.956 824.263 547.747 824.792 546.426 825.245 545.105 825.358 543.708 825.245 542.386 825.018 541.065 824.565 539.857 824.037 538.875ZM811.578 542.915 789.606 542.915C789.908 538.347 791.23 533.854 793.646 529.777 796.024 525.624 799.309 522.227 803.046 519.697L813.881 538.989C814.183 539.631 814.297 540.65 813.768 541.631 813.202 542.5 812.333 542.915 811.578 542.915Z" fill="#FEFEFE"/></g></svg>`,
   },
 };

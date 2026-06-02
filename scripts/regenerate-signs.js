@@ -72,13 +72,30 @@ function extractInlineXml(currentSource, signId) {
   return xmlMatch[1];
 }
 
+// Limpia SVGs generados por Adobe Illustrator que llevan DOCTYPE con
+// declaraciones de ENTITY. react-native-svg (SvgXml) no procesa DOCTYPE
+// con entities y los renderiza vacíos. También quita XML declaration y
+// comentarios extra para minimizar tamaño.
+function cleanSvg(xml) {
+  let out = xml;
+  // 1. Quitar XML declaration <?xml ...?>
+  out = out.replace(/<\?xml[^>]*\?>\s*/g, '');
+  // 2. Quitar DOCTYPE entero (incluido si tiene [ ... ] inline)
+  out = out.replace(/<!DOCTYPE[\s\S]*?(?:\[[\s\S]*?\])?\s*>\s*/g, '');
+  // 3. Quitar comentarios <!-- ... -->
+  out = out.replace(/<!--[\s\S]*?-->\s*/g, '');
+  // 4. Si quedan referencias a entidades Adobe (&ns_X;) las elimina
+  out = out.replace(/&ns_[a-z]+;/g, '');
+  return out.trim();
+}
+
 function readSvgFile(filename) {
   const p = path.join(SVG_DIR, filename);
   if (!fs.existsSync(p)) {
     console.warn(`[skip] file not found: ${filename}`);
     return null;
   }
-  return fs.readFileSync(p, 'utf8').trim();
+  return cleanSvg(fs.readFileSync(p, 'utf8'));
 }
 
 // Escapa backslash y backtick para inlinearlo dentro de un template literal.
@@ -181,10 +198,10 @@ const FINAL_SIGNS = [
     desc: 'Fin de autovía' },
   { signId: 'estacionamiento', code: 'S-17a', source: 'inline', inlineKey: 'estacionamiento',
     desc: 'Lugar de aparcamiento' },
-  { signId: 'zona_peatonal', code: 'S-28', source: 'inline', inlineKey: 'zona_peatonal',
+  { signId: 'zona_peatonal', code: 'S-28', source: 'file', filename: 's28.svg',
     desc: 'Zona residencial / calle peatonal prioritaria' },
-  { signId: 'carril_bici', code: 'S-29', source: 'inline', inlineKey: 'carril_bici',
-    desc: 'Carril reservado para ciclistas' },
+  { signId: 'carril_bici', code: 'R-407a', source: 'file', filename: 'r407a.svg',
+    desc: 'Vía reservada para ciclos (carril bici exclusivo)' },
 ];
 
 // Genera el archivo

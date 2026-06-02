@@ -327,10 +327,10 @@ export const SIGNS_INDICACION: CatalogSign[] = [
     legalRef: 'Señal S-28 · Art. 159 RGC',
   },
   {
-    code: 'S-29', name: 'Carril reservado para ciclistas (carril bici)', signId: 'carril_bici', type: 'indicacion',
-    description: 'Vía o carril reservado a ciclos. Los vehículos a motor no pueden circular, detenerse ni estacionar en él.',
+    code: 'R-407a', name: 'Vía reservada para ciclos (carril bici)', signId: 'carril_bici', type: 'indicacion',
+    description: 'Vía o carril reservado exclusivamente para ciclos. Los vehículos a motor no pueden circular, detenerse ni estacionar en él.',
     action: 'No invadas el carril bici ni para detenerte un segundo.',
-    legalRef: 'Señal S-29 · Art. 159 RGC',
+    legalRef: 'Señal R-407a · Art. 149 RGC',
   },
 ];
 

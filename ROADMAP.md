@@ -2,7 +2,7 @@
 
 > Documento vivo. Las tareas se trabajan **una a una en orden**. Conforme se completan se marcan `[x]` y se mueven a la sección de "Historial completado" al final, conservando fecha y commit asociado.
 
-**Última actualización:** 2026-05-31
+**Última actualización:** 2026-06-02
 
 ---
 
@@ -31,11 +31,11 @@
 
   **Resultado:** banco final de **300 preguntas exactas** en **30 lecciones**, distribuidas en 10 temas. Calidad DGT consistente: escenarios prácticos, distractores plausibles, referencias legales explícitas.
 
-- [ ] **3. Onboarding tutorial primer uso**
-  3-4 pantallas guía tras el nombre/color: cómo funciona la app, qué es el examen, dónde está el manual. Marca `tutorialSeen` en store para que no aparezca dos veces.
+- [x] **3. Onboarding tutorial primer uso** ✅
+  Completado 2026-06-02: 4 pantallas tras nombre/color explicando lecciones, fallos, examen simulado y manual. Persistencia `tutorialSeen` para que no aparezca dos veces.
 
-- [ ] **4. Sonidos opcionales en quiz**
-  Tic-toc de timer (últimos 5 min de examen), ding de acierto, buzz de error. Toggle en Ajustes (`soundsEnabled`). Archivos `.mp3` ligeros (<5KB cada uno).
+- [x] **4. Sonidos opcionales en quiz** ✅
+  Completado 2026-06-02: efectos discretos de acierto/error y tic suave en examen durante los últimos 5 minutos. Toggle en Ajustes (`soundsEnabled`) persistido. Assets `.wav` locales ligeros (<1KB cada uno aprox.).
 
 ## Tier 2 — Medios (1-2 sesiones)
 
@@ -100,6 +100,18 @@
 ---
 
 ## Historial completado
+
+### 2026-06-02
+- [x] **Tarea #4 — Sonidos opcionales en quiz** | commit pendiente
+  - `expo-audio` instalado con la versión compatible del SDK 54
+  - Switch "Efectos de sonido" en Ajustes, persistido como `soundsEnabled`
+  - Sonidos locales suaves: acierto, error y tic periódico cada 30s en los últimos 5 min del examen
+  - Verificado con `npx tsc --noEmit`, `npm ls expo-audio` y tamaños de assets; `expo export` no se pudo repetir por bloqueo de aprobación del entorno
+
+- [x] **Tarea #3 — Onboarding tutorial primer uso** | commit pendiente
+  - Nueva pantalla de tutorial de 4 pasos tras completar nombre/color
+  - Flag persistido `tutorialSeen` en Zustand y reseteo correcto con `resetProgress`
+  - Verificado con `npx tsc --noEmit`, servidor web local HTTP 200 y `npx expo export --platform web --output-dir dist-check`
 
 ### 2026-05-31
 - [x] **Tarea #2 — Auditoría y reescritura banco preguntas (220 → 300)** | commit `9b97e00` + cierre Fase C extendida
