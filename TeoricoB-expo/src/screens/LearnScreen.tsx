@@ -8,11 +8,13 @@ import { SHADOWS } from '../theme';
 import { Topic, Lesson } from '../types';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
+import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function LearnScreen() {
   const topics = useStore(s => s.topics);
   const progressForTopic = useStore(s => s.progressForTopic);
   const theme = useTheme();
+  const playSound = useSoundEffect();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
 
   if (selectedTopic) {
@@ -31,7 +33,7 @@ export default function LearnScreen() {
             <TouchableOpacity
               key={topic.id}
               style={[s.topicCard, { backgroundColor: theme.card, borderColor: theme.border }, SHADOWS.small]}
-              onPress={() => setSelectedTopic(topic)}
+              onPress={() => { playSound('tap'); setSelectedTopic(topic); }}
               activeOpacity={0.85}
             >
               <View style={[s.iconBox, { backgroundColor: topic.colorHex + '18' }]}>
@@ -66,6 +68,7 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
   const isLessonCompleted = useStore(s => s.isLessonCompleted);
   const completeLesson = useStore(s => s.completeLesson);
   const theme = useTheme();
+  const playSound = useSoundEffect();
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
 
   const diffColor = (d: string) =>
@@ -106,7 +109,7 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
                 done && { borderLeftWidth: 4, borderLeftColor: topic.colorHex },
                 SHADOWS.small,
               ]}
-              onPress={() => setActiveLesson(lesson)}
+              onPress={() => { playSound('tap'); setActiveLesson(lesson); }}
               activeOpacity={0.85}
             >
               <View style={[s.lessonNum, { backgroundColor: done ? topic.colorHex : theme.bg2 }]}>

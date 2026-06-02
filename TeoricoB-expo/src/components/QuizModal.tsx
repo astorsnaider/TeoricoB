@@ -12,6 +12,7 @@ import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { TrafficSign } from './TrafficSign';
 import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
+import { useSoundEffect } from '../audio/useSoundEffect';
 
 interface Props {
   visible: boolean;
@@ -48,8 +49,11 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
   const requestManualChapter = useStore(s => s.requestManualChapter);
   const saveExamResult = useStore(s => s.saveExamResult);
+  const soundsEnabled = useStore(s => s.soundsEnabled);
+  const playSound = useSoundEffect();
   const theme = useTheme();
   const savedExamRef = useRef(false);
+  const lastTimerTickRef = useRef<number | null>(null);
 
   const progressAnim = useRef(new Animated.Value(0)).current;
   const feedbackAnim = useRef(new Animated.Value(0)).current;
@@ -63,6 +67,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setDone(false); setElapsed(0); setAnswers([]); setShowReview(false);
     setCurrentHearts(user.hearts);
     savedExamRef.current = false;
+    lastTimerTickRef.current = null;
     timerRef.current = setInterval(() => {
       setElapsed(e => {
         const next = e + 1;
@@ -77,6 +82,15 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     }, 1000);
     return () => clearInterval(timerRef.current);
   }, [visible, isExam]);
+
+  useEffect(() => {
+    if (!visible || !isExam || done || !soundsEnabled) return;
+    const remaining = Math.max(0, EXAM_TIME_LIMIT_SEC - elapsed);
+    if (remaining > 0 && remaining <= 5 * 60 && remaining % 30 === 0 && lastTimerTickRef.current !== remaining) {
+      lastTimerTickRef.current = remaining;
+      playSound('tick');
+    }
+  }, [visible, isExam, done, elapsed, soundsEnabled]);
 
   useEffect(() => {
     if (!questions.length) return;
@@ -150,9 +164,11 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
     setAnswers(prev => [...prev, { qIndex: index, selectedIndex: idx, isCorrect }]);
     if (isCorrect) {
       setCorrectCount(c => c + 1);
+      playSound('correct');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       setWrongCount(w => w + 1);
+      playSound('wrong');
       // En examen NO se pierden vidas (es solo un test)
       if (!isExam) {
         setCurrentHearts(h => Math.max(0, h - 1));
@@ -217,6 +233,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
         timeElapsed: elapsed,
         passed: !!examPassed,
       });
+      playSound(examPassed ? 'examPass' : 'examFail');
     }
 
     // Pantalla de REPASO de fallos
@@ -460,7 +477,7 @@ export default function QuizModal({ visible, questions, title, isExam, onClose, 
                 <Text style={[qs.feedbackExp, { color: theme.textSecondary }]}>{q.explanation}</Text>
                 {!correct && (
                   <Text style={[qs.feedbackCorrect, { color: theme.textSecondary }]}>
-                    Correcta: <Text style={{ color: theme.correct, fontWeight: '700' }}>{q.correctAnswer}</Text>
+                    Correcta: <Text style={{ color: theme.correct, fontWeight: '700' }}>{q.options[q.correctIndex]}</Text>
                   </Text>
                 )}
                 {(() => {

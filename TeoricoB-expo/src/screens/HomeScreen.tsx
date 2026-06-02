@@ -8,6 +8,7 @@ import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
+import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function HomeScreen() {
   const user = useStore(s => s.user);
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const progressForTopic = useStore(s => s.progressForTopic);
   const addXP = useStore(s => s.addXP);
   const theme = useTheme();
+  const playSound = useSoundEffect();
 
   const [dailyOpen, setDailyOpen] = useState(false);
   const [examOpen, setExamOpen] = useState(false);
@@ -90,7 +92,7 @@ export default function HomeScreen() {
         {dailyChallenge && (
           <TouchableOpacity
             style={[s.card, s.dailyCard, { backgroundColor: theme.card }, dailyChallenge.isCompleted && { opacity: 0.7 }]}
-            onPress={() => { if (!dailyChallenge.isCompleted) setDailyOpen(true); }}
+            onPress={() => { if (!dailyChallenge.isCompleted) { playSound('tap'); setDailyOpen(true); } }}
             activeOpacity={0.85}
           >
             <View style={[s.dailyIcon, { backgroundColor: dailyChallenge.isCompleted ? theme.correct + '25' : theme.yellow + '25' }]}>
@@ -135,7 +137,7 @@ export default function HomeScreen() {
         {/* Exam button */}
         <TouchableOpacity
           style={[s.card, s.examCard, { backgroundColor: theme.card }]}
-          onPress={() => { setExamQs(getExamQuestions()); setExamOpen(true); }}
+          onPress={() => { playSound('tap'); setExamQs(getExamQuestions()); setExamOpen(true); }}
           activeOpacity={0.85}
         >
           <View style={[s.examIcon, { backgroundColor: theme.primary + '18' }]}>

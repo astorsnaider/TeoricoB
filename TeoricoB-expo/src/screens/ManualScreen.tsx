@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
 import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
+import { useSoundEffect } from '../audio/useSoundEffect';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
 import { MANUAL_CHAPTERS, ManualChapter, ContentBlock } from '../data/manualContent';
 import { LEGAL } from '../legal/config';
@@ -308,6 +309,7 @@ export default function ManualScreen() {
   const theme = useTheme();
   const requestedChapter = useStore(s => s.requestedManualChapter);
   const clearRequestedChapter = useStore(s => s.clearRequestedManualChapter);
+  const playSound = useSoundEffect();
 
   // Si otra pantalla pide abrir un capítulo concreto, navegar a él
   useEffect(() => {
@@ -362,7 +364,7 @@ export default function ManualScreen() {
           <TouchableOpacity
             key={chapter.id}
             style={[s.chapterCard, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={() => setView({ type: 'chapter', chapterId: chapter.id })}
+            onPress={() => { playSound('tap'); setView({ type: 'chapter', chapterId: chapter.id }); }}
             activeOpacity={0.85}
           >
             <View style={[s.chapterIcon, { backgroundColor: chapter.color + '18' }]}>
@@ -393,7 +395,7 @@ export default function ManualScreen() {
           <TouchableOpacity
             key={group.type}
             style={[s.chapterCard, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={() => setView({ type: 'signGroup', groupIndex: i })}
+            onPress={() => { playSound('tap'); setView({ type: 'signGroup', groupIndex: i }); }}
             activeOpacity={0.85}
           >
             <View style={[s.chapterIcon, { backgroundColor: group.color + '18' }]}>

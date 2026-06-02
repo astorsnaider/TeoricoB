@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
 import { useTheme } from './src/hooks/useTheme';
+import { useSoundEffect } from './src/audio/useSoundEffect';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LearnScreen from './src/screens/LearnScreen';
@@ -32,6 +34,7 @@ const TABS: TabDef[] = [
 
 export default function App() {
   const isOnboardingComplete = useStore(s => s.isOnboardingComplete);
+  const tutorialSeen = useStore(s => s.tutorialSeen);
   const disclaimerAccepted = useStore(s => s.disclaimerAccepted);
   const generateLeagueStandings = useStore(s => s.generateLeagueStandings);
   const generateDailyChallenge = useStore(s => s.generateDailyChallenge);
@@ -56,6 +59,47 @@ export default function App() {
     if (requestedManualChapter) setActiveTab('manual');
   }, [requestedManualChapter]);
 
+  // ── Cableado global de sonidos basado en cambios del store ─────────────
+  const playSound = useSoundEffect();
+  const user = useStore(s => s.user);
+  const prevHeartsRef = useRef(user.hearts);
+  const prevLeagueRef = useRef(user.league);
+  const prevStreakRef = useRef(user.streak);
+  const prevAchievementRef = useRef<typeof newAchievement>(null);
+
+  // Nuevo logro desbloqueado
+  useEffect(() => {
+    if (newAchievement && prevAchievementRef.current?.id !== newAchievement.id) {
+      playSound('achievement');
+    }
+    prevAchievementRef.current = newAchievement;
+  }, [newAchievement, playSound]);
+
+  // Cambio de liga (subida de nivel)
+  useEffect(() => {
+    if (user.league !== prevLeagueRef.current) {
+      // Solo si subió (la app no degrada manualmente)
+      playSound('levelup');
+      prevLeagueRef.current = user.league;
+    }
+  }, [user.league, playSound]);
+
+  // Cambio de vidas
+  useEffect(() => {
+    const prev = prevHeartsRef.current;
+    if (user.hearts < prev) playSound('heartLose');
+    else if (user.hearts > prev) playSound('heartGain');
+    prevHeartsRef.current = user.hearts;
+  }, [user.hearts, playSound]);
+
+  // Racha incrementada al completar lección / reto diario
+  useEffect(() => {
+    if (user.streak > prevStreakRef.current) {
+      playSound('streak');
+    }
+    prevStreakRef.current = user.streak;
+  }, [user.streak, playSound]);
+
   // Disclaimer first — legally required acceptance before any use
   if (!disclaimerAccepted) {
     return (
@@ -71,6 +115,15 @@ export default function App() {
       <SafeAreaProvider>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <OnboardingScreen />
+      </SafeAreaProvider>
+    );
+  }
+
+  if (!tutorialSeen) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+        <TutorialScreen />
       </SafeAreaProvider>
     );
   }

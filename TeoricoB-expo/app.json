@@ -34,6 +34,9 @@
       "name": "TeoricoB",
       "themeColor": "#E63946",
       "backgroundColor": "#FFFFFF"
-    }
+    },
+    "plugins": [
+      "expo-audio"
+    ]
   }
 }

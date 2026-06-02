@@ -8,6 +8,7 @@ import { SHADOWS } from '../theme';
 import { AvatarView, AVATAR_COLORS } from '../components/AvatarView';
 import LegalScreen from './LegalScreen';
 import StatsScreen from './StatsScreen';
+import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
@@ -23,9 +24,12 @@ function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; on
   const resetProgress = useStore(s => s.resetProgress);
   const isDarkMode = useStore(s => s.isDarkMode);
   const toggleDarkMode = useStore(s => s.toggleDarkMode);
+  const soundsEnabled = useStore(s => s.soundsEnabled);
+  const toggleSounds = useStore(s => s.toggleSounds);
   const setProfilePhoto = useStore(s => s.setProfilePhoto);
   const setAvatarColor = useStore(s => s.setAvatarColor);
   const theme = useTheme();
+  const playSound = useSoundEffect();
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   const league = getLeagueInfo(user.league);
@@ -209,13 +213,24 @@ function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; on
             />
           </View>
           <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
-          <TouchableOpacity style={s.settingRow} onPress={onShowStats} activeOpacity={0.7}>
+          <View style={s.settingRow}>
+            <Ionicons name="volume-low-outline" size={20} color={theme.textSecondary} />
+            <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Efectos de sonido</Text>
+            <Switch
+              value={soundsEnabled}
+              onValueChange={toggleSounds}
+              trackColor={{ false: theme.border, true: theme.primary + '80' }}
+              thumbColor={soundsEnabled ? theme.primary : theme.textTertiary}
+            />
+          </View>
+          <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
+          <TouchableOpacity style={s.settingRow} onPress={() => { playSound('tap'); onShowStats(); }} activeOpacity={0.7}>
             <Ionicons name="stats-chart-outline" size={20} color={theme.textSecondary} />
             <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Estadísticas detalladas</Text>
             <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
           </TouchableOpacity>
           <View style={[s.settingDivider, { backgroundColor: theme.border }]} />
-          <TouchableOpacity style={s.settingRow} onPress={onShowLegal} activeOpacity={0.7}>
+          <TouchableOpacity style={s.settingRow} onPress={() => { playSound('tap'); onShowLegal(); }} activeOpacity={0.7}>
             <Ionicons name="shield-checkmark-outline" size={20} color={theme.textSecondary} />
             <Text style={[s.settingLabel, { color: theme.textPrimary }]}>Información legal</Text>
             <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
