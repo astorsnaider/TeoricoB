@@ -7,8 +7,9 @@
  * coche rojo", "el coche azul", "el peatón", "el ciclista").
  *
  * Cada entrada respaldada por:
- * - Cita textual de TeoricaAbreviada (DGT lectura fácil)
- * - Artículo del RGC que regula la situación
+ * - Cita textual de TeoricaAbreviada (DGT lectura fácil) cuando exista, o
+ * - Artículo del Reglamento General de Circulación (RD 1428/2003) cuando
+ *   el manual oficial no redacte la situación literalmente.
  *
  * Convención visual:
  * - Vista cenital (de pájaro)
@@ -24,7 +25,7 @@
 export interface SceneEntry {
   xml: string;
   alt: string;        // accesibilidad
-  source: string;     // referencia DGT que respalda la escena
+  source: string;     // referencia DGT o RGC que respalda la escena
   legalRef: string;   // Art. RGC
 }
 
@@ -273,6 +274,168 @@ export const TRAFFIC_SCENES: Record<string, SceneEntry> = {
   </g>
   <!-- Flecha indicando el cambio del rojo -->
   <path d="M 120 110 Q 100 105 80 90 L 84 89 M 80 90 L 84 94" stroke="${WHITE}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 7. INCORPORACIÓN a AUTOPISTA / AUTOVÍA (carril de aceleración) ─────
+  incorporacion_autopista: {
+    legalRef: 'Art. 72 RGC',
+    source: 'TeoricaAbreviada DGT (Tema 12): "Cuando tengas que ceder el paso a otro vehículo mientras estás en el carril de aceleración para entrar a una carretera, detente al principio del carril hasta que el vehículo que ya está dentro de la carretera pase de largo"',
+    alt: 'Carril de aceleración de autovía con coche rojo incorporándose y coche azul circulando por el carril derecho',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="${SHOULDER}"/>
+  <rect x="45" y="0" width="100" height="200" fill="${ASPHALT}"/>
+  <line x1="95" y1="0" x2="95" y2="200" stroke="${WHITE}" stroke-width="1.8" stroke-dasharray="10,6"/>
+  <line x1="47" y1="0" x2="47" y2="200" stroke="${WHITE}" stroke-width="1.5"/>
+  <line x1="143" y1="0" x2="143" y2="105" stroke="${WHITE}" stroke-width="1.5"/>
+  <path d="M 170 200 L 118 118 Q 110 105 143 105 L 143 200 Z" fill="${ASPHALT}"/>
+  <path d="M 170 200 L 118 118 Q 110 105 143 105" stroke="${WHITE}" stroke-width="1.5" fill="none" stroke-dasharray="8,5"/>
+  <g>
+    <rect x="110" y="55" width="20" height="38" rx="4" fill="${CAR_BLUE}"/>
+    <rect x="114" y="55" width="12" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+  </g>
+  <g transform="rotate(-28 146 150)">
+    <rect x="136" y="130" width="20" height="38" rx="4" fill="${CAR_RED}"/>
+    <rect x="140" y="130" width="12" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+    <circle cx="139" cy="134" r="2.2" fill="#FFC107"/>
+  </g>
+  <path d="M 150 132 Q 135 112 120 98 L 124 98 M 120 98 L 123 102" stroke="${WHITE}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 8. AUTOBÚS urbano saliendo de parada ──────────────────────────
+  // Manual DGT Lectura Fácil no redacta esta situación literalmente.
+  // Respaldado por el articulado oficial del RGC (BOE, RD 1428/2003, art. 73).
+  bus_parada_urbana: {
+    legalRef: 'Art. 73 RGC',
+    source: 'Reglamento General de Circulación (RD 1428/2003), art. 73: en poblado, los conductores deben facilitar al transporte colectivo señalizado la salida de la parada, reduciendo la velocidad o deteniéndose si fuera preciso',
+    alt: 'Autobús urbano saliendo de una parada señalizada con coche rojo aproximándose por detrás',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#B8C0C8"/>
+  <rect x="40" y="0" width="110" height="200" fill="${ASPHALT}"/>
+  <line x1="95" y1="0" x2="95" y2="200" stroke="${WHITE}" stroke-width="1.5" stroke-dasharray="8,5"/>
+  <rect x="150" y="0" width="50" height="200" fill="#D8DDE3"/>
+  <rect x="154" y="45" width="38" height="18" rx="2" fill="#2A6BFF"/>
+  <text x="173" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="${WHITE}">BUS</text>
+  <g>
+    <rect x="112" y="70" width="28" height="58" rx="5" fill="#F4C430"/>
+    <rect x="117" y="76" width="18" height="8" rx="1" fill="#DFF3FF"/>
+    <rect x="117" y="90" width="18" height="8" rx="1" fill="#DFF3FF"/>
+    <rect x="117" y="104" width="18" height="8" rx="1" fill="#DFF3FF"/>
+    <circle cx="112" cy="82" r="2.4" fill="#FFC107"/>
+  </g>
+  <g>
+    <rect x="112" y="145" width="22" height="38" rx="4" fill="${CAR_RED}"/>
+    <rect x="116" y="145" width="14" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+  </g>
+  <path d="M 126 135 Q 105 124 85 116 L 89 115 M 85 116 L 88 120" stroke="${WHITE}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 9. PASO PARA CICLISTAS señalizado ─────────────────────────────
+  // Manual DGT Lectura Fácil no redacta esta situación literalmente.
+  // Respaldado por el articulado oficial del RGC (BOE, RD 1428/2003, art. 64).
+  paso_ciclistas: {
+    legalRef: 'Art. 64 RGC',
+    source: 'Reglamento General de Circulación (RD 1428/2003), art. 64: los ciclistas tienen prioridad cuando circulen por un paso para ciclistas debidamente señalizado',
+    alt: 'Ciclista cruzando por un paso para ciclistas señalizado delante de un coche rojo',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="${SHOULDER}"/>
+  <rect x="50" y="0" width="100" height="200" fill="${ASPHALT}"/>
+  <line x1="100" y1="0" x2="100" y2="78" stroke="${WHITE}" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <line x1="100" y1="122" x2="100" y2="200" stroke="${WHITE}" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <g stroke="${WHITE}" stroke-width="3" stroke-linecap="square">
+    <line x1="55" y1="86" x2="65" y2="86"/><line x1="75" y1="86" x2="85" y2="86"/><line x1="95" y1="86" x2="105" y2="86"/><line x1="115" y1="86" x2="125" y2="86"/><line x1="135" y1="86" x2="145" y2="86"/>
+    <line x1="55" y1="114" x2="65" y2="114"/><line x1="75" y1="114" x2="85" y2="114"/><line x1="95" y1="114" x2="105" y2="114"/><line x1="115" y1="114" x2="125" y2="114"/><line x1="135" y1="114" x2="145" y2="114"/>
+  </g>
+  <g transform="translate(83 94) rotate(90)">
+    <rect x="-5" y="-10" width="10" height="20" rx="2" fill="${BICI}"/>
+    <circle cx="0" cy="-13" r="3.3" fill="${PED_SKIN}"/>
+    <circle cx="0" cy="-7" r="3" fill="none" stroke="#1A1A1A" stroke-width="1"/>
+    <circle cx="0" cy="8" r="3" fill="none" stroke="#1A1A1A" stroke-width="1"/>
+  </g>
+  <g>
+    <rect x="84" y="140" width="22" height="38" rx="4" fill="${CAR_RED}"/>
+    <rect x="88" y="140" width="14" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+  </g>
+  <path d="M 111 98 L 125 98 L 122 95 M 125 98 L 122 101" stroke="${WHITE}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 10. FINAL DE ATASCO en AUTOPISTA ──────────────────────────────
+  final_atasco_autopista: {
+    legalRef: 'Art. 109 RGC',
+    source: 'TeoricaAbreviada DGT (Tema 11): "En autopistas, autovías y lugares cerrados o que no se ve bien, debes encender las luces de emergencia y posición siempre que tengas que detener el vehículo"',
+    alt: 'Coche rojo llegando al final de un atasco en autovía con luces de emergencia encendidas',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="${SHOULDER}"/>
+  <rect x="35" y="0" width="130" height="200" fill="${ASPHALT}"/>
+  <line x1="100" y1="0" x2="100" y2="200" stroke="${WHITE}" stroke-width="1.8" stroke-dasharray="10,6"/>
+  <line x1="37" y1="0" x2="37" y2="200" stroke="${WHITE}" stroke-width="1.5"/>
+  <line x1="163" y1="0" x2="163" y2="200" stroke="${WHITE}" stroke-width="1.5"/>
+  <rect x="58" y="34" width="22" height="36" rx="4" fill="${CAR_BLUE}"/>
+  <rect x="120" y="42" width="22" height="36" rx="4" fill="#6C757D"/>
+  <rect x="58" y="84" width="22" height="36" rx="4" fill="#6C757D"/>
+  <g>
+    <rect x="120" y="142" width="22" height="38" rx="4" fill="${CAR_RED}"/>
+    <rect x="124" y="142" width="14" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+    <circle cx="121" cy="148" r="2.2" fill="#FFC107"/>
+    <circle cx="141" cy="148" r="2.2" fill="#FFC107"/>
+  </g>
+  <text x="132" y="134" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#FFC107">!</text>
+  <path d="M 131 138 L 131 125" stroke="#FFC107" stroke-width="1.4" stroke-dasharray="3,2"/>
+</svg>`,
+  },
+
+  // ─── 11. MARCHA ATRÁS hacia garaje cercano ─────────────────────────
+  marcha_atras_garaje: {
+    legalRef: 'Art. 80 RGC',
+    source: 'TeoricaAbreviada DGT (Tema 11): "Está prohibido circular marcha atrás en cualquier vía o camino. Solo se puede circular marcha atrás en los siguientes casos: ■ Al hacer maniobras para aparcar el vehículo. […] En estos dos casos no se podrá circular hacia atrás más de 15 metros ni entrar en un cruce de caminos o vías marcha atrás"',
+    alt: 'Coche rojo retrocediendo pocos metros para entrar en un garaje señalizado',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#B8C0C8"/>
+  <rect x="35" y="0" width="100" height="200" fill="${ASPHALT}"/>
+  <line x1="85" y1="0" x2="85" y2="200" stroke="${WHITE}" stroke-width="1.5" stroke-dasharray="8,5"/>
+  <rect x="135" y="0" width="65" height="200" fill="#D8DDE3"/>
+  <rect x="142" y="58" width="48" height="34" rx="2" fill="#5C6470"/>
+  <text x="166" y="78" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="bold" fill="${WHITE}">GARAJE</text>
+  <g transform="rotate(88 105 112)">
+    <rect x="94" y="92" width="22" height="40" rx="4" fill="${CAR_RED}"/>
+    <rect x="98" y="92" width="14" height="8" rx="1" fill="#FFF9E0" opacity="0.85"/>
+  </g>
+  <path d="M 125 112 Q 145 105 152 88 L 148 90 M 152 88 L 153 93" stroke="${WHITE}" stroke-width="1.4" fill="none" stroke-dasharray="4,3" stroke-linecap="round"/>
+  <text x="126" y="130" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${WHITE}">marcha atrás corta</text>
+</svg>`,
+  },
+
+  // ─── 12. SALIDA DE ESTACIONAMIENTO EN LÍNEA ────────────────────────
+  // Manual DGT Lectura Fácil no redacta esta situación literalmente.
+  // Respaldado por el articulado oficial del RGC (BOE, RD 1428/2003, art. 72).
+  salida_estacionamiento: {
+    legalRef: 'Arts. 72 y 109 RGC',
+    source: 'Reglamento General de Circulación (RD 1428/2003), art. 72: al incorporarse a la circulación desde un estacionamiento se debe ceder el paso a los demás usuarios de la vía y advertir la maniobra mediante señales ópticas',
+    alt: 'Coche rojo saliendo de un estacionamiento en línea mientras un coche azul circula por la vía',
+    xml: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#B8C0C8"/>
+  <rect x="45" y="0" width="110" height="200" fill="${ASPHALT}"/>
+  <line x1="100" y1="0" x2="100" y2="200" stroke="${WHITE}" stroke-width="1.5" stroke-dasharray="8,5"/>
+  <rect x="155" y="0" width="35" height="200" fill="#66717E"/>
+  <line x1="155" y1="0" x2="155" y2="200" stroke="${WHITE}" stroke-width="1.5"/>
+  <line x1="155" y1="54" x2="190" y2="54" stroke="${WHITE}" stroke-width="1.2"/>
+  <line x1="155" y1="104" x2="190" y2="104" stroke="${WHITE}" stroke-width="1.2"/>
+  <line x1="155" y1="154" x2="190" y2="154" stroke="${WHITE}" stroke-width="1.2"/>
+  <rect x="161" y="10" width="22" height="34" rx="4" fill="#6C757D"/>
+  <rect x="161" y="160" width="22" height="34" rx="4" fill="#6C757D"/>
+  <g transform="rotate(-18 155 112)">
+    <rect x="144" y="93" width="22" height="38" rx="4" fill="${CAR_RED}"/>
+    <rect x="148" y="93" width="14" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+    <circle cx="145" cy="99" r="2.2" fill="#FFC107"/>
+  </g>
+  <g>
+    <rect x="72" y="128" width="22" height="38" rx="4" fill="${CAR_BLUE}"/>
+    <rect x="76" y="128" width="14" height="7" rx="1" fill="#FFF9E0" opacity="0.85"/>
+  </g>
+  <path d="M 143 117 Q 122 121 105 129 L 109 125 M 105 129 L 110 131" stroke="${WHITE}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
 </svg>`,
   },
 };

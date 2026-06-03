@@ -2,7 +2,7 @@
 
 > Documento vivo. Las tareas se trabajan **una a una en orden**. Conforme se completan se marcan `[x]` y se mueven a la sección de "Historial completado" al final, conservando fecha y commit asociado.
 
-**Última actualización:** 2026-06-02
+**Última actualización:** 2026-06-03
 
 ---
 
@@ -39,14 +39,11 @@
 
 ## Tier 2 — Medios (1-2 sesiones)
 
-- [ ] **5. Notificaciones push**
-  - Recordatorio diario de racha si no abrió la app en 20h
-  - Aviso de vidas llenas
-  - Reto diario nuevo cada mañana
-  Requiere `expo-notifications` + flujo de permisos + `expo-task-manager`.
+- [x] **5. Notificaciones push** ✅
+  Completado previamente: scheduler local con `expo-notifications`, permisos, toggles en Ajustes, recordatorio diario, racha en riesgo, vidas llenas y misiones nuevas.
 
-- [ ] **6. Preguntas con imagen de escenario (la más impactante)**
-  SVGs propios de situaciones: cruces, rotondas, adelantamientos. 20-30 preguntas tipo "qué hace el coche rojo".
+- [x] **6. Preguntas con imagen de escenario (la más impactante)** ✅
+  Completado 2026-06-03: 12 escenarios cenitales SVG propios y 20 preguntas con `sceneId` tipo "qué hace el coche rojo". Banco total: 320 preguntas.
 
 - [ ] **7. Logros mejorados**
   - Animación celebratoria al desbloquear (confetti)
@@ -100,6 +97,18 @@
 ---
 
 ## Historial completado
+
+### 2026-06-03
+- [x] **Tarea #6 — Preguntas con imagen de escenario** | commit pendiente
+  - Se corrigió el duplicado de IDs `p3q11`/`p3q12` introducido al insertar preguntas con peatones.
+  - Catálogo ampliado de 6 a 12 escenarios cenitales SVG (`trafficScenes.ts`): incorporación a autovía, autobús urbano saliendo de parada, paso ciclista, final de atasco en autovía, marcha atrás a garaje y salida de estacionamiento.
+  - Preguntas con `sceneId`: 8 → 20, repartidas en Preferencia, Distancias y Maniobras.
+  - Verificado con `npx tsc --noEmit`, conteo de escenas y validación de IDs duplicados.
+
+- [x] **Tarea #5 — Notificaciones push/locales** | commit `59e03f3`
+  - `expo-notifications` + `expo-task-manager` presentes.
+  - Scheduler local para recordatorio diario, racha en riesgo, vidas llenas y misiones nuevas.
+  - Configuración persistida y toggles en Ajustes.
 
 ### 2026-06-02
 - [x] **Tarea #4 — Sonidos opcionales en quiz** | commit pendiente
