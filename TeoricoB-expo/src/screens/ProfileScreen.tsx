@@ -9,16 +9,31 @@ import { AvatarView, AVATAR_COLORS } from '../components/AvatarView';
 import LegalScreen from './LegalScreen';
 import StatsScreen from './StatsScreen';
 import { useSoundEffect } from '../audio/useSoundEffect';
+import { useAuth } from '../auth/AuthContext';
+import AuthScreen from '../auth/AuthScreen';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   if (showLegal) return <LegalScreen onBack={() => setShowLegal(false)} />;
   if (showStats) return <StatsScreen onBack={() => setShowStats(false)} />;
-  return <ProfileMain onShowLegal={() => setShowLegal(true)} onShowStats={() => setShowStats(true)} />;
+  return (
+    <>
+      <ProfileMain
+        onShowLegal={() => setShowLegal(true)}
+        onShowStats={() => setShowStats(true)}
+        onShowAuth={() => setShowAuth(true)}
+      />
+      <Modal visible={showAuth} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAuth(false)}>
+        <AuthScreen onClose={() => setShowAuth(false)} />
+      </Modal>
+    </>
+  );
 }
 
-function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; onShowStats: () => void }) {
+function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: () => void; onShowStats: () => void; onShowAuth: () => void }) {
+  const { user: authUser, signOut } = useAuth();
   const user = useStore(s => s.user);
   const topics = useStore(s => s.topics);
   const resetProgress = useStore(s => s.resetProgress);
@@ -112,6 +127,53 @@ function ProfileMain({ onShowLegal, onShowStats }: { onShowLegal: () => void; on
             <Text style={{ fontSize: 14 }}>{league.emoji}</Text>
             <Text style={[s.leagueTxt, { color: league.color }]}>Liga {user.league}</Text>
           </View>
+        </View>
+
+        {/* Account section: login o info de cuenta */}
+        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, marginBottom: 16 }]}>
+          {authUser ? (
+            <>
+              <View style={s.accountRow}>
+                <View style={[s.accountIcon, { backgroundColor: theme.correct + '20' }]}>
+                  <Ionicons name="cloud-done" size={20} color={theme.correct} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.accountTitle, { color: theme.textPrimary }]}>
+                    Sincronizado
+                  </Text>
+                  <Text style={[s.accountSub, { color: theme.textSecondary }]} numberOfLines={1}>
+                    {authUser.email ?? 'Sesión activa'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    Alert.alert('Cerrar sesión', 'Tu progreso local seguirá disponible. ¿Cerrar sesión?', [
+                      { text: 'Cancelar', style: 'cancel' },
+                      { text: 'Cerrar sesión', style: 'destructive', onPress: () => signOut() },
+                    ]);
+                  }}
+                  style={s.accountAction}
+                >
+                  <Ionicons name="log-out-outline" size={18} color={theme.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <TouchableOpacity onPress={onShowAuth} style={s.accountRow} activeOpacity={0.7}>
+              <View style={[s.accountIcon, { backgroundColor: theme.primary + '20' }]}>
+                <Ionicons name="cloud-upload-outline" size={20} color={theme.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.accountTitle, { color: theme.textPrimary }]}>
+                  Guarda tu progreso
+                </Text>
+                <Text style={[s.accountSub, { color: theme.textSecondary }]}>
+                  Crea una cuenta gratis para sincronizar entre dispositivos
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Color picker modal */}
@@ -385,4 +447,9 @@ const s = StyleSheet.create({
   timeText: { fontSize: 15, fontWeight: '800', minWidth: 50, textAlign: 'center' },
   resetBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, borderWidth: 1.5, padding: 14 },
   resetTxt: { fontSize: 15, fontWeight: '600' },
+  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 },
+  accountIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  accountTitle: { fontSize: 14, fontWeight: '700' },
+  accountSub: { fontSize: 12, marginTop: 2 },
+  accountAction: { padding: 8 },
 });

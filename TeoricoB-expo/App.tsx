@@ -9,6 +9,7 @@ import { useSoundEffect } from './src/audio/useSoundEffect';
 import { requestPermissions as requestNotifPermissions, syncNotifications } from './src/notifications/scheduler';
 import { AchievementUnlockModal } from './src/components/AchievementUnlockModal';
 import { AuthProvider } from './src/auth/AuthContext';
+import { useAutoSync } from './src/sync/useAutoSync';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
@@ -44,6 +45,7 @@ export default function App() {
 }
 
 function AppContent() {
+  useAutoSync();
   const isOnboardingComplete = useStore(s => s.isOnboardingComplete);
   const tutorialSeen = useStore(s => s.tutorialSeen);
   const disclaimerAccepted = useStore(s => s.disclaimerAccepted);
