@@ -1,6 +1,12 @@
 -- ╔══════════════════════════════════════════════════════════════════════╗
 -- ║ TeoricoB — esquema BD inicial (Supabase / Postgres)                 ║
--- ║ Versión: 1.0  · Fecha: 2026-06-03                                   ║
+-- ║ Versión: 1.0.1  · Fecha: 2026-06-03                                 ║
+-- ║                                                                      ║
+-- ║ Script IDEMPOTENTE: puedes ejecutarlo varias veces sin problemas.   ║
+-- ║ Si ya hay datos, NO los borra (usa IF NOT EXISTS).                  ║
+-- ║                                                                      ║
+-- ║ Si quieres RESETEAR todo (proyecto en limpio), descomenta el bloque ║
+-- ║ de DROP TABLE al final de este archivo.                             ║
 -- ╚══════════════════════════════════════════════════════════════════════╝
 --
 -- Filosofía:
@@ -13,11 +19,55 @@
 -- - RLS activo en TODAS las tablas desde el inicio.
 -- - Schema preparado para autoescuelas (Fase 4) y recompensas (Fase 5)
 --   aunque las features se activan después.
---
+
+begin;
+
 -- ─────────────────────────────────────────────────────────────────────
--- 1. PERFILES
+-- 0. FUNCIONES UTILITARIAS (idempotentes)
 -- ─────────────────────────────────────────────────────────────────────
-create table public.profiles (
+create or replace function public.set_updated_at() returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- 1. AUTOESCUELAS (declaradas antes que profiles para que la FK funcione)
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.autoescuelas (
+  id              uuid primary key default gen_random_uuid(),
+  name            text not null,
+  city            text not null,
+  province        text,
+  country         text not null default 'ES',
+  cif             text unique,
+  email_contact   text,
+  phone           text,
+  -- Código alfanumérico corto que el instructor pasa al alumno para vincularse
+  join_code       text not null unique default upper(substring(md5(random()::text) from 1 for 6)),
+  -- Plan comercial
+  plan            text not null default 'trial' check (plan in ('trial', 'basic', 'pro', 'enterprise')),
+  trial_ends_at   timestamptz,
+  active          boolean not null default true,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+create index if not exists idx_autoescuelas_city
+  on public.autoescuelas(city) where active = true;
+create index if not exists idx_autoescuelas_join_code
+  on public.autoescuelas(join_code) where active = true;
+
+drop trigger if exists trg_autoescuelas_updated_at on public.autoescuelas;
+create trigger trg_autoescuelas_updated_at
+  before update on public.autoescuelas
+  for each row execute function public.set_updated_at();
+
+-- ─────────────────────────────────────────────────────────────────────
+-- 2. PERFILES
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists public.profiles (
   id                   uuid primary key references auth.users(id) on delete cascade,
   display_name         text not null,
   avatar_emoji         text default '🎨',           -- color hex o emoji
@@ -36,28 +86,22 @@ create table public.profiles (
   deleted_at           timestamptz
 );
 
-create index idx_profiles_autoescuela on public.profiles(autoescuela_id)
+create index if not exists idx_profiles_autoescuela
+  on public.profiles(autoescuela_id)
   where autoescuela_id is not null;
 
--- Trigger updated_at
-create or replace function public.set_updated_at() returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
+drop trigger if exists trg_profiles_updated_at on public.profiles;
 create trigger trg_profiles_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
 
 -- ─────────────────────────────────────────────────────────────────────
--- 2. PROGRESO DEL USUARIO (espejo Zustand)
+-- 3. PROGRESO DEL USUARIO (espejo Zustand)
 -- ─────────────────────────────────────────────────────────────────────
 -- Estrategia: 1 fila por usuario con un blob JSONB completo del store +
 -- columnas extraídas para queries. Sync push reemplaza el blob entero
 -- (last-write-wins). Mistakes/exam_history quedan separados.
-create table public.user_progress (
+create table if not exists public.user_progress (
   user_id            uuid primary key references auth.users(id) on delete cascade,
   -- Campos extraídos del state (para leaderboards y queries)
   xp                 int not null default 0,
@@ -78,17 +122,20 @@ create table public.user_progress (
   updated_at         timestamptz not null default now()
 );
 
-create index idx_user_progress_league_weekly on public.user_progress(league, weekly_xp desc);
-create index idx_user_progress_xp on public.user_progress(xp desc);
+create index if not exists idx_user_progress_league_weekly
+  on public.user_progress(league, weekly_xp desc);
+create index if not exists idx_user_progress_xp
+  on public.user_progress(xp desc);
 
+drop trigger if exists trg_user_progress_updated_at on public.user_progress;
 create trigger trg_user_progress_updated_at
   before update on public.user_progress
   for each row execute function public.set_updated_at();
 
 -- ─────────────────────────────────────────────────────────────────────
--- 3. ERRORES (spaced repetition simple)
+-- 4. ERRORES (spaced repetition simple)
 -- ─────────────────────────────────────────────────────────────────────
-create table public.mistakes (
+create table if not exists public.mistakes (
   user_id            uuid not null references auth.users(id) on delete cascade,
   question_id        text not null,
   category           text not null,
@@ -98,12 +145,13 @@ create table public.mistakes (
   primary key (user_id, question_id)
 );
 
-create index idx_mistakes_user_recent on public.mistakes(user_id, failed_at desc);
+create index if not exists idx_mistakes_user_recent
+  on public.mistakes(user_id, failed_at desc);
 
 -- ─────────────────────────────────────────────────────────────────────
--- 4. HISTORIAL DE EXÁMENES
+-- 5. HISTORIAL DE EXÁMENES
 -- ─────────────────────────────────────────────────────────────────────
-create table public.exam_history (
+create table if not exists public.exam_history (
   id                  uuid primary key default gen_random_uuid(),
   user_id             uuid not null references auth.users(id) on delete cascade,
   taken_at            timestamptz not null default now(),
@@ -114,12 +162,13 @@ create table public.exam_history (
   passed              boolean not null
 );
 
-create index idx_exam_history_user_recent on public.exam_history(user_id, taken_at desc);
+create index if not exists idx_exam_history_user_recent
+  on public.exam_history(user_id, taken_at desc);
 
 -- ─────────────────────────────────────────────────────────────────────
--- 5. AMIGOS (real social, reemplaza MOCK_FRIENDS)
+-- 6. AMIGOS (real social, reemplaza MOCK_FRIENDS)
 -- ─────────────────────────────────────────────────────────────────────
-create table public.friendships (
+create table if not exists public.friendships (
   user_id_a   uuid not null references auth.users(id) on delete cascade,
   user_id_b   uuid not null references auth.users(id) on delete cascade,
   status      text not null check (status in ('pending', 'accepted', 'blocked')),
@@ -129,39 +178,12 @@ create table public.friendships (
   check (user_id_a < user_id_b)  -- canonical order, evita duplicados
 );
 
-create index idx_friendships_b on public.friendships(user_id_b);
+create index if not exists idx_friendships_b on public.friendships(user_id_b);
 
 -- ─────────────────────────────────────────────────────────────────────
--- 6. AUTOESCUELAS (Fase 4 — diseñado desde ya)
+-- 7. MIEMBROS DE AUTOESCUELA (alumnos + instructores)
 -- ─────────────────────────────────────────────────────────────────────
-create table public.autoescuelas (
-  id              uuid primary key default gen_random_uuid(),
-  name            text not null,
-  city            text not null,
-  province        text,
-  country         text not null default 'ES',
-  cif             text unique,
-  email_contact   text,
-  phone           text,
-  -- Código alfanumérico corto que el instructor pasa al alumno para vincularse
-  join_code       text not null unique default upper(substring(md5(random()::text) from 1 for 6)),
-  -- Plan comercial
-  plan            text not null default 'trial' check (plan in ('trial', 'basic', 'pro', 'enterprise')),
-  trial_ends_at   timestamptz,
-  active          boolean not null default true,
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
-);
-
-create index idx_autoescuelas_city on public.autoescuelas(city) where active = true;
-create index idx_autoescuelas_join_code on public.autoescuelas(join_code) where active = true;
-
-create trigger trg_autoescuelas_updated_at
-  before update on public.autoescuelas
-  for each row execute function public.set_updated_at();
-
--- Roles dentro de una autoescuela
-create table public.autoescuela_members (
+create table if not exists public.autoescuela_members (
   autoescuela_id  uuid not null references public.autoescuelas(id) on delete cascade,
   user_id         uuid not null references auth.users(id) on delete cascade,
   role            text not null check (role in ('alumno', 'instructor', 'admin')),
@@ -169,12 +191,13 @@ create table public.autoescuela_members (
   primary key (autoescuela_id, user_id)
 );
 
-create index idx_autoescuela_members_user on public.autoescuela_members(user_id);
+create index if not exists idx_autoescuela_members_user
+  on public.autoescuela_members(user_id);
 
 -- ─────────────────────────────────────────────────────────────────────
--- 7. RECOMPENSAS CANJEABLES (Fase 5 — diseñado desde ya)
+-- 8. RECOMPENSAS CANJEABLES (Fase 5)
 -- ─────────────────────────────────────────────────────────────────────
-create table public.rewards_catalog (
+create table if not exists public.rewards_catalog (
   id                       uuid primary key default gen_random_uuid(),
   partner_name             text not null,       -- "McDonalds", "Concesionario Toyota Valencia"
   title                    text not null,        -- "McFlurry gratis"
@@ -192,10 +215,11 @@ create table public.rewards_catalog (
   created_at               timestamptz not null default now()
 );
 
-create index idx_rewards_active on public.rewards_catalog(active, valid_until) where active = true;
+create index if not exists idx_rewards_active
+  on public.rewards_catalog(active, valid_until) where active = true;
 
 -- Canjes individuales
-create table public.redemptions (
+create table if not exists public.redemptions (
   id                  uuid primary key default gen_random_uuid(),
   user_id             uuid not null references auth.users(id) on delete cascade,
   reward_id           uuid not null references public.rewards_catalog(id) on delete restrict,
@@ -210,12 +234,15 @@ create table public.redemptions (
   redeemed_at         timestamptz
 );
 
-create index idx_redemptions_user_recent on public.redemptions(user_id, created_at desc);
-create index idx_redemptions_status_pending on public.redemptions(created_at) where status = 'pending';
-create index idx_redemptions_code on public.redemptions(redemption_code);
+create index if not exists idx_redemptions_user_recent
+  on public.redemptions(user_id, created_at desc);
+create index if not exists idx_redemptions_status_pending
+  on public.redemptions(created_at) where status = 'pending';
+create index if not exists idx_redemptions_code
+  on public.redemptions(redemption_code);
 
 -- ─────────────────────────────────────────────────────────────────────
--- 8. LEADERBOARD VIEW (reemplaza MOCK_FRIENDS)
+-- 9. LEADERBOARD VIEW (reemplaza MOCK_FRIENDS)
 -- ─────────────────────────────────────────────────────────────────────
 create or replace view public.weekly_leaderboard as
   select
@@ -232,7 +259,7 @@ create or replace view public.weekly_leaderboard as
   where p.deleted_at is null and up.weekly_xp > 0;
 
 -- ─────────────────────────────────────────────────────────────────────
--- 9. ROW LEVEL SECURITY (CRÍTICO — activo desde día 1)
+-- 10. ROW LEVEL SECURITY (CRÍTICO — activo desde día 1)
 -- ─────────────────────────────────────────────────────────────────────
 alter table public.profiles            enable row level security;
 alter table public.user_progress       enable row level security;
@@ -244,17 +271,23 @@ alter table public.autoescuela_members enable row level security;
 alter table public.rewards_catalog     enable row level security;
 alter table public.redemptions         enable row level security;
 
+-- Helper macro: las policies usan DROP IF EXISTS + CREATE para idempotencia.
+
 -- ── profiles ─────────────────────────────────────────────────────────
+drop policy if exists "Users read own profile"   on public.profiles;
+drop policy if exists "Users update own profile" on public.profiles;
+drop policy if exists "Users insert own profile" on public.profiles;
 create policy "Users read own profile"
   on public.profiles for select using (auth.uid() = id);
 create policy "Users update own profile"
   on public.profiles for update using (auth.uid() = id);
 create policy "Users insert own profile"
   on public.profiles for insert with check (auth.uid() = id);
--- Instructores ven perfiles de SUS alumnos (limitado a display_name + avatar)
--- → se hará vía función SECURITY DEFINER en Fase 4. Por ahora cerrado.
 
 -- ── user_progress ────────────────────────────────────────────────────
+drop policy if exists "Users read own progress"   on public.user_progress;
+drop policy if exists "Users upsert own progress" on public.user_progress;
+drop policy if exists "Users update own progress" on public.user_progress;
 create policy "Users read own progress"
   on public.user_progress for select using (auth.uid() = user_id);
 create policy "Users upsert own progress"
@@ -263,16 +296,22 @@ create policy "Users update own progress"
   on public.user_progress for update using (auth.uid() = user_id);
 
 -- ── mistakes ─────────────────────────────────────────────────────────
+drop policy if exists "Users CRUD own mistakes" on public.mistakes;
 create policy "Users CRUD own mistakes"
   on public.mistakes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ── exam_history ─────────────────────────────────────────────────────
+drop policy if exists "Users insert own exams" on public.exam_history;
+drop policy if exists "Users read own exams"   on public.exam_history;
 create policy "Users insert own exams"
   on public.exam_history for insert with check (auth.uid() = user_id);
 create policy "Users read own exams"
   on public.exam_history for select using (auth.uid() = user_id);
 
 -- ── friendships ──────────────────────────────────────────────────────
+drop policy if exists "Users see friendships they're in"   on public.friendships;
+drop policy if exists "Users create friend requests"       on public.friendships;
+drop policy if exists "Users update friendships they're in" on public.friendships;
 create policy "Users see friendships they're in"
   on public.friendships for select
   using (auth.uid() in (user_id_a, user_id_b));
@@ -284,31 +323,32 @@ create policy "Users update friendships they're in"
   using (auth.uid() in (user_id_a, user_id_b));
 
 -- ── autoescuelas ─────────────────────────────────────────────────────
--- Cualquier autenticado lee el catálogo activo (para el selector).
+drop policy if exists "Auth users list active autoescuelas" on public.autoescuelas;
+drop policy if exists "Members manage their autoescuela"    on public.autoescuelas;
 create policy "Auth users list active autoescuelas"
   on public.autoescuelas for select
   using (active = true and auth.role() = 'authenticated');
--- Solo admins/instructores de la autoescuela la actualizan.
 create policy "Members manage their autoescuela"
   on public.autoescuelas for update
   using (
     exists (
       select 1 from public.autoescuela_members m
-      where m.autoescuela_id = id
+      where m.autoescuela_id = autoescuelas.id
         and m.user_id = auth.uid()
         and m.role in ('admin', 'instructor')
     )
   );
 
 -- ── autoescuela_members ──────────────────────────────────────────────
--- Alumno ve su propia membresía. Instructor/admin de la autoescuela ve todas.
+drop policy if exists "Members visible to self and staff" on public.autoescuela_members;
+drop policy if exists "Alumno joins via valid code"       on public.autoescuela_members;
 create policy "Members visible to self and staff"
   on public.autoescuela_members for select
   using (
     auth.uid() = user_id
     or exists (
       select 1 from public.autoescuela_members m
-      where m.autoescuela_id = autoescuela_id
+      where m.autoescuela_id = autoescuela_members.autoescuela_id
         and m.user_id = auth.uid()
         and m.role in ('admin', 'instructor')
     )
@@ -316,14 +356,16 @@ create policy "Members visible to self and staff"
 create policy "Alumno joins via valid code"
   on public.autoescuela_members for insert
   with check (auth.uid() = user_id and role = 'alumno');
--- Staff lo gestiona vía RPC con SECURITY DEFINER (Fase 4).
 
 -- ── rewards_catalog ──────────────────────────────────────────────────
+drop policy if exists "Anyone reads active rewards" on public.rewards_catalog;
 create policy "Anyone reads active rewards"
   on public.rewards_catalog for select
   using (active = true and (valid_until is null or valid_until > now()));
 
 -- ── redemptions ──────────────────────────────────────────────────────
+drop policy if exists "Users read own redemptions"   on public.redemptions;
+drop policy if exists "Users request own redemption" on public.redemptions;
 create policy "Users read own redemptions"
   on public.redemptions for select using (auth.uid() = user_id);
 create policy "Users request own redemption"
@@ -331,7 +373,7 @@ create policy "Users request own redemption"
 -- Aprobación / cambio de status: solo service_role (panel admin).
 
 -- ─────────────────────────────────────────────────────────────────────
--- 10. TRIGGER: crear profile + user_progress al registrarse
+-- 11. TRIGGER: crear profile + user_progress al registrarse
 -- ─────────────────────────────────────────────────────────────────────
 create or replace function public.handle_new_user()
 returns trigger
@@ -346,17 +388,41 @@ begin
       new.raw_user_meta_data->>'name',
       split_part(coalesce(new.email, 'Usuario'), '@', 1)
     )
-  );
-  insert into public.user_progress (user_id) values (new.id);
+  )
+  on conflict (id) do nothing;
+
+  insert into public.user_progress (user_id) values (new.id)
+  on conflict (user_id) do nothing;
+
   return new;
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+commit;
+
 -- ─────────────────────────────────────────────────────────────────────
--- FIN del esquema v1.0
--- Próximas migraciones: numerar como `001_schema.sql`, `002_xxx.sql`...
+-- FIN del esquema v1.0.1
+-- Próximas migraciones: numerar como `001_xxx.sql`, `002_xxx.sql`...
 -- ─────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────
+-- ANEXO — RESET COMPLETO (descomentar SOLO si quieres empezar de cero
+-- y tienes la certeza de que NO hay datos reales todavía)
+-- ─────────────────────────────────────────────────────────────────────
+-- drop table if exists public.redemptions          cascade;
+-- drop table if exists public.rewards_catalog      cascade;
+-- drop table if exists public.autoescuela_members  cascade;
+-- drop table if exists public.friendships          cascade;
+-- drop table if exists public.exam_history         cascade;
+-- drop table if exists public.mistakes             cascade;
+-- drop table if exists public.user_progress        cascade;
+-- drop table if exists public.profiles             cascade;
+-- drop table if exists public.autoescuelas         cascade;
+-- drop view  if exists public.weekly_leaderboard;
+-- drop function if exists public.handle_new_user();
+-- drop function if exists public.set_updated_at();
