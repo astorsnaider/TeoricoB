@@ -32,6 +32,41 @@ export interface ProfileRow {
   deleted_at: string | null;
 }
 
+// NOTA: tipos Insert/Update declarados con `type` (no `interface`)
+// intencionalmente. Los type literals son estructuralmente asignables a
+// Record<string, unknown> (el constraint que pide @supabase/supabase-js
+// en GenericTable.Insert), mientras que las interfaces nombradas NO lo
+// son. Si conviertes esto a `interface`, el tipado del cliente colapsa
+// a `never` y todos los upsert/select fallan en compilación.
+export type UserProgressInsert = {
+  user_id: string;
+  xp?: number;
+  weekly_xp?: number;
+  weekly_reset_at?: string;
+  streak?: number;
+  hearts?: number;
+  gems?: number;
+  league?: LeagueName;
+  last_active_date?: string | null;
+  total_correct?: number;
+  total_answered?: number;
+  state_blob?: Record<string, unknown>;
+  schema_version?: number;
+  updated_at?: string;
+};
+
+export type ProfileInsert = {
+  id: string;
+  display_name: string;
+  avatar_emoji?: string;
+  profile_photo_url?: string | null;
+  birth_year?: number | null;
+  locale?: string;
+  autoescuela_id?: string | null;
+  disclaimer_accepted?: boolean;
+  tutorial_seen?: boolean;
+};
+
 export interface UserProgressRow {
   user_id: string;
   xp: number;
@@ -152,21 +187,32 @@ export interface WeeklyLeaderboardRow {
 // Estructura mínima para tipar el cliente. Cuando integremos
 // `supabase gen types`, esto se autogenera.
 
+// `Loose<T>` añade un index signature al tipo. Es necesario para que
+// las interfaces nombradas satisfagan `Record<string, unknown>`, que es
+// el constraint de `GenericTable.Row` en @supabase/postgrest-js. Sin
+// esto, todos los upsert/select fallan en compilación con `never`.
+// Las interfaces siguen estrictas en su uso normal; solo aquí se
+// "afloran" para Postgrest.
+type Loose<T> = T & Record<string, unknown>;
+
+type AnyRecord = Record<string, unknown>;
+
 export interface Database {
   public: {
     Tables: {
-      profiles:            { Row: ProfileRow;            Insert: Partial<ProfileRow>            & { id: string; display_name: string }; Update: Partial<ProfileRow> };
-      user_progress:       { Row: UserProgressRow;       Insert: Partial<UserProgressRow>       & { user_id: string };                  Update: Partial<UserProgressRow> };
-      mistakes:            { Row: MistakeRow;            Insert: MistakeRow;                                                            Update: Partial<MistakeRow> };
-      exam_history:        { Row: ExamHistoryRow;        Insert: Omit<ExamHistoryRow, 'id' | 'taken_at'> & { id?: string; taken_at?: string }; Update: Partial<ExamHistoryRow> };
-      friendships:         { Row: FriendshipRow;         Insert: FriendshipRow;                                                         Update: Partial<FriendshipRow> };
-      autoescuelas:        { Row: AutoescuelaRow;        Insert: Partial<AutoescuelaRow>        & { name: string; city: string };       Update: Partial<AutoescuelaRow> };
-      autoescuela_members: { Row: AutoescuelaMemberRow;  Insert: AutoescuelaMemberRow;                                                  Update: Partial<AutoescuelaMemberRow> };
-      rewards_catalog:     { Row: RewardCatalogRow;      Insert: Partial<RewardCatalogRow>      & { partner_name: string; title: string; description: string; reward_type: RewardType }; Update: Partial<RewardCatalogRow> };
-      redemptions:         { Row: RedemptionRow;         Insert: Partial<RedemptionRow>         & { user_id: string; reward_id: string }; Update: Partial<RedemptionRow> };
+      profiles:            { Row: Loose<ProfileRow>;           Insert: ProfileInsert;        Update: ProfileInsert;       Relationships: [] };
+      user_progress:       { Row: Loose<UserProgressRow>;      Insert: UserProgressInsert;   Update: UserProgressInsert;  Relationships: [] };
+      mistakes:            { Row: Loose<MistakeRow>;           Insert: Loose<MistakeRow>;    Update: AnyRecord;           Relationships: [] };
+      exam_history:        { Row: Loose<ExamHistoryRow>;       Insert: AnyRecord;            Update: AnyRecord;           Relationships: [] };
+      friendships:         { Row: Loose<FriendshipRow>;        Insert: Loose<FriendshipRow>; Update: AnyRecord;           Relationships: [] };
+      autoescuelas:        { Row: Loose<AutoescuelaRow>;       Insert: AnyRecord;            Update: AnyRecord;           Relationships: [] };
+      autoescuela_members: { Row: Loose<AutoescuelaMemberRow>; Insert: Loose<AutoescuelaMemberRow>; Update: AnyRecord;    Relationships: [] };
+      rewards_catalog:     { Row: Loose<RewardCatalogRow>;     Insert: AnyRecord;            Update: AnyRecord;           Relationships: [] };
+      redemptions:         { Row: Loose<RedemptionRow>;        Insert: AnyRecord;            Update: AnyRecord;           Relationships: [] };
     };
     Views: {
-      weekly_leaderboard: { Row: WeeklyLeaderboardRow };
+      weekly_leaderboard: { Row: Loose<WeeklyLeaderboardRow>; Relationships: [] };
     };
+    Functions: Record<never, never>;
   };
 }

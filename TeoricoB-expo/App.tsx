@@ -8,6 +8,7 @@ import { useTheme } from './src/hooks/useTheme';
 import { useSoundEffect } from './src/audio/useSoundEffect';
 import { requestPermissions as requestNotifPermissions, syncNotifications } from './src/notifications/scheduler';
 import { AchievementUnlockModal } from './src/components/AchievementUnlockModal';
+import { AuthProvider } from './src/auth/AuthContext';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
@@ -35,6 +36,14 @@ const TABS: TabDef[] = [
 ];
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const isOnboardingComplete = useStore(s => s.isOnboardingComplete);
   const tutorialSeen = useStore(s => s.tutorialSeen);
   const disclaimerAccepted = useStore(s => s.disclaimerAccepted);
