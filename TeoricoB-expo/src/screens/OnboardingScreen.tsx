@@ -47,8 +47,8 @@ export default function OnboardingScreen() {
     {
       icon: 'cloud-upload-outline' as const,
       title: 'Guarda tu progreso',
-      subtitle: 'Crea una cuenta gratis para sincronizar tu racha, XP y logros entre todos tus dispositivos. Puedes saltarlo y crearla más tarde.',
-      cta: user ? 'Comenzar' : 'Crear cuenta',
+      subtitle: 'Crea cuenta o inicia sesión para sincronizar tu racha, XP y logros entre todos tus dispositivos. Puedes saltarlo y hacerlo más tarde.',
+      cta: user ? 'Comenzar' : 'Crear cuenta o entrar',
     },
   ];
 
@@ -192,8 +192,8 @@ export default function OnboardingScreen() {
       <Modal visible={showAuth} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAuth(false)}>
         <AuthScreen
           onClose={() => setShowAuth(false)}
-          ctaTitle="Crea tu cuenta"
-          ctaSubtitle="Con tu cuenta, tu progreso de hoy te seguirá si cambias de móvil, reinstalas la app o estudias también desde el ordenador."
+          ctaTitle="Crea cuenta o entra"
+          ctaSubtitle="Si ya tenías cuenta, te enviaremos un código para entrar. Si no, te la creamos automáticamente — mismo flujo en ambos casos."
         />
       </Modal>
     </SafeAreaView>

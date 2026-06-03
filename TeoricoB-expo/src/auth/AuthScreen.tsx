@@ -118,12 +118,12 @@ export default function AuthScreen({ onClose, ctaTitle, ctaSubtitle }: Props) {
             <Text style={[s.title, { color: theme.textPrimary }]}>
               {showCodeStep
                 ? 'Revisa tu email'
-                : (ctaTitle ?? 'Guarda tu progreso')}
+                : (ctaTitle ?? 'Crea cuenta o entra')}
             </Text>
             <Text style={[s.subtitle, { color: theme.textSecondary }]}>
               {showCodeStep
                 ? `Hemos enviado un código de 6 dígitos a${'\n'}`
-                : (ctaSubtitle ?? 'Crea una cuenta para sincronizar tu racha, XP y logros entre dispositivos. Es gratis y opcional.')}
+                : (ctaSubtitle ?? 'Si ya tenías cuenta, te enviaremos un código para entrar. Si no, te la creamos sin pasos extra. Gratis y opcional.')}
               {showCodeStep && (
                 <Text style={{ fontWeight: '700', color: theme.textPrimary }}>
                   {phase.kind === 'code' || phase.kind === 'verifying' ? phase.email : ''}

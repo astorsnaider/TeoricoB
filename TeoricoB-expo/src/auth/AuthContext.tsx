@@ -63,6 +63,31 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Convierte mensajes de error técnicos de Supabase en algo que el
+ * usuario final entienda y sepa qué hacer.
+ */
+function friendlyAuthError(raw: string): string {
+  const m = raw.toLowerCase();
+  if (m.includes('rate limit')) {
+    return 'Has pedido demasiados códigos en poco tiempo. Espera unos minutos antes de intentarlo otra vez.';
+  }
+  if (m.includes('invalid login credentials') || m.includes('invalid token') || m.includes('otp_expired') || m.includes('expired')) {
+    return 'El código es incorrecto o ha caducado. Pide uno nuevo.';
+  }
+  if (m.includes('email') && m.includes('invalid')) {
+    return 'El email no parece válido. Revísalo y vuelve a intentarlo.';
+  }
+  if (m.includes('network') || m.includes('failed to fetch')) {
+    return 'No hay conexión a internet. Comprueba tu red y vuelve a intentarlo.';
+  }
+  if (m.includes('signup') && m.includes('disabled')) {
+    return 'No se permiten cuentas nuevas en este momento. Si ya tenías cuenta, prueba a iniciar sesión.';
+  }
+  // Fallback: dejamos el mensaje original pero con prefijo amable
+  return raw;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -141,10 +166,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // NO mandamos emailRedirectTo: con shouldCreateUser=true y sin
         // redirect, Supabase mete `{{ .Token }}` en el email si el
         // template lo usa. El usuario ve el código de 6 dígitos.
+        // shouldCreateUser=true → si la cuenta no existe, la crea; si
+        // existe, es un login. El usuario no distingue ambos casos.
         shouldCreateUser: true,
       },
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
     return { ok: true };
   }, []);
 
@@ -158,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token: cleanToken,
       type: 'email',
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
     // Forzamos actualización inmediata del estado (no esperamos al listener)
     if (data?.session) setSession(data.session);
     return { ok: true };

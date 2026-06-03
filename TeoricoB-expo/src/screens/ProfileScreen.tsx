@@ -165,10 +165,10 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.accountTitle, { color: theme.textPrimary }]}>
-                  Guarda tu progreso
+                  Crea cuenta o inicia sesión
                 </Text>
                 <Text style={[s.accountSub, { color: theme.textSecondary }]}>
-                  Crea una cuenta gratis para sincronizar entre dispositivos
+                  Sincroniza tu progreso entre dispositivos. Es gratis.
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
