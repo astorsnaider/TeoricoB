@@ -1,27 +1,28 @@
 /**
  * AuthContext — Estado global de autenticación.
  *
- * Filosofía "auth opcional":
+ * Filosofía "auth opcional pero promovida":
  * - La app sigue funcionando local-only si el usuario no inicia sesión.
+ * - Al onboarding se le ofrece crear cuenta como paso natural.
  * - Cuando inicia sesión, su progreso local se sube y desde ese momento
  *   se sincroniza con la nube.
  * - Cierre de sesión: la sesión Supabase se cierra. El progreso local en
  *   AsyncStorage NO se borra (el usuario puede seguir usando la app).
  *
  * Métodos de autenticación soportados:
- * - Email + magic link (implementado, no requiere config extra).
+ * - Email + OTP code (6 dígitos). Mejor UX en mobile que magic link
+ *   porque no depende de deep links: el usuario lee el código en el
+ *   email y lo escribe en la app. Funciona idéntico en iOS / Android /
+ *   Web / Expo Go.
  * - Apple Sign-In (stub — requiere expo-apple-authentication + cuenta dev Apple).
- * - Google Sign-In (stub — requiere @react-native-google-signin/google-signin).
- *
- * Cuando se tenga cuenta Apple Developer y se quiera publicar en iOS,
- * implementar los métodos signInWithApple / signInWithGoogle.
+ * - Google Sign-In (stub — requiere OAuth flow + redirect).
  */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../api/supabase';
 import { ProfileRow } from '../types/database';
 
-export type AuthMethod = 'magic_link' | 'apple' | 'google';
+export type AuthMethod = 'otp' | 'apple' | 'google';
 
 interface SignInResult {
   ok: boolean;
@@ -39,8 +40,17 @@ interface AuthContextValue {
   isLoading: boolean;
   /** True si Supabase está configurado (env presentes). */
   isConfigured: boolean;
-  /** Envía un email con magic link al usuario. */
-  signInWithMagicLink: (email: string) => Promise<SignInResult>;
+  /**
+   * Pide a Supabase que envíe un código OTP de 6 dígitos al email del
+   * usuario. Crea cuenta si no existe.
+   */
+  requestOtp: (email: string) => Promise<SignInResult>;
+  /**
+   * Verifica el código OTP de 6 dígitos contra el email. Al éxito,
+   * abre sesión automáticamente y onAuthStateChange dispara la
+   * actualización de session/user/profile.
+   */
+  verifyOtp: (email: string, token: string) => Promise<SignInResult>;
   /** Sign-in con Apple (stub hasta cuenta dev Apple). */
   signInWithApple: () => Promise<SignInResult>;
   /** Sign-in con Google (stub hasta config Google OAuth). */
@@ -121,19 +131,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error) setProfile(data);
   }, [session?.user]);
 
-  const signInWithMagicLink = useCallback(async (email: string): Promise<SignInResult> => {
+  const requestOtp = useCallback(async (email: string): Promise<SignInResult> => {
     if (!isSupabaseConfigured) {
       return { ok: false, error: 'Supabase no configurado' };
     }
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
-        // En web abre desde el email, lleva al user a la app.
-        // En mobile, configurar deep link en app.json y cambiar esta URL.
-        emailRedirectTo: undefined,
+        // NO mandamos emailRedirectTo: con shouldCreateUser=true y sin
+        // redirect, Supabase mete `{{ .Token }}` en el email si el
+        // template lo usa. El usuario ve el código de 6 dígitos.
+        shouldCreateUser: true,
       },
     });
     if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }, []);
+
+  const verifyOtp = useCallback(async (email: string, token: string): Promise<SignInResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    const cleanToken = token.replace(/\s+/g, '').trim();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: cleanToken,
+      type: 'email',
+    });
+    if (error) return { ok: false, error: error.message };
+    // Forzamos actualización inmediata del estado (no esperamos al listener)
+    if (data?.session) setSession(data.session);
     return { ok: true };
   }, []);
 
@@ -160,7 +187,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     isLoading,
     isConfigured: isSupabaseConfigured,
-    signInWithMagicLink,
+    requestOtp,
+    verifyOtp,
     signInWithApple,
     signInWithGoogle,
     signOut,

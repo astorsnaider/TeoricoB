@@ -1,16 +1,19 @@
 /**
- * AuthScreen — pantalla modal de login/signup.
+ * AuthScreen — pantalla modal de login/signup en DOS pasos.
  *
- * Método principal: email + magic link. El usuario introduce su email,
- * Supabase le envía un enlace, y al pulsarlo entra autenticado.
+ * Paso 1: el usuario introduce su email → recibe un código de 6
+ * dígitos por correo.
+ * Paso 2: introduce el código en la app y se autentica.
  *
- * Métodos secundarios (deshabilitados todavía):
- * - Apple Sign-In — requiere cuenta dev Apple + expo-apple-authentication.
- * - Google Sign-In — requiere OAuth config + redirect.
+ * Este flow funciona idéntico en iOS / Android / Web / Expo Go porque
+ * no depende de deep links ni de abrir el link desde el dispositivo
+ * correcto. Es el patrón estándar de apps mobile modernas (Slack,
+ * Notion, Linear…).
  *
- * Se invoca desde ProfileScreen como Modal a pantalla completa.
+ * Si en el futuro queremos magic link, está soportado por Supabase
+ * cambiando el template del email.
  */
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
@@ -22,33 +25,73 @@ import { useAuth } from './AuthContext';
 
 interface Props {
   onClose: () => void;
+  /** Texto del CTA superior (override para onboarding). */
+  ctaTitle?: string;
+  /** Subtítulo bajo el CTA (override para onboarding). */
+  ctaSubtitle?: string;
 }
 
-type ScreenState =
-  | { phase: 'idle' }
-  | { phase: 'sending' }
-  | { phase: 'sent'; email: string }
-  | { phase: 'error'; message: string };
+type Phase =
+  | { kind: 'email' }
+  | { kind: 'requesting' }
+  | { kind: 'code'; email: string }
+  | { kind: 'verifying'; email: string; token: string }
+  | { kind: 'error'; email?: string; message: string };
 
-export default function AuthScreen({ onClose }: Props) {
+export default function AuthScreen({ onClose, ctaTitle, ctaSubtitle }: Props) {
   const theme = useTheme();
-  const { signInWithMagicLink, isConfigured } = useAuth();
+  const { requestOtp, verifyOtp, isConfigured, user } = useAuth();
   const [email, setEmail] = useState('');
-  const [state, setState] = useState<ScreenState>({ phase: 'idle' });
+  const [token, setToken] = useState('');
+  const [phase, setPhase] = useState<Phase>({ kind: 'email' });
+  const tokenInputRef = useRef<TextInput>(null);
+
+  // Si el usuario completa el login con éxito, cerramos el modal
+  useEffect(() => {
+    if (user) onClose();
+  }, [user, onClose]);
+
+  // Auto-focus en el input de código cuando entramos a esa fase
+  useEffect(() => {
+    if (phase.kind === 'code') {
+      const t = setTimeout(() => tokenInputRef.current?.focus(), 100);
+      return () => clearTimeout(t);
+    }
+  }, [phase.kind]);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const isSending = state.phase === 'sending';
+  const tokenValid = /^\d{6}$/.test(token.trim());
 
-  const onSubmit = async () => {
-    if (!emailValid || isSending) return;
-    setState({ phase: 'sending' });
-    const result = await signInWithMagicLink(email);
+  const onRequestCode = async () => {
+    if (!emailValid) return;
+    setPhase({ kind: 'requesting' });
+    const result = await requestOtp(email);
     if (result.ok) {
-      setState({ phase: 'sent', email: email.trim() });
+      setPhase({ kind: 'code', email: email.trim().toLowerCase() });
+      setToken('');
     } else {
-      setState({ phase: 'error', message: result.error ?? 'Error desconocido' });
+      setPhase({ kind: 'error', message: result.error ?? 'Error desconocido' });
     }
   };
+
+  const onVerifyCode = async () => {
+    if (phase.kind !== 'code' || !tokenValid) return;
+    setPhase({ kind: 'verifying', email: phase.email, token });
+    const result = await verifyOtp(phase.email, token);
+    if (!result.ok) {
+      setPhase({ kind: 'error', email: phase.email, message: result.error ?? 'Código incorrecto' });
+    }
+    // Si OK, el useEffect del user cierra el modal automáticamente.
+  };
+
+  const onChangeEmail = () => {
+    setPhase({ kind: 'email' });
+    setToken('');
+  };
+
+  const isSending = phase.kind === 'requesting' || phase.kind === 'verifying';
+  const showCodeStep = phase.kind === 'code' || phase.kind === 'verifying' ||
+    (phase.kind === 'error' && phase.email);
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
@@ -56,7 +99,6 @@ export default function AuthScreen({ onClose }: Props) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={s.flex}
       >
-        {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={onClose} style={s.closeBtn} hitSlop={12}>
             <Ionicons name="close" size={26} color={theme.textSecondary} />
@@ -67,14 +109,27 @@ export default function AuthScreen({ onClose }: Props) {
           {/* Hero */}
           <View style={s.hero}>
             <View style={[s.iconCircle, { backgroundColor: theme.primary + '20' }]}>
-              <Ionicons name="cloud-upload" size={40} color={theme.primary} />
+              <Ionicons
+                name={showCodeStep ? 'mail-open' : 'cloud-upload'}
+                size={40}
+                color={theme.primary}
+              />
             </View>
             <Text style={[s.title, { color: theme.textPrimary }]}>
-              Guarda tu progreso
+              {showCodeStep
+                ? 'Revisa tu email'
+                : (ctaTitle ?? 'Guarda tu progreso')}
             </Text>
             <Text style={[s.subtitle, { color: theme.textSecondary }]}>
-              Crea una cuenta para sincronizar tu racha, XP y logros
-              entre todos tus dispositivos. Es gratis y opcional.
+              {showCodeStep
+                ? `Hemos enviado un código de 6 dígitos a${'\n'}`
+                : (ctaSubtitle ?? 'Crea una cuenta para sincronizar tu racha, XP y logros entre dispositivos. Es gratis y opcional.')}
+              {showCodeStep && (
+                <Text style={{ fontWeight: '700', color: theme.textPrimary }}>
+                  {phase.kind === 'code' || phase.kind === 'verifying' ? phase.email : ''}
+                  {phase.kind === 'error' && phase.email ? phase.email : ''}
+                </Text>
+              )}
             </Text>
           </View>
 
@@ -87,40 +142,19 @@ export default function AuthScreen({ onClose }: Props) {
             </View>
           )}
 
-          {/* Estado: sent */}
-          {state.phase === 'sent' && (
-            <View style={[s.sentCard, { backgroundColor: theme.correct + '15', borderColor: theme.correct }]}>
-              <Ionicons name="mail" size={28} color={theme.correct} />
-              <Text style={[s.sentTitle, { color: theme.textPrimary }]}>Revisa tu email</Text>
-              <Text style={[s.sentBody, { color: theme.textSecondary }]}>
-                Hemos enviado un enlace a{'\n'}
-                <Text style={{ fontWeight: '700', color: theme.textPrimary }}>{state.email}</Text>{'\n\n'}
-                Pulsa el enlace para entrar. Puedes cerrar esta pantalla.
-              </Text>
-              <TouchableOpacity
-                onPress={() => setState({ phase: 'idle' })}
-                style={[s.linkBtn]}
-              >
-                <Text style={[s.linkBtnTxt, { color: theme.primary }]}>
-                  Usar otro email
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Estado: idle / error / sending → form */}
-          {state.phase !== 'sent' && (
+          {/* ── Paso 1: email ─────────────────────────────────────────── */}
+          {!showCodeStep && (
             <>
               <View style={[s.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Text style={[s.inputLabel, { color: theme.textSecondary }]}>
                   Tu email
                 </Text>
                 <TextInput
-                  style={[s.input, { color: theme.textPrimary, borderColor: theme.border }]}
+                  style={[s.input, { color: theme.textPrimary }]}
                   value={email}
                   onChangeText={(t) => {
                     setEmail(t);
-                    if (state.phase === 'error') setState({ phase: 'idle' });
+                    if (phase.kind === 'error') setPhase({ kind: 'email' });
                   }}
                   placeholder="tu@email.com"
                   placeholderTextColor={theme.textTertiary}
@@ -129,13 +163,15 @@ export default function AuthScreen({ onClose }: Props) {
                   keyboardType="email-address"
                   textContentType="emailAddress"
                   editable={!isSending}
+                  onSubmitEditing={onRequestCode}
+                  returnKeyType="next"
                 />
               </View>
 
-              {state.phase === 'error' && (
+              {phase.kind === 'error' && !phase.email && (
                 <View style={s.errorRow}>
                   <Ionicons name="alert-circle" size={16} color={theme.wrong} />
-                  <Text style={[s.errorTxt, { color: theme.wrong }]}>{state.message}</Text>
+                  <Text style={[s.errorTxt, { color: theme.wrong }]}>{phase.message}</Text>
                 </View>
               )}
 
@@ -145,21 +181,20 @@ export default function AuthScreen({ onClose }: Props) {
                   { backgroundColor: emailValid && !isSending ? theme.primary : theme.border },
                   SHADOWS.medium,
                 ]}
-                onPress={onSubmit}
+                onPress={onRequestCode}
                 disabled={!emailValid || isSending}
                 activeOpacity={0.85}
               >
-                {isSending ? (
+                {phase.kind === 'requesting' ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <>
                     <Ionicons name="mail-unread" size={18} color="#fff" />
-                    <Text style={s.primaryBtnTxt}>Enviarme un enlace</Text>
+                    <Text style={s.primaryBtnTxt}>Enviarme el código</Text>
                   </>
                 )}
               </TouchableOpacity>
 
-              {/* Métodos alternativos (deshabilitados) */}
               <View style={s.divider}>
                 <View style={[s.dividerLine, { backgroundColor: theme.border }]} />
                 <Text style={[s.dividerTxt, { color: theme.textTertiary }]}>o próximamente</Text>
@@ -192,6 +227,84 @@ export default function AuthScreen({ onClose }: Props) {
               </Text>
             </>
           )}
+
+          {/* ── Paso 2: código ───────────────────────────────────────── */}
+          {showCodeStep && (
+            <>
+              <View style={[s.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Text style={[s.inputLabel, { color: theme.textSecondary }]}>
+                  Código de 6 dígitos
+                </Text>
+                <TextInput
+                  ref={tokenInputRef}
+                  style={[s.codeInput, { color: theme.textPrimary }]}
+                  value={token}
+                  onChangeText={(t) => {
+                    const digits = t.replace(/\D/g, '').slice(0, 6);
+                    setToken(digits);
+                    if (phase.kind === 'error') {
+                      setPhase({ kind: 'code', email: phase.email ?? '' });
+                    }
+                  }}
+                  placeholder="000000"
+                  placeholderTextColor={theme.textTertiary}
+                  keyboardType="number-pad"
+                  textContentType="oneTimeCode"
+                  autoComplete="sms-otp"
+                  maxLength={6}
+                  editable={!isSending}
+                  onSubmitEditing={onVerifyCode}
+                  returnKeyType="done"
+                />
+              </View>
+
+              {phase.kind === 'error' && phase.email && (
+                <View style={s.errorRow}>
+                  <Ionicons name="alert-circle" size={16} color={theme.wrong} />
+                  <Text style={[s.errorTxt, { color: theme.wrong }]}>{phase.message}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[
+                  s.primaryBtn,
+                  { backgroundColor: tokenValid && !isSending ? theme.primary : theme.border },
+                  SHADOWS.medium,
+                ]}
+                onPress={onVerifyCode}
+                disabled={!tokenValid || isSending}
+                activeOpacity={0.85}
+              >
+                {phase.kind === 'verifying' ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                    <Text style={s.primaryBtnTxt}>Entrar</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <View style={s.helpRow}>
+                <TouchableOpacity onPress={onChangeEmail} style={s.linkBtn}>
+                  <Text style={[s.linkBtnTxt, { color: theme.primary }]}>
+                    Usar otro email
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onRequestCode} disabled={isSending} style={s.linkBtn}>
+                  <Text style={[s.linkBtnTxt, { color: theme.textSecondary }]}>
+                    Reenviar código
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={[s.legalNote, { color: theme.textTertiary }]}>
+                ¿No te llega? Revisa la carpeta de spam o promociones. El email
+                viene de Supabase (todavía no configurado con el dominio
+                TeoricoB).
+              </Text>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -208,9 +321,7 @@ const s = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 4,
   },
-  closeBtn: {
-    padding: 6,
-  },
+  closeBtn: { padding: 6 },
   content: {
     paddingHorizontal: 22,
     paddingBottom: 40,
@@ -247,8 +358,13 @@ const s = StyleSheet.create({
   input: {
     fontSize: 16,
     paddingVertical: 6,
-    paddingHorizontal: 0,
-    borderBottomWidth: 0,
+  },
+  codeInput: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: 8,
+    paddingVertical: 6,
   },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
   errorTxt: { fontSize: 13, flex: 1 },
@@ -288,15 +404,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 6,
     marginTop: 8,
   },
-  sentCard: {
-    padding: 22,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    gap: 10,
+  helpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
   },
-  sentTitle: { fontSize: 18, fontWeight: '700' },
-  sentBody: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  linkBtn: { marginTop: 8, padding: 8 },
+  linkBtn: { padding: 8 },
   linkBtnTxt: { fontSize: 13, fontWeight: '600' },
 });
