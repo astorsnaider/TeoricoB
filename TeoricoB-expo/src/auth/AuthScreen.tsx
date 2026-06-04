@@ -84,7 +84,9 @@ export default function AuthScreen({ onClose, initialMode = 'login' }: Props) {
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const passwordValid = password.length >= 8;
   const passwordsMatch = password === password2;
-  const tokenValid = /^\d{6}$/.test(token.trim());
+  // Supabase puede generar OTPs de 6, 8 o 10 dígitos según el setting
+  // "OTP length" del proyecto. Aceptamos cualquier longitud en ese rango.
+  const tokenValid = /^\d{6,10}$/.test(token.trim());
 
   // ── HANDLERS ───────────────────────────────────────────────────────
 
@@ -240,9 +242,9 @@ export default function AuthScreen({ onClose, initialMode = 'login' }: Props) {
   const heroSub =
     view.kind === 'login' ? 'Entra para sincronizar tu progreso entre dispositivos.' :
     view.kind === 'signup' ? 'Solo necesitas un email y una contraseña. Te enviaremos un código para verificar tu cuenta.' :
-    view.kind === 'verify-signup' ? `Hemos enviado un código de 6 dígitos a ${view.email}` :
+    view.kind === 'verify-signup' ? `Hemos enviado un código a ${view.email}` :
     view.kind === 'forgot-email' ? 'Te enviaremos un código por email para que vuelvas a entrar.' :
-    view.kind === 'forgot-code' ? `Hemos enviado un código de 6 dígitos a ${view.email}` :
+    view.kind === 'forgot-code' ? `Hemos enviado un código a ${view.email}` :
     'Elige una contraseña nueva. Mínimo 8 caracteres.';
 
   return (
@@ -435,13 +437,13 @@ export default function AuthScreen({ onClose, initialMode = 'login' }: Props) {
           {view.kind === 'verify-signup' && (
             <>
               <View style={[s.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Text style={[s.inputLabel, { color: theme.textSecondary }]}>Código de 6 dígitos</Text>
+                <Text style={[s.inputLabel, { color: theme.textSecondary }]}>Código del email</Text>
                 <TextInput
                   ref={tokenRef}
-                  style={[s.codeInput, { color: theme.textPrimary }]}
+                  style={[s.codeInput, { color: theme.textPrimary, letterSpacing: token.length > 6 ? 4 : 8 }]}
                   value={token}
                   onChangeText={(t) => {
-                    setToken(t.replace(/\D/g, '').slice(0, 6));
+                    setToken(t.replace(/\D/g, '').slice(0, 10));
                     setErrorMsg(null);
                   }}
                   placeholder="000000"
@@ -449,7 +451,7 @@ export default function AuthScreen({ onClose, initialMode = 'login' }: Props) {
                   keyboardType="number-pad"
                   textContentType="oneTimeCode"
                   autoComplete="sms-otp"
-                  maxLength={6}
+                  maxLength={10}
                   editable={!isSubmitting}
                   onSubmitEditing={handleVerifySignup}
                 />
@@ -532,18 +534,18 @@ export default function AuthScreen({ onClose, initialMode = 'login' }: Props) {
           {view.kind === 'forgot-code' && (
             <>
               <View style={[s.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Text style={[s.inputLabel, { color: theme.textSecondary }]}>Código de 6 dígitos</Text>
+                <Text style={[s.inputLabel, { color: theme.textSecondary }]}>Código del email</Text>
                 <TextInput
                   ref={tokenRef}
-                  style={[s.codeInput, { color: theme.textPrimary }]}
+                  style={[s.codeInput, { color: theme.textPrimary, letterSpacing: token.length > 6 ? 4 : 8 }]}
                   value={token}
-                  onChangeText={(t) => { setToken(t.replace(/\D/g, '').slice(0, 6)); setErrorMsg(null); }}
+                  onChangeText={(t) => { setToken(t.replace(/\D/g, '').slice(0, 10)); setErrorMsg(null); }}
                   placeholder="000000"
                   placeholderTextColor={theme.textTertiary}
                   keyboardType="number-pad"
                   textContentType="oneTimeCode"
                   autoComplete="sms-otp"
-                  maxLength={6}
+                  maxLength={10}
                   editable={!isSubmitting}
                   onSubmitEditing={handleForgotVerify}
                 />
