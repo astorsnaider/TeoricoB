@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "TeoricoB",
-    "slug": "teoricob",
-    "version": "0.5.0",
-    "description": "App de estudio para el permiso de conducción B en España. Material educativo basado en la normativa oficial DGT.",
+    "name": "Teoric",
+    "slug": "teoric",
+    "version": "0.6.0",
+    "description": "App de estudio para los permisos de conducción de la DGT. Material educativo basado en la normativa oficial.",
     "primaryColor": "#E63946",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,11 +16,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.astorsnaider.teoricob",
+      "bundleIdentifier": "com.astorsnaider.teoric",
       "buildNumber": "1"
     },
     "android": {
-      "package": "com.astorsnaider.teoricob",
+      "package": "com.astorsnaider.teoric",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -31,7 +31,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "name": "TeoricoB",
+      "name": "Teoric",
       "themeColor": "#E63946",
       "backgroundColor": "#FFFFFF"
     },

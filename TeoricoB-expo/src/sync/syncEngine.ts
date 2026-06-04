@@ -8,7 +8,7 @@
  * blob JSONB completo).
  *
  * Estrategia de conflictos: **last-write-wins** por timestamp `updated_at`.
- * Suficiente para una app single-user multi-device como TeoricoB.
+ * Suficiente para una app single-user multi-device como Teoric.
  *
  * Push: debounce 5 s. Cada vez que el state cambia, se programa un push.
  *   Si llegan más cambios en esa ventana, se reagenda y consolida.

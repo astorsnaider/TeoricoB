@@ -1,5 +1,5 @@
 /**
- * Scheduler de notificaciones locales para TeoricoB.
+ * Scheduler de notificaciones locales para Teoric.
  *
  * Encapsula `expo-notifications` con un API simple por tipo. Cada tipo
  * tiene su propio identifier para poder cancelarlas selectivamente sin
@@ -13,6 +13,9 @@ import { Platform } from 'react-native';
 import type { NotificationsConfig } from '../types';
 
 // ── Identifiers (para poder cancelarlas selectivamente) ───────────────
+// Mantenemos prefijo "teoricob" en runtime IDs para no invalidar las
+// notificaciones programadas en dispositivos de testers actuales.
+// En el próximo bump destructivo se migrará a "teoric.*".
 const ID_DAILY_REMINDER = 'teoricob.reminder.daily';
 const ID_STREAK_DANGER  = 'teoricob.streak.danger';
 const ID_HEARTS_FULL    = 'teoricob.hearts.full';
@@ -26,7 +29,7 @@ async function ensureChannel() {
   // En Android se requiere un canal explícito desde 8.0
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
-      name: 'TeoricoB',
+      name: 'Teoric',
       importance: Notifications.AndroidImportance.DEFAULT,
       lightColor: '#E63946',
     });

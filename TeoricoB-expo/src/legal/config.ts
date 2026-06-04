@@ -1,5 +1,5 @@
 /**
- * Configuración legal centralizada de TeoricoB.
+ * Configuración legal centralizada de Teoric.
  *
  * Cambia cualquier valor aquí y se actualiza automáticamente
  * en todos los documentos legales, disclaimers y pantallas.
@@ -7,9 +7,9 @@
 
 export const LEGAL = {
   // ─── Identidad de la app ────────────────────────────────────────
-  APP_NAME:        'TeoricoB',
-  APP_VERSION:     '0.5.0',
-  APP_DESCRIPTION: 'App de estudio para el permiso de conducción B',
+  APP_NAME:        'Teoric',
+  APP_VERSION:     '0.6.0',
+  APP_DESCRIPTION: 'App de estudio para los permisos de conducción de la DGT',
 
   // ─── Responsable legal (Art. 10 LSSI) ───────────────────────────
   // Estos datos aparecen en Aviso Legal / Términos / Privacidad,
@@ -17,7 +17,7 @@ export const LEGAL = {
   // Nunca se muestran en la UI principal de la app.
   RESPONSIBLE_NAME: 'Astor Snaider',
   RESPONSIBLE_TYPE: 'Persona física',
-  CONTACT_EMAIL:    'contacto@teoricob.app',   // ⚠️ PLACEHOLDER — actualizar cuando esté el email definitivo
+  CONTACT_EMAIL:    'contacto@teoric.app',   // ⚠️ PLACEHOLDER — actualizar cuando esté el email definitivo
   JURISDICTION:     'España',
   COUNTRY_CODE:     'ES',
 

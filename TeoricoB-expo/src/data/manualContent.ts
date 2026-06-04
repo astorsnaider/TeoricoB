@@ -1,5 +1,5 @@
 /**
- * Contenido del Manual del Permiso B — TeoricoB.
+ * Contenido del Manual del Permiso B — Teoric.
  *
  * Estructura organizada siguiendo los 17 temas oficiales del temario DGT
  * (estructura temática es de dominio público; el contenido es de elaboración

@@ -1,4 +1,4 @@
-# Personalizar los emails de TeoricoB en Supabase
+# Personalizar los emails de Teoric en Supabase
 
 El flow de auth usa **email + contraseña con verificación por código OTP de 6 dígitos**. Supabase envía dos tipos de email:
 
@@ -13,7 +13,7 @@ Esta guía cubre los dos templates. **5-7 minutos en total**.
 
 ## 0. Antes de empezar
 
-- Confirma que el dominio (`Authentication → URL Configuration → Site URL`) está como `https://teoricob.es` o equivalente. Cuando registres el dominio real, lo cambias.
+- Confirma que el dominio (`Authentication → URL Configuration → Site URL`) está como `https://teoric.app` o equivalente. Cuando registres el dominio real, lo cambias.
 - Confirma que está activado **"Confirm email"** en `Authentication → Providers → Email → "Confirm email"` (ON). Si está OFF, Supabase no envía email de verificación y cualquiera puede crear cuenta sin demostrar que el email es suyo.
 
 ---
@@ -26,7 +26,7 @@ Esta guía cubre los dos templates. **5-7 minutos en total**.
 4. Asunto:
 
 ```
-Tu código de verificación TeoricoB: {{ .Token }}
+Tu código de verificación Teoric: {{ .Token }}
 ```
 
 5. Cuerpo HTML (reemplaza todo el contenido):
@@ -37,7 +37,7 @@ Tu código de verificación TeoricoB: {{ .Token }}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Verifica tu email — TeoricoB</title>
+  <title>Verifica tu email — Teoric</title>
 </head>
 <body style="margin:0;padding:0;background:#F2F2F7;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1C1C1E;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F2F2F7;padding:32px 16px;">
@@ -46,7 +46,7 @@ Tu código de verificación TeoricoB: {{ .Token }}
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
           <tr>
             <td style="background:#E63946;padding:28px 24px;text-align:center;">
-              <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">TeoricoB</div>
+              <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">Teoric</div>
               <div style="font-size:13px;color:#ffd9dc;margin-top:4px;">Tu app para aprobar el Teórico de la DGT</div>
             </td>
           </tr>
@@ -68,14 +68,14 @@ Tu código de verificación TeoricoB: {{ .Token }}
           <tr>
             <td style="padding:0 28px 24px 28px;">
               <p style="font-size:13px;line-height:20px;margin:0;color:#6D6D72;">
-                Si no has creado una cuenta en TeoricoB, puedes ignorar este email. Nunca compartas este código con nadie.
+                Si no has creado una cuenta en Teoric, puedes ignorar este email. Nunca compartas este código con nadie.
               </p>
             </td>
           </tr>
           <tr>
             <td style="background:#FAFAFA;border-top:1px solid #E5E5EA;padding:18px 28px;text-align:center;">
               <p style="font-size:12px;line-height:18px;margin:0;color:#8E8E93;">
-                TeoricoB · Preparación para el examen teórico del permiso B<br/>
+                Teoric · Preparación para el examen teórico del permiso B<br/>
                 Material adaptado del catálogo oficial de la DGT
               </p>
             </td>
@@ -98,7 +98,7 @@ Tu código de verificación TeoricoB: {{ .Token }}
 2. Asunto:
 
 ```
-Tu código de recuperación TeoricoB: {{ .Token }}
+Tu código de recuperación Teoric: {{ .Token }}
 ```
 
 3. Cuerpo HTML — es casi idéntico al de signup, solo cambia el texto. Pega esto:
@@ -109,7 +109,7 @@ Tu código de recuperación TeoricoB: {{ .Token }}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Recupera tu cuenta — TeoricoB</title>
+  <title>Recupera tu cuenta — Teoric</title>
 </head>
 <body style="margin:0;padding:0;background:#F2F2F7;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1C1C1E;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F2F2F7;padding:32px 16px;">
@@ -118,7 +118,7 @@ Tu código de recuperación TeoricoB: {{ .Token }}
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
           <tr>
             <td style="background:#E63946;padding:28px 24px;text-align:center;">
-              <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">TeoricoB</div>
+              <div style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">Teoric</div>
               <div style="font-size:13px;color:#ffd9dc;margin-top:4px;">Tu app para aprobar el Teórico de la DGT</div>
             </td>
           </tr>
@@ -147,7 +147,7 @@ Tu código de recuperación TeoricoB: {{ .Token }}
           <tr>
             <td style="background:#FAFAFA;border-top:1px solid #E5E5EA;padding:18px 28px;text-align:center;">
               <p style="font-size:12px;line-height:18px;margin:0;color:#8E8E93;">
-                TeoricoB · Preparación para el examen teórico del permiso B
+                Teoric · Preparación para el examen teórico del permiso B
               </p>
             </td>
           </tr>
@@ -171,7 +171,7 @@ Dos caminos:
 
 ### Opción A — Configurar SMTP propio (recomendado para producción)
 
-Cuando tengas dominio `teoricob.es`:
+Cuando tengas dominio `teoric.app`:
 1. Crea cuenta gratis en **Resend** (https://resend.com) o **Brevo** (https://brevo.com).
 2. Verifica el dominio (añadir 2-3 registros DNS).
 3. En Supabase → **Project Settings** → **Authentication** → **SMTP Settings** → introduce credenciales SMTP.
@@ -207,8 +207,8 @@ Tras aplicar los pasos 1, 2 y 3:
 
 1. Abre la app, ve a Perfil → "Iniciar sesión o crear cuenta" → pestaña "Crear cuenta".
 2. Introduce nombre, email, contraseña (≥8 caracteres) → "Crear cuenta".
-3. Revisa tu correo. Asunto: `Tu código de verificación TeoricoB: 123456`.
-4. El email debería tener el banner rojo TeoricoB y el código grande centrado.
+3. Revisa tu correo. Asunto: `Tu código de verificación Teoric: 123456`.
+4. El email debería tener el banner rojo Teoric y el código grande centrado.
 5. Vuelve a la app, introduce el código → entras autenticado.
 6. Prueba también el flow "¿Olvidaste tu contraseña?" para verificar el segundo email.
 

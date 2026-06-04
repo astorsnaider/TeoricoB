@@ -1,5 +1,5 @@
 -- ╔══════════════════════════════════════════════════════════════════════╗
--- ║ TeoricoB — esquema BD inicial (Supabase / Postgres)                 ║
+-- ║ Teoric — esquema BD inicial (Supabase / Postgres)                   ║
 -- ║ Versión: 1.0.1  · Fecha: 2026-06-03                                 ║
 -- ║                                                                      ║
 -- ║ Script IDEMPOTENTE: puedes ejecutarlo varias veces sin problemas.   ║

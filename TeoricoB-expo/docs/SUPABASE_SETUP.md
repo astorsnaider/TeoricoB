@@ -7,7 +7,7 @@ Esta guía te lleva desde "no tengo cuenta Supabase" hasta "el cliente Expo se c
 1. Entra en **https://supabase.com** → "Start your project" → registra con GitHub o email (recomendado GitHub).
 2. **Create a new project**:
    - Organization: la que se cree por defecto.
-   - Project name: `TeoricoB`.
+   - Project name: `Teoric`.
    - Database password: genera una fuerte (Supabase tiene generador) → **GUÁRDALA en tu gestor de contraseñas**, no la verás más en claro.
    - Region: **West EU (London / Frankfurt)** — más cerca = más rápido para usuarios españoles.
    - Pricing plan: **Free**.
@@ -17,7 +17,7 @@ Esta guía te lleva desde "no tengo cuenta Supabase" hasta "el cliente Expo se c
 
 1. En el dashboard de tu proyecto, panel izquierdo → **SQL Editor**.
 2. Click en **+ New query**.
-3. Abre el archivo `TeoricoB-expo/supabase/schema.sql` de este repo, copia su contenido entero.
+3. Abre el archivo `Teoric-expo/supabase/schema.sql` de este repo, copia su contenido entero.
 4. Pega en el editor SQL de Supabase → **RUN** (botón verde arriba a la derecha).
 5. Si todo va bien: "Success. No rows returned".
 6. Verifica que las tablas están: panel izquierdo → **Table Editor** → deberías ver: `profiles`, `user_progress`, `mistakes`, `exam_history`, `friendships`, `autoescuelas`, `autoescuela_members`, `rewards_catalog`, `redemptions`.
@@ -32,7 +32,7 @@ Esta guía te lleva desde "no tengo cuenta Supabase" hasta "el cliente Expo se c
 
 ## 4. Configurar en el proyecto Expo (1 min)
 
-Crea un archivo `.env.local` en `TeoricoB-expo/` (junto a `package.json`, NO en git, ya está en `.gitignore`):
+Crea un archivo `.env.local` en `Teoric-expo/` (junto a `package.json`, NO en git, ya está en `.gitignore`):
 
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxxxxx.supabase.co
@@ -66,8 +66,8 @@ Reinicia Expo (`npx expo start --clear`) para que cargue las variables.
 ## 6. Auth Email Template (opcional pero importante) (3 min)
 
 Authentication → **Email Templates** → personaliza:
-- "Confirm signup" → cambia "Confirm your email" por algo como "Bienvenido a TeoricoB — confirma tu email".
-- "Magic Link" → "Enlace para entrar en TeoricoB".
+- "Confirm signup" → cambia "Confirm your email" por algo como "Bienvenido a Teoric — confirma tu email".
+- "Magic Link" → "Enlace para entrar en Teoric".
 
 Esto es lo que verán los usuarios reales, ponle cariño.
 

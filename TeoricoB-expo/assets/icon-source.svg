@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  TeoricoB - App icon source (1024x1024)
+  Teoric - App icon source (1024x1024)
   Design: rounded square red background + white circular badge with "B" letter
   Colors: #E63946 (primary red), #FFFFFF (white)
+  TODO: rediseñar para que el badge sea más genérico (no solo "B"), ya
+  que la app pasa a cubrir múltiples permisos de la DGT.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <!-- Rounded square background -->

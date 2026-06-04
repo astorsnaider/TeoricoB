@@ -1,5 +1,5 @@
 /**
- * Manual del Conductor — TeoricoB
+ * Manual del Conductor — Teoric
  *
  * Estructura:
  *  - Home: 18 capítulos del manual + acceso al catálogo de señales + recursos oficiales

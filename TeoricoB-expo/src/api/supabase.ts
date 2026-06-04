@@ -1,5 +1,5 @@
 /**
- * Cliente Supabase único para TeoricoB.
+ * Cliente Supabase único para Teoric.
  *
  * - Las credenciales se leen de variables EXPO_PUBLIC_* (visibles en cliente
  *   por diseño — son la anon key, no la service key).
