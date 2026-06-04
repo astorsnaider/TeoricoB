@@ -21,6 +21,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../api/supabase';
 import { ProfileRow } from '../types/database';
+import { resetSyncStatus } from '../sync/syncEngine';
 
 export type AuthMethod = 'password' | 'apple' | 'google';
 
@@ -83,6 +84,13 @@ interface AuthContextValue {
   signInWithGoogle: () => Promise<AuthResult>;
   /** Cierra sesión. NO borra progreso local. */
   signOut: () => Promise<void>;
+  /**
+   * Borra todos los datos personales del usuario (RGPD Art. 17).
+   * Se ejecuta la RPC delete_my_account en Supabase, después se cierra
+   * sesión. El registro de auth.users queda con email pero sin datos
+   * asociados; se elimina por completo en 30 días (proceso admin).
+   */
+  deleteAccount: () => Promise<AuthResult>;
   /** Recarga el profile desde la BD (tras updates externos). */
   refreshProfile: () => Promise<void>;
 }
@@ -314,6 +322,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);
+    resetSyncStatus();
+  }, []);
+
+  const deleteAccount = useCallback(async (): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    // Type cast: la RPC delete_my_account no está en el Database tipado
+    // todavía (es una función SQL custom). Cuando integremos
+    // supabase gen types se autogenerará.
+    const { error } = await (supabase.rpc as unknown as (name: string) => Promise<{ error: { message: string } | null }>)('delete_my_account');
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    await supabase.auth.signOut();
+    setSession(null);
+    setProfile(null);
+    resetSyncStatus();
+    return { ok: true };
   }, []);
 
   const value: AuthContextValue = {
@@ -332,6 +357,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithApple,
     signInWithGoogle,
     signOut,
+    deleteAccount,
     refreshProfile,
   };
 

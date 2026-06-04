@@ -403,6 +403,98 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- ─────────────────────────────────────────────────────────────────────
+-- 12. RPC: delete_my_account
+-- ─────────────────────────────────────────────────────────────────────
+-- Permite al usuario autenticado borrar todos sus datos personales en
+-- cumplimiento del Art. 17 RGPD (derecho al olvido / supresión).
+--
+-- Estrategia:
+-- - Borra inmediatamente todo el contenido asociado al usuario en
+--   tablas de la app (mistakes, exam_history, friendships,
+--   autoescuela_members, redemptions).
+-- - Marca el profile como deleted_at = now() (soft delete).
+-- - La eliminación final del registro en auth.users requiere
+--   privilegios admin (service_role) y se realiza periódicamente por
+--   tarea de administrador (30 días de gracia, plazo estándar de la
+--   industria).
+--
+-- SECURITY DEFINER + comprobación explícita de auth.uid() para que
+-- el usuario solo pueda borrarse a sí mismo y nunca a otro.
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid;
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'No autenticado.';
+  end if;
+
+  delete from public.mistakes            where user_id = v_uid;
+  delete from public.exam_history        where user_id = v_uid;
+  delete from public.friendships         where user_id_a = v_uid or user_id_b = v_uid;
+  delete from public.autoescuela_members where user_id = v_uid;
+  delete from public.redemptions         where user_id = v_uid;
+  delete from public.user_progress       where user_id = v_uid;
+
+  update public.profiles
+    set deleted_at = now(),
+        display_name = 'Cuenta eliminada',
+        avatar_emoji = '🎨',
+        profile_photo_url = null,
+        autoescuela_id = null
+    where id = v_uid;
+end;
+$$;
+
+grant execute on function public.delete_my_account() to authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- 13. RPC: get_weekly_leaderboard(league)
+-- ─────────────────────────────────────────────────────────────────────
+-- Devuelve la clasificación semanal pública (solo campos no sensibles)
+-- para que cualquier usuario autenticado pueda ver el ranking de su
+-- liga. SECURITY DEFINER salta las RLS de profiles (que solo dejan al
+-- usuario ver su propio profile), pero solo expone los campos
+-- mínimos necesarios para renderizar el leaderboard.
+create or replace function public.get_weekly_leaderboard(p_league text default null)
+returns table (
+  user_id uuid,
+  name text,
+  avatar_emoji text,
+  profile_photo_url text,
+  xp int,
+  league text,
+  rank_in_league bigint
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    p.id              as user_id,
+    p.display_name    as name,
+    p.avatar_emoji,
+    p.profile_photo_url,
+    up.weekly_xp      as xp,
+    up.league,
+    rank() over (partition by up.league order by up.weekly_xp desc) as rank_in_league
+  from public.profiles p
+  inner join public.user_progress up on up.user_id = p.id
+  where p.deleted_at is null
+    and up.weekly_xp > 0
+    and (p_league is null or up.league = p_league)
+  order by up.weekly_xp desc
+  limit 100;
+$$;
+
+grant execute on function public.get_weekly_leaderboard(text) to authenticated;
+
 commit;
 
 -- ─────────────────────────────────────────────────────────────────────

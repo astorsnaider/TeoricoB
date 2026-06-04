@@ -1,16 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore, getLeagueInfo, LEAGUES } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
-import { LeagueType } from '../types';
+import { LeagueType, LeagueStanding } from '../types';
+import { useLeaderboard } from '../sync/useLeaderboard';
 
 export default function LeagueScreen() {
   const user = useStore(s => s.user);
-  const standings = useStore(s => s.leagueStandings);
+  const fallbackStandings = useStore(s => s.leagueStandings);
+  const remote = useLeaderboard(user.league);
+  // Si el usuario está autenticado y la query terminó con datos, usamos
+  // el ranking real. En cualquier otro caso (no autenticado, todavía
+  // cargando, o fallo de red) caemos al ranking simulado del store
+  // para no dejar la pantalla vacía.
+  const standings: LeagueStanding[] =
+    remote.available && remote.standings.length > 0
+      ? remote.standings
+      : fallbackStandings;
   const theme = useTheme();
 
   const league = getLeagueInfo(user.league);
@@ -52,7 +62,25 @@ export default function LeagueScreen() {
         </LinearGradient>
 
         {/* Ranking */}
-        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Clasificación semanal</Text>
+        <View style={s.rankingHeader}>
+          <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Clasificación semanal</Text>
+          {remote.available && remote.standings.length > 0 && (
+            <View style={[s.realBadge, { backgroundColor: theme.correct + '18' }]}>
+              <Ionicons name="cloud-done" size={11} color={theme.correct} />
+              <Text style={[s.realBadgeTxt, { color: theme.correct }]}>en vivo</Text>
+            </View>
+          )}
+        </View>
+
+        {!remote.available && (
+          <View style={[s.fakeBanner, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
+            <Ionicons name="information-circle-outline" size={16} color={theme.textTertiary} />
+            <Text style={[s.fakeBannerTxt, { color: theme.textSecondary }]}>
+              Ranking simulado. Inicia sesión para competir con usuarios reales.
+            </Text>
+          </View>
+        )}
+
         <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {standings.map((st, i) => (
             <View
@@ -173,4 +201,9 @@ const s = StyleSheet.create({
   },
   leagueTileName: { fontSize: 10, fontWeight: '700', textAlign: 'center' },
   leagueTileXP: { fontSize: 9 },
+  rankingHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  realBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  realBadgeTxt: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  fakeBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
+  fakeBannerTxt: { flex: 1, fontSize: 12, lineHeight: 16 },
 });

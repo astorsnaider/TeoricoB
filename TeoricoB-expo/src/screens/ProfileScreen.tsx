@@ -11,6 +11,7 @@ import StatsScreen from './StatsScreen';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { useAuth } from '../auth/AuthContext';
 import AuthScreen from '../auth/AuthScreen';
+import { useSyncStatus, syncStatusLabel } from '../sync/useSyncStatus';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
@@ -33,7 +34,8 @@ export default function ProfileScreen() {
 }
 
 function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: () => void; onShowStats: () => void; onShowAuth: () => void }) {
-  const { user: authUser, signOut } = useAuth();
+  const { user: authUser, signOut, deleteAccount } = useAuth();
+  const syncStatus = useSyncStatus();
   const user = useStore(s => s.user);
   const topics = useStore(s => s.topics);
   const resetProgress = useStore(s => s.resetProgress);
@@ -59,6 +61,46 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Reiniciar', style: 'destructive', onPress: resetProgress },
     ]);
+  };
+
+  const confirmDeleteAccount = () => {
+    // Confirmación doble por ser acción irreversible (Art. 17 RGPD)
+    Alert.alert(
+      'Borrar mi cuenta',
+      'Se eliminarán de forma permanente tus datos en la nube: progreso, racha, logros, fallos, exámenes y amigos.\n\nTu correo quedará en cola de eliminación durante 30 días. Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Continuar',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              '¿Confirmas el borrado?',
+              'Si sigues, no podrás recuperar tu progreso. ¿Estás completamente seguro?',
+              [
+                { text: 'No, cancelar', style: 'cancel' },
+                {
+                  text: 'Sí, borrar mi cuenta',
+                  style: 'destructive',
+                  onPress: async () => {
+                    const result = await deleteAccount();
+                    if (result.ok) {
+                      resetProgress();
+                      Alert.alert(
+                        'Cuenta eliminada',
+                        'Tus datos se han borrado. Gracias por haber usado Teoric.'
+                      );
+                    } else {
+                      Alert.alert('No se pudo borrar', result.error ?? 'Inténtalo de nuevo más tarde.');
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
   };
 
   const pickPhoto = async () => {
@@ -134,15 +176,24 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
           {authUser ? (
             <>
               <View style={s.accountRow}>
-                <View style={[s.accountIcon, { backgroundColor: theme.correct + '20' }]}>
-                  <Ionicons name="cloud-done" size={20} color={theme.correct} />
+                <View
+                  style={[
+                    s.accountIcon,
+                    { backgroundColor: syncIconBg(syncStatus.kind, theme) },
+                  ]}
+                >
+                  <Ionicons
+                    name={syncIconName(syncStatus.kind)}
+                    size={20}
+                    color={syncIconColor(syncStatus.kind, theme)}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[s.accountTitle, { color: theme.textPrimary }]}>
-                    Sincronizado
+                  <Text style={[s.accountTitle, { color: theme.textPrimary }]} numberOfLines={1}>
+                    {authUser.email ?? 'Sesión activa'}
                   </Text>
                   <Text style={[s.accountSub, { color: theme.textSecondary }]} numberOfLines={1}>
-                    {authUser.email ?? 'Sesión activa'}
+                    {syncStatusLabel(syncStatus, authUser.email)}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -394,6 +445,19 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
           <Text style={[s.resetTxt, { color: theme.wrong }]}>Reiniciar progreso</Text>
         </TouchableOpacity>
 
+        {/* Borrar cuenta (solo si autenticado) */}
+        {authUser && (
+          <TouchableOpacity
+            onPress={confirmDeleteAccount}
+            style={s.deleteAccountBtn}
+          >
+            <Ionicons name="warning-outline" size={14} color={theme.textTertiary} />
+            <Text style={[s.deleteAccountTxt, { color: theme.textTertiary }]}>
+              Borrar mi cuenta y todos mis datos
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
@@ -447,9 +511,38 @@ const s = StyleSheet.create({
   timeText: { fontSize: 15, fontWeight: '800', minWidth: 50, textAlign: 'center' },
   resetBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, borderWidth: 1.5, padding: 14 },
   resetTxt: { fontSize: 15, fontWeight: '600' },
+  deleteAccountBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, padding: 8 },
+  deleteAccountTxt: { fontSize: 12, fontWeight: '500', textDecorationLine: 'underline' },
   accountRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 },
   accountIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   accountTitle: { fontSize: 14, fontWeight: '700' },
   accountSub: { fontSize: 12, marginTop: 2 },
   accountAction: { padding: 8 },
 });
+
+// ── Helpers para el indicador de sync ──────────────────────────────────
+type SyncKind = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
+
+function syncIconName(kind: SyncKind): keyof typeof Ionicons.glyphMap {
+  switch (kind) {
+    case 'pending':  return 'cloud-upload-outline';
+    case 'syncing':  return 'sync';
+    case 'error':    return 'cloud-offline-outline';
+    case 'synced':
+    case 'idle':
+    default:         return 'cloud-done';
+  }
+}
+function syncIconColor(kind: SyncKind, theme: ReturnType<typeof useTheme>): string {
+  switch (kind) {
+    case 'pending':  return theme.orange;
+    case 'syncing':  return theme.blue;
+    case 'error':    return theme.wrong;
+    case 'synced':
+    case 'idle':
+    default:         return theme.correct;
+  }
+}
+function syncIconBg(kind: SyncKind, theme: ReturnType<typeof useTheme>): string {
+  return syncIconColor(kind, theme) + '20';
+}

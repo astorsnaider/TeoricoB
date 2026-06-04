@@ -148,11 +148,57 @@ export async function pullProgress(): Promise<PullResult> {
   };
 }
 
+// ─── Estado de sync observable ────────────────────────────────────────
+// Permite que la UI (Profile, banner, etc.) refleje en tiempo real qué
+// está pasando con la sincronización: cambios pendientes, subida en
+// curso, último éxito o error.
+
+export type SyncStatus =
+  | { kind: 'idle' }                             // ningún cambio pendiente
+  | { kind: 'pending' }                          // hay cambios esperando al debounce
+  | { kind: 'syncing' }                          // push en marcha
+  | { kind: 'synced'; at: number }               // último push correcto (ms)
+  | { kind: 'error'; message: string; at: number };
+
+let _status: SyncStatus = { kind: 'idle' };
+const _listeners = new Set<(s: SyncStatus) => void>();
+
+function setStatus(s: SyncStatus): void {
+  _status = s;
+  _listeners.forEach(l => l(s));
+}
+
+export function getSyncStatus(): SyncStatus { return _status; }
+
+export function subscribeSyncStatus(cb: (s: SyncStatus) => void): () => void {
+  _listeners.add(cb);
+  return () => { _listeners.delete(cb); };
+}
+
+/** Útil al hacer signOut: limpia el estado para que la UI no muestre
+ *  un "sincronizado hace X seg" de la sesión anterior. */
+export function resetSyncStatus(): void {
+  setStatus({ kind: 'idle' });
+}
+
 // ─── Debounced push ───────────────────────────────────────────────────
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingState: SyncedState | null = null;
 const PUSH_DEBOUNCE_MS = 5000;
+
+async function runPush(state: SyncedState): Promise<void> {
+  setStatus({ kind: 'syncing' });
+  const result = await pushProgress(state);
+  if (result.ok) {
+    setStatus({ kind: 'synced', at: Date.now() });
+  } else if (result.error === 'no-session' || result.error === 'no-config') {
+    // Estado intermedio benigno: no era esperable subir nada.
+    setStatus({ kind: 'idle' });
+  } else {
+    setStatus({ kind: 'error', message: result.error ?? 'Error desconocido', at: Date.now() });
+  }
+}
 
 /**
  * Programa un push debounced. Si se llama varias veces seguidas, solo
@@ -160,13 +206,14 @@ const PUSH_DEBOUNCE_MS = 5000;
  */
 export function schedulePush(state: SyncedState): void {
   pendingState = state;
+  setStatus({ kind: 'pending' });
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(() => {
     const snapshot = pendingState;
     pushTimer = null;
     pendingState = null;
     if (snapshot) {
-      pushProgress(snapshot).catch(() => undefined);
+      runPush(snapshot).catch(() => undefined);
     }
   }, PUSH_DEBOUNCE_MS);
 }
@@ -181,5 +228,5 @@ export async function flushPendingPush(): Promise<void> {
   const snapshot = pendingState;
   pushTimer = null;
   pendingState = null;
-  await pushProgress(snapshot).catch(() => undefined);
+  await runPush(snapshot).catch(() => undefined);
 }
