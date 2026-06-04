@@ -47,8 +47,8 @@ export default function OnboardingScreen() {
     {
       icon: 'cloud-upload-outline' as const,
       title: 'Guarda tu progreso',
-      subtitle: 'Crea cuenta o inicia sesión para sincronizar tu racha, XP y logros entre todos tus dispositivos. Puedes saltarlo y hacerlo más tarde.',
-      cta: user ? 'Comenzar' : 'Crear cuenta o entrar',
+      subtitle: 'Crea cuenta con email y contraseña para sincronizar tu racha, XP y logros entre dispositivos. Puedes saltarlo y hacerlo más tarde desde Perfil.',
+      cta: user ? 'Comenzar' : 'Crear cuenta',
     },
   ];
 
@@ -192,8 +192,7 @@ export default function OnboardingScreen() {
       <Modal visible={showAuth} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAuth(false)}>
         <AuthScreen
           onClose={() => setShowAuth(false)}
-          ctaTitle="Crea cuenta o entra"
-          ctaSubtitle="Si ya tenías cuenta, te enviaremos un código para entrar. Si no, te la creamos automáticamente — mismo flujo en ambos casos."
+          initialMode="signup"
         />
       </Modal>
     </SafeAreaView>

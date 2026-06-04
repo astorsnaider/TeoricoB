@@ -165,7 +165,7 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.accountTitle, { color: theme.textPrimary }]}>
-                  Crea cuenta o inicia sesión
+                  Iniciar sesión o crear cuenta
                 </Text>
                 <Text style={[s.accountSub, { color: theme.textSecondary }]}>
                   Sincroniza tu progreso entre dispositivos. Es gratis.

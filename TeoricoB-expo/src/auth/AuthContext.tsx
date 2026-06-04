@@ -1,32 +1,34 @@
 /**
  * AuthContext — Estado global de autenticación.
  *
+ * Modelo (estándar de la industria):
+ * - Email + contraseña.
+ * - Signup requiere verificación del email mediante código OTP de 6
+ *   dígitos enviado al correo (en lugar de un link, para que funcione
+ *   idéntico en iOS / Android / Web / Expo Go).
+ * - Reset de contraseña por email (OTP).
+ * - Apple/Google saltarán la verificación (sus identidades ya están
+ *   verificadas por el proveedor) cuando se implementen.
+ *
  * Filosofía "auth opcional pero promovida":
  * - La app sigue funcionando local-only si el usuario no inicia sesión.
- * - Al onboarding se le ofrece crear cuenta como paso natural.
+ * - Onboarding ofrece crear cuenta como paso natural; se puede saltar.
  * - Cuando inicia sesión, su progreso local se sube y desde ese momento
  *   se sincroniza con la nube.
- * - Cierre de sesión: la sesión Supabase se cierra. El progreso local en
- *   AsyncStorage NO se borra (el usuario puede seguir usando la app).
- *
- * Métodos de autenticación soportados:
- * - Email + OTP code (6 dígitos). Mejor UX en mobile que magic link
- *   porque no depende de deep links: el usuario lee el código en el
- *   email y lo escribe en la app. Funciona idéntico en iOS / Android /
- *   Web / Expo Go.
- * - Apple Sign-In (stub — requiere expo-apple-authentication + cuenta dev Apple).
- * - Google Sign-In (stub — requiere OAuth flow + redirect).
+ * - signOut() cierra sesión pero NO borra progreso local en AsyncStorage.
  */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../api/supabase';
 import { ProfileRow } from '../types/database';
 
-export type AuthMethod = 'otp' | 'apple' | 'google';
+export type AuthMethod = 'password' | 'apple' | 'google';
 
-interface SignInResult {
+interface AuthResult {
   ok: boolean;
   error?: string;
+  /** True si el usuario necesita verificar su email antes de poder usar la cuenta. */
+  needsEmailVerification?: boolean;
 }
 
 interface AuthContextValue {
@@ -41,20 +43,44 @@ interface AuthContextValue {
   /** True si Supabase está configurado (env presentes). */
   isConfigured: boolean;
   /**
-   * Pide a Supabase que envíe un código OTP de 6 dígitos al email del
-   * usuario. Crea cuenta si no existe.
+   * Registra una cuenta nueva con email y contraseña. Si el proyecto
+   * Supabase exige verificación de email (recomendado), Supabase envía
+   * un correo con un código OTP que el usuario debe verificar con
+   * `verifyEmail()` antes de poder usar la cuenta.
+   *
+   * El `name` se guarda en raw_user_meta_data.name; el trigger
+   * handle_new_user lo lee para crear `profiles.display_name`.
    */
-  requestOtp: (email: string) => Promise<SignInResult>;
+  signUp: (name: string, email: string, password: string) => Promise<AuthResult>;
   /**
-   * Verifica el código OTP de 6 dígitos contra el email. Al éxito,
-   * abre sesión automáticamente y onAuthStateChange dispara la
-   * actualización de session/user/profile.
+   * Inicia sesión con email y contraseña existentes. Si el email no
+   * está confirmado y Supabase lo exige, devolverá needsEmailVerification.
    */
-  verifyOtp: (email: string, token: string) => Promise<SignInResult>;
+  signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
+  /**
+   * Verifica el código OTP de 6 dígitos enviado al email tras signUp.
+   * Al éxito, la sesión se abre automáticamente.
+   */
+  verifyEmail: (email: string, token: string) => Promise<AuthResult>;
+  /** Reenvía el código de verificación de email (para signups pendientes). */
+  resendVerification: (email: string) => Promise<AuthResult>;
+  /**
+   * Envía un email con instrucciones para restablecer la contraseña.
+   * El email lleva un código OTP que el usuario introduce, y luego
+   * elige nueva contraseña con `updatePassword()`.
+   */
+  requestPasswordReset: (email: string) => Promise<AuthResult>;
+  /**
+   * Verifica el OTP de reset de password. Una vez verificado, la sesión
+   * temporal abierta permite llamar a updatePassword().
+   */
+  verifyPasswordResetCode: (email: string, token: string) => Promise<AuthResult>;
+  /** Actualiza la contraseña del usuario actualmente autenticado. */
+  updatePassword: (newPassword: string) => Promise<AuthResult>;
   /** Sign-in con Apple (stub hasta cuenta dev Apple). */
-  signInWithApple: () => Promise<SignInResult>;
+  signInWithApple: () => Promise<AuthResult>;
   /** Sign-in con Google (stub hasta config Google OAuth). */
-  signInWithGoogle: () => Promise<SignInResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   /** Cierra sesión. NO borra progreso local. */
   signOut: () => Promise<void>;
   /** Recarga el profile desde la BD (tras updates externos). */
@@ -72,8 +98,20 @@ function friendlyAuthError(raw: string): string {
   if (m.includes('rate limit')) {
     return 'Has pedido demasiados códigos en poco tiempo. Espera unos minutos antes de intentarlo otra vez.';
   }
-  if (m.includes('invalid login credentials') || m.includes('invalid token') || m.includes('otp_expired') || m.includes('expired')) {
+  if (m.includes('email not confirmed') || m.includes('email_not_confirmed')) {
+    return 'Tu email todavía no está verificado. Revisa tu correo (también la carpeta spam).';
+  }
+  if (m.includes('invalid login credentials')) {
+    return 'Email o contraseña incorrectos. Si has olvidado tu contraseña, usa "¿Olvidaste tu contraseña?".';
+  }
+  if (m.includes('invalid token') || m.includes('otp_expired') || m.includes('token has expired') || m.includes('expired')) {
     return 'El código es incorrecto o ha caducado. Pide uno nuevo.';
+  }
+  if (m.includes('user already registered') || m.includes('already been registered')) {
+    return 'Ya existe una cuenta con ese email. Prueba a iniciar sesión.';
+  }
+  if (m.includes('password') && (m.includes('short') || m.includes('weak') || m.includes('6 characters'))) {
+    return 'La contraseña debe tener al menos 8 caracteres.';
   }
   if (m.includes('email') && m.includes('invalid')) {
     return 'El email no parece válido. Revísalo y vuelve a intentarlo.';
@@ -84,7 +122,6 @@ function friendlyAuthError(raw: string): string {
   if (m.includes('signup') && m.includes('disabled')) {
     return 'No se permiten cuentas nuevas en este momento. Si ya tenías cuenta, prueba a iniciar sesión.';
   }
-  // Fallback: dejamos el mensaje original pero con prefijo amable
   return raw;
 }
 
@@ -107,7 +144,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     });
 
-    // Suscripción a cambios de auth (login/logout/refresh)
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
     });
@@ -156,26 +192,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error) setProfile(data);
   }, [session?.user]);
 
-  const requestOtp = useCallback(async (email: string): Promise<SignInResult> => {
+  const signUp = useCallback(async (name: string, email: string, password: string): Promise<AuthResult> => {
     if (!isSupabaseConfigured) {
       return { ok: false, error: 'Supabase no configurado' };
     }
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
+    if (!cleanName) return { ok: false, error: 'El nombre no puede estar vacío.' };
+    if (password.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' };
+
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
       options: {
-        // NO mandamos emailRedirectTo: con shouldCreateUser=true y sin
-        // redirect, Supabase mete `{{ .Token }}` en el email si el
-        // template lo usa. El usuario ve el código de 6 dígitos.
-        // shouldCreateUser=true → si la cuenta no existe, la crea; si
-        // existe, es un login. El usuario no distingue ambos casos.
-        shouldCreateUser: true,
+        data: { name: cleanName },
       },
     });
+
     if (error) return { ok: false, error: friendlyAuthError(error.message) };
+
+    // Si Supabase exige verificación: no hay session todavía.
+    // Si no la exige: la session viene en data.session y entras directo.
+    if (data.session) {
+      setSession(data.session);
+      return { ok: true };
+    }
+    return { ok: true, needsEmailVerification: true };
+  }, []);
+
+  const signInWithPassword = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) {
+      const msg = friendlyAuthError(error.message);
+      const needsVerification = error.message.toLowerCase().includes('email not confirmed') ||
+        error.message.toLowerCase().includes('email_not_confirmed');
+      return { ok: false, error: msg, needsEmailVerification: needsVerification };
+    }
+    if (data?.session) setSession(data.session);
     return { ok: true };
   }, []);
 
-  const verifyOtp = useCallback(async (email: string, token: string): Promise<SignInResult> => {
+  const verifyEmail = useCallback(async (email: string, token: string): Promise<AuthResult> => {
     if (!isSupabaseConfigured) {
       return { ok: false, error: 'Supabase no configurado' };
     }
@@ -183,21 +246,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.verifyOtp({
       email: email.trim().toLowerCase(),
       token: cleanToken,
-      type: 'email',
+      type: 'signup',
     });
     if (error) return { ok: false, error: friendlyAuthError(error.message) };
-    // Forzamos actualización inmediata del estado (no esperamos al listener)
     if (data?.session) setSession(data.session);
     return { ok: true };
   }, []);
 
-  const signInWithApple = useCallback(async (): Promise<SignInResult> => {
-    // TODO: implementar con expo-apple-authentication cuando exista cuenta dev.
+  const resendVerification = useCallback(async (email: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim().toLowerCase(),
+    });
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    return { ok: true };
+  }, []);
+
+  const requestPasswordReset = useCallback(async (email: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+    );
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    return { ok: true };
+  }, []);
+
+  const verifyPasswordResetCode = useCallback(async (email: string, token: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    const cleanToken = token.replace(/\s+/g, '').trim();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: cleanToken,
+      type: 'recovery',
+    });
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    if (data?.session) setSession(data.session);
+    return { ok: true };
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase no configurado' };
+    }
+    if (newPassword.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' };
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    return { ok: true };
+  }, []);
+
+  const signInWithApple = useCallback(async (): Promise<AuthResult> => {
     return { ok: false, error: 'Apple Sign-In no implementado todavía' };
   }, []);
 
-  const signInWithGoogle = useCallback(async (): Promise<SignInResult> => {
-    // TODO: implementar con OAuth flow + redirect cuando esté configurado.
+  const signInWithGoogle = useCallback(async (): Promise<AuthResult> => {
     return { ok: false, error: 'Google Sign-In no implementado todavía' };
   }, []);
 
@@ -214,8 +322,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     isLoading,
     isConfigured: isSupabaseConfigured,
-    requestOtp,
-    verifyOtp,
+    signUp,
+    signInWithPassword,
+    verifyEmail,
+    resendVerification,
+    requestPasswordReset,
+    verifyPasswordResetCode,
+    updatePassword,
     signInWithApple,
     signInWithGoogle,
     signOut,
