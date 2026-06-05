@@ -21,7 +21,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Question } from '../types';
@@ -55,7 +55,13 @@ export default function ExamRunModal({ examId, questions, onClose }: Props) {
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [elapsed, setElapsed] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [showGrid, setShowGrid] = useState(false);
+  const [confirm, setConfirm] = useState<null | {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    confirmStyle?: 'normal' | 'destructive';
+    onConfirm: () => void;
+  }>(null);
   const timerRef = useRef<any>(null);
   const savedRef = useRef(false);
   const lastTickRef = useRef<number | null>(null);
@@ -137,36 +143,32 @@ export default function ExamRunModal({ examId, questions, onClose }: Props) {
   const onTapFinish = () => {
     const missing = questions.length - answeredCount;
     if (missing > 0) {
-      Alert.alert(
-        'Terminar examen',
-        `Te quedan ${missing} pregunta${missing === 1 ? '' : 's'} sin responder. Las preguntas en blanco cuentan como falladas. ¿Terminar igualmente?`,
-        [
-          { text: 'Seguir respondiendo', style: 'cancel' },
-          { text: 'Terminar', style: 'destructive', onPress: () => finalize(false) },
-        ],
-      );
+      setConfirm({
+        title: 'Terminar examen',
+        message: `Te quedan ${missing} pregunta${missing === 1 ? '' : 's'} sin responder. Las preguntas en blanco cuentan como falladas. ¿Terminar igualmente?`,
+        confirmLabel: 'Terminar',
+        confirmStyle: 'destructive',
+        onConfirm: () => { setConfirm(null); finalize(false); },
+      });
     } else {
-      Alert.alert(
-        'Terminar examen',
-        '¿Entregar el examen para ver el resultado?',
-        [
-          { text: 'Volver', style: 'cancel' },
-          { text: 'Entregar', onPress: () => finalize(false) },
-        ],
-      );
+      setConfirm({
+        title: 'Terminar examen',
+        message: '¿Entregar el examen para ver el resultado?',
+        confirmLabel: 'Entregar',
+        onConfirm: () => { setConfirm(null); finalize(false); },
+      });
     }
   };
 
   const onTapClose = () => {
     if (finished) { onClose(); return; }
-    Alert.alert(
-      '¿Salir del examen?',
-      'Si sales ahora, el intento no quedará guardado. Tu progreso se pierde.',
-      [
-        { text: 'Seguir examen', style: 'cancel' },
-        { text: 'Salir', style: 'destructive', onPress: onClose },
-      ],
-    );
+    setConfirm({
+      title: '¿Salir del examen?',
+      message: 'Si sales ahora, el intento no quedará guardado. Tu progreso se pierde.',
+      confirmLabel: 'Salir',
+      confirmStyle: 'destructive',
+      onConfirm: () => { setConfirm(null); onClose(); },
+    });
   };
 
   if (finished) {
@@ -198,45 +200,41 @@ export default function ExamRunModal({ examId, questions, onClose }: Props) {
             {answeredCount}/{questions.length} · {mm}:{ss}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => setShowGrid(g => !g)} hitSlop={12} style={s.headerBtn}>
-          <Ionicons name={showGrid ? 'list' : 'grid'} size={22} color={theme.textSecondary} />
-        </TouchableOpacity>
+        <View style={s.headerBtn} />
       </View>
 
-      {/* Grid 1..30 colapsable */}
-      {showGrid && (
-        <View style={[s.gridCard, { backgroundColor: theme.bg2, borderBottomColor: theme.border }]}>
-          <View style={s.gridWrap}>
-            {questions.map((_, i) => {
-              const isCurrent = i === index;
-              const isAnswered = answers[i] !== null && answers[i] !== undefined;
-              return (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() => { setIndex(i); setShowGrid(false); }}
-                  style={[
-                    s.gridCell,
-                    {
-                      backgroundColor: isCurrent
-                        ? theme.primary
-                        : isAnswered
-                          ? theme.correct + '22'
-                          : theme.card,
-                      borderColor: isCurrent ? theme.primary : theme.border,
-                    },
-                  ]}
-                >
-                  <Text style={[s.gridCellTxt, {
-                    color: isCurrent ? '#fff' : isAnswered ? theme.correct : theme.textPrimary,
-                  }]}>
-                    {i + 1}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+      {/* Grid 1..30 SIEMPRE visible */}
+      <View style={[s.gridCard, { backgroundColor: theme.bg2, borderBottomColor: theme.border }]}>
+        <View style={s.gridWrap}>
+          {questions.map((_, i) => {
+            const isCurrent = i === index;
+            const isAnswered = answers[i] !== null && answers[i] !== undefined;
+            return (
+              <TouchableOpacity
+                key={i}
+                onPress={() => setIndex(i)}
+                style={[
+                  s.gridCell,
+                  {
+                    backgroundColor: isCurrent
+                      ? theme.primary
+                      : isAnswered
+                        ? theme.correct + '22'
+                        : theme.card,
+                    borderColor: isCurrent ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <Text style={[s.gridCellTxt, {
+                  color: isCurrent ? '#fff' : isAnswered ? theme.correct : theme.textPrimary,
+                }]}>
+                  {i + 1}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-      )}
+      </View>
 
       {/* Pregunta + opciones */}
       <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
@@ -318,7 +316,53 @@ export default function ExamRunModal({ examId, questions, onClose }: Props) {
           <Ionicons name="chevron-forward" size={20} color={theme.textPrimary} />
         </TouchableOpacity>
       </View>
+
+      <ConfirmDialog
+        visible={confirm !== null}
+        title={confirm?.title ?? ''}
+        message={confirm?.message ?? ''}
+        confirmLabel={confirm?.confirmLabel ?? 'Aceptar'}
+        confirmStyle={confirm?.confirmStyle}
+        onCancel={() => setConfirm(null)}
+        onConfirm={() => confirm?.onConfirm()}
+      />
     </SafeAreaView>
+  );
+}
+
+// ── ConfirmDialog: alternativa a Alert.alert que funciona en web ─────
+function ConfirmDialog({
+  visible, title, message, confirmLabel, confirmStyle = 'normal', onConfirm, onCancel,
+}: {
+  visible: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmStyle?: 'normal' | 'destructive';
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+      <View style={s.confirmBackdrop}>
+        <View style={[s.confirmCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[s.confirmTitle, { color: theme.textPrimary }]}>{title}</Text>
+          <Text style={[s.confirmMsg, { color: theme.textSecondary }]}>{message}</Text>
+          <View style={s.confirmRow}>
+            <TouchableOpacity onPress={onCancel} style={[s.confirmBtn, { backgroundColor: theme.bg2 }]}>
+              <Text style={[s.confirmBtnTxt, { color: theme.textPrimary }]}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onConfirm}
+              style={[s.confirmBtn, { backgroundColor: confirmStyle === 'destructive' ? theme.wrong : theme.primary }]}
+            >
+              <Text style={[s.confirmBtnTxt, { color: '#fff' }]}>{confirmLabel}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -544,13 +588,13 @@ const s = StyleSheet.create({
   headerBtn: { width: 32, alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '800' },
   headerSub: { fontSize: 11, fontWeight: '600', marginTop: 2, fontFamily: 'Menlo' },
-  gridCard: { paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 0.5 },
-  gridWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
+  gridCard: { paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 0.5 },
+  gridWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'center' },
   gridCell: {
-    width: 36, height: 32, borderRadius: 8, borderWidth: 1,
+    width: 28, height: 26, borderRadius: 6, borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
-  gridCellTxt: { fontSize: 12, fontWeight: '700' },
+  gridCellTxt: { fontSize: 11, fontWeight: '700' },
   body: { padding: 18, gap: 12 },
   qIndex: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
   qText: { fontSize: 17, lineHeight: 24, fontWeight: '600' },
@@ -604,4 +648,11 @@ const s = StyleSheet.create({
   explainBox: { flexDirection: 'row', gap: 6, padding: 10, borderRadius: 8, alignItems: 'flex-start' },
   explainTxt: { fontSize: 12, flex: 1, lineHeight: 17 },
   legalRef: { fontSize: 11, fontWeight: '600', textAlign: 'right' },
+  confirmBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: 30 },
+  confirmCard: { width: '100%', maxWidth: 380, borderRadius: 16, borderWidth: 1, padding: 22, gap: 12 },
+  confirmTitle: { fontSize: 17, fontWeight: '800', textAlign: 'center' },
+  confirmMsg: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  confirmRow: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  confirmBtnTxt: { fontSize: 14, fontWeight: '700' },
 });
