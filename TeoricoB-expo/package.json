@@ -6,7 +6,15 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "eas:dev:ios": "npx eas-cli build --profile development --platform ios",
+    "eas:dev:android": "npx eas-cli build --profile development --platform android",
+    "eas:preview:ios": "npx eas-cli build --profile preview --platform ios",
+    "eas:preview:android": "npx eas-cli build --profile preview --platform android",
+    "eas:prod:ios": "npx eas-cli build --profile production --platform ios",
+    "eas:prod:android": "npx eas-cli build --profile production --platform android",
+    "eas:submit:ios": "npx eas-cli submit --profile production --platform ios",
+    "eas:submit:android": "npx eas-cli submit --profile production --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
