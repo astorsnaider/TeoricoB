@@ -53,6 +53,18 @@ export interface ExamResult {
   passed: boolean;        // true si <= 3 fallos y termino a tiempo
 }
 
+export interface ExamTemplateStats {
+  examId: string;          // "exam_001"
+  attempts: number;        // veces realizado
+  bestCorrect: number;     // mejor nº de aciertos
+  lastCorrect: number;     // último nº de aciertos
+  lastWrong: number;       // último nº de fallos
+  lastPassed: boolean;     // último intento aprobado (<=3 fallos)
+  lastDate: string;        // ISO timestamp del último intento
+  lastDurationSec: number; // duración del último intento
+  bestPassed: boolean;     // alguna vez aprobado
+}
+
 export interface MistakeEntry {
   questionId: string;
   category: string;
@@ -82,7 +94,8 @@ export interface UserState {
   gems: number;
   friends: Friend[];
   topicStats: Record<string, TopicStat>;  // accuracy por categoria de pregunta
-  examHistory: ExamResult[];               // ultimos 50 examenes
+  examHistory: ExamResult[];               // ultimos 50 examenes (acumulado general)
+  examTemplateStats: Record<string, ExamTemplateStats>; // estadísticas por examen del listado 90 fijos
   mistakes: MistakeEntry[];                // preguntas falladas para repaso (spaced repetition simple)
   streakFreezeActiveUntil?: string;        // ISO date hasta cuándo dura el freeze actual
   streakFreezesUsedThisMonth: number;      // contador resetable cada mes (límite 3)

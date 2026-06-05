@@ -90,6 +90,7 @@ interface AppStore {
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
   saveExamResult: (result: import('../types').ExamResult) => void;
+  recordExamTemplateAttempt: (examId: string, correct: number, wrong: number, durationSec: number) => void;
 
   // ── Mistakes / repaso ───────────────────────────────
   recordMistake: (questionId: string, category: string) => void;
@@ -133,6 +134,7 @@ const defaultUser: UserState = {
   friends: MOCK_FRIENDS,
   topicStats: {},
   examHistory: [],
+  examTemplateStats: {},
   mistakes: [],
   streakFreezesUsedThisMonth: 0,
   streakFreezesMonthKey: new Date().toISOString().slice(0, 7),
@@ -339,6 +341,32 @@ export const useStore = create<AppStore>()(
           },
           newAchievement: reward.firstNew ?? s.newAchievement,
           dailyQuests: dq,
+        };
+      }),
+
+      recordExamTemplateAttempt: (examId, correct, wrong, durationSec) => set(s => {
+        const prev = s.user.examTemplateStats?.[examId];
+        const passed = wrong <= 3;
+        const nowIso = new Date().toISOString();
+        const next: import('../types').ExamTemplateStats = {
+          examId,
+          attempts: (prev?.attempts ?? 0) + 1,
+          bestCorrect: Math.max(prev?.bestCorrect ?? 0, correct),
+          lastCorrect: correct,
+          lastWrong: wrong,
+          lastPassed: passed,
+          lastDate: nowIso,
+          lastDurationSec: durationSec,
+          bestPassed: (prev?.bestPassed ?? false) || passed,
+        };
+        return {
+          user: {
+            ...s.user,
+            examTemplateStats: {
+              ...(s.user.examTemplateStats ?? {}),
+              [examId]: next,
+            },
+          },
         };
       }),
 

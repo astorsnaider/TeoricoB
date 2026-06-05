@@ -17,6 +17,36 @@
 
 - [ ] (placeholder — añade lo que vayas viendo)
 
+## Modos pedagógicos (en desarrollo activo)
+
+- [ ] **Modo Examen REAL — formal estilo TodoTest** (en revisión 2026-06-05):
+  Rediseñar completamente el modo Examen para que se parezca a un test
+  oficial DGT real, no a "más de lo mismo":
+  - Pantalla nueva tipo lista con **90 exámenes numerados fijos** (001,
+    002…) que no cambian — siempre las mismas 30 preguntas por examen.
+    Algoritmo determinístico de selección a partir del banco actual,
+    con cobertura temática equilibrada.
+  - Por cada examen, mostrar **stats acumuladas**: veces realizado,
+    fallos, último resultado, mejor resultado.
+  - Dentro del examen:
+    - **Navegación libre adelante/atrás** entre las 30 preguntas
+      (puedes saltarte, volver, cambiar respuesta).
+    - **No revelar correcto/incorrecto durante el examen** — solo al
+      finalizar.
+    - **No permitir consultar el Manual** durante el examen.
+    - Timer 30 min mantenido; el resultado se entrega al acabar.
+  - Pantalla de resultados final con: aprobado/suspenso, % aciertos,
+    revisión de respuestas (tus respuestas vs correctas + explicación).
+  - Persistencia del histórico por examen (sync Supabase).
+
+- [ ] **Revisión profesional de las 320 preguntas** (en revisión
+  2026-06-05): el banco actual tiene un sesgo serio — en muchas la
+  respuesta correcta es la opción **más larga y elaborada** y se acierta
+  a ojo sin saber la materia. Hay que reescribir distractores para que
+  todas las opciones tengan longitud y registro similar, y la elección
+  exija conocer la normativa. Basarse en estilo DGT real / TodoTest sin
+  copiar literal. Probablemente trabajo de varias sesiones por bloques.
+
 ## Visual / Diseño
 
 - [ ] Rediseñar `assets/icon-source.svg`: actualmente lleva la letra "B".

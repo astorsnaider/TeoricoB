@@ -9,6 +9,8 @@ import { AvatarView } from '../components/AvatarView';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
 import { useSoundEffect } from '../audio/useSoundEffect';
+import { Modal } from 'react-native';
+import ExamListScreen from './ExamListScreen';
 
 export default function HomeScreen() {
   const user = useStore(s => s.user);
@@ -30,9 +32,8 @@ export default function HomeScreen() {
   const playSound = useSoundEffect();
 
   const [dailyOpen, setDailyOpen] = useState(false);
-  const [examOpen, setExamOpen] = useState(false);
+  const [examListOpen, setExamListOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
-  const [examQs, setExamQs] = useState<any[]>([]);
   const [practiceQs, setPracticeQs] = useState<any[]>([]);
 
   useEffect(() => {
@@ -255,7 +256,7 @@ export default function HomeScreen() {
         {/* Exam button */}
         <TouchableOpacity
           style={[s.card, s.examCard, { backgroundColor: theme.card }]}
-          onPress={() => { playSound('tap'); setExamQs(getExamQuestions()); setExamOpen(true); }}
+          onPress={() => { playSound('tap'); setExamListOpen(true); }}
           activeOpacity={0.85}
         >
           <View style={[s.examIcon, { backgroundColor: theme.primary + '18' }]}>
@@ -280,14 +281,14 @@ export default function HomeScreen() {
           onComplete={() => { completeDailyChallenge(); setDailyOpen(false); }}
         />
       )}
-      <QuizModal
-        visible={examOpen}
-        questions={examQs}
-        title="Examen Simulado"
-        isExam
-        onClose={() => setExamOpen(false)}
-        onComplete={(xp) => { addXP(xp); setExamOpen(false); }}
-      />
+      <Modal
+        visible={examListOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setExamListOpen(false)}
+      >
+        <ExamListScreen onClose={() => setExamListOpen(false)} />
+      </Modal>
       <QuizModal
         visible={practiceOpen}
         questions={practiceQs}
