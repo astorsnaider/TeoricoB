@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore, getLeagueInfo, LEAGUES } from '../store/useStore';
@@ -8,11 +8,15 @@ import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
 import { LeagueType, LeagueStanding } from '../types';
 import { useLeaderboard } from '../sync/useLeaderboard';
+import { useFriends } from '../friends/useFriends';
+import FriendsScreen from './FriendsScreen';
 
 export default function LeagueScreen() {
   const user = useStore(s => s.user);
   const fallbackStandings = useStore(s => s.leagueStandings);
   const remote = useLeaderboard(user.league);
+  const friendsState = useFriends();
+  const [showFriends, setShowFriends] = useState(false);
   // Si el usuario está autenticado y la query terminó con datos, usamos
   // el ranking real. En cualquier otro caso (no autenticado, todavía
   // cargando, o fallo de red) caemos al ranking simulado del store
@@ -28,7 +32,7 @@ export default function LeagueScreen() {
   const nextLeague = leagueIdx < LEAGUES.length - 1 ? LEAGUES[leagueIdx + 1] : null;
   const xpToNext = nextLeague ? nextLeague.xpRequired - user.xp : 0;
   const promoPct = nextLeague ? Math.min(1, user.xp / nextLeague.xpRequired) : 1;
-  const friends = user.friends ?? [];
+  const mockFriends = user.friends ?? [];
 
   const rankIcon = (rank: number) => {
     if (rank === 1) return <Ionicons name="trophy" size={20} color="#FFD700" />;
@@ -112,33 +116,101 @@ export default function LeagueScreen() {
         </View>
 
         {/* Friends */}
-        {friends.length > 0 && (
+        {friendsState.available ? (
           <>
-            <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Amigos</Text>
+            <View style={s.rankingHeader}>
+              <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>
+                Amigos {friendsState.friends.length > 0 ? `(${friendsState.friends.length})` : ''}
+              </Text>
+              {friendsState.incoming.length > 0 && (
+                <View style={[s.realBadge, { backgroundColor: theme.orange + '22' }]}>
+                  <Ionicons name="notifications" size={11} color={theme.orange} />
+                  <Text style={[s.realBadgeTxt, { color: theme.orange }]}>
+                    {friendsState.incoming.length} pendiente{friendsState.incoming.length === 1 ? '' : 's'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
             <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              {friends.slice(0, 4).map((f, i) => {
-                const fi = getLeagueInfo(f.league as LeagueType);
-                return (
-                  <View key={`fr-${i}`} style={[s.rankRow, { borderBottomColor: theme.border }, i < 3 && s.rankDivider]}>
-                    <AvatarView color={f.avatarEmoji.startsWith('#') ? f.avatarEmoji : fi.color} name={f.name} size={34} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={[s.rankName, { color: theme.textPrimary }]}>{f.name}</Text>
-                      <View style={s.friendMeta}>
-                        <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{fi.emoji} {f.league}</Text>
-                        <Ionicons name="flame" size={12} color={theme.orange} />
-                        <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{f.streak}</Text>
-                      </View>
+              {friendsState.friends.length === 0 ? (
+                <View style={s.emptyFriends}>
+                  <Ionicons name="people-outline" size={32} color={theme.textTertiary} />
+                  <Text style={[s.emptyFriendsTitle, { color: theme.textPrimary }]}>
+                    Aún no tienes amigos
+                  </Text>
+                  <Text style={[s.emptyFriendsSub, { color: theme.textSecondary }]}>
+                    Comparte tu código o introduce el de un amigo.
+                  </Text>
+                  {friendsState.myCode && (
+                    <View style={[s.codeChip, { backgroundColor: theme.bg2 }]}>
+                      <Text style={[s.codeChipTxt, { color: theme.textPrimary }]}>{friendsState.myCode}</Text>
                     </View>
-                    <Text style={[s.rankXP, { color: theme.textSecondary }]}>{f.xp} XP</Text>
-                  </View>
-                );
-              })}
-              <View style={[s.inviteRow, { borderTopColor: theme.border }]}>
-                <Ionicons name="person-add-outline" size={16} color={theme.textTertiary} />
-                <Text style={[s.inviteTxt, { color: theme.textTertiary }]}>Invitar amigos — próximamente</Text>
-              </View>
+                  )}
+                </View>
+              ) : (
+                friendsState.friends.slice(0, 4).map((f, i) => {
+                  const fi = getLeagueInfo(f.league);
+                  return (
+                    <View key={f.userId} style={[s.rankRow, { borderBottomColor: theme.border }, i < Math.min(friendsState.friends.length, 4) - 1 && s.rankDivider]}>
+                      <AvatarView color={f.avatarEmoji.startsWith('#') ? f.avatarEmoji : fi.color} name={f.name} size={34} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.rankName, { color: theme.textPrimary }]} numberOfLines={1}>{f.name}</Text>
+                        <View style={s.friendMeta}>
+                          <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{fi.emoji} {f.league}</Text>
+                          <Ionicons name="flame" size={12} color={theme.orange} />
+                          <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{f.streak}</Text>
+                        </View>
+                      </View>
+                      <Text style={[s.rankXP, { color: theme.textSecondary }]}>{f.weeklyXP} XP</Text>
+                    </View>
+                  );
+                })
+              )}
+              <TouchableOpacity
+                style={[s.inviteRow, { borderTopColor: theme.border }]}
+                onPress={() => setShowFriends(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="person-add-outline" size={16} color={theme.primary} />
+                <Text style={[s.inviteTxt, { color: theme.primary, fontWeight: '600' }]}>
+                  Gestionar amigos
+                </Text>
+                <Ionicons name="chevron-forward" size={14} color={theme.primary} />
+              </TouchableOpacity>
             </View>
           </>
+        ) : (
+          mockFriends.length > 0 && (
+            <>
+              <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Amigos</Text>
+              <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                {mockFriends.slice(0, 4).map((f, i) => {
+                  const fi = getLeagueInfo(f.league as LeagueType);
+                  return (
+                    <View key={`fr-${i}`} style={[s.rankRow, { borderBottomColor: theme.border }, i < 3 && s.rankDivider]}>
+                      <AvatarView color={f.avatarEmoji.startsWith('#') ? f.avatarEmoji : fi.color} name={f.name} size={34} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.rankName, { color: theme.textPrimary }]}>{f.name}</Text>
+                        <View style={s.friendMeta}>
+                          <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{fi.emoji} {f.league}</Text>
+                          <Ionicons name="flame" size={12} color={theme.orange} />
+                          <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{f.streak}</Text>
+                        </View>
+                      </View>
+                      <Text style={[s.rankXP, { color: theme.textSecondary }]}>{f.xp} XP</Text>
+                    </View>
+                  );
+                })}
+                <View style={[s.inviteRow, { borderTopColor: theme.border }]}>
+                  <Ionicons name="information-circle-outline" size={14} color={theme.textTertiary} />
+                  <Text style={[s.inviteTxt, { color: theme.textTertiary }]}>
+                    Inicia sesión para añadir amigos reales
+                  </Text>
+                </View>
+              </View>
+            </>
+          )
         )}
 
         {/* All leagues */}
@@ -169,6 +241,10 @@ export default function LeagueScreen() {
 
         <View style={{ height: 32 }} />
       </ScrollView>
+
+      <Modal visible={showFriends} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowFriends(false)}>
+        <FriendsScreen onClose={() => setShowFriends(false)} />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -206,4 +282,9 @@ const s = StyleSheet.create({
   realBadgeTxt: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
   fakeBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
   fakeBannerTxt: { flex: 1, fontSize: 12, lineHeight: 16 },
+  emptyFriends: { alignItems: 'center', padding: 20, gap: 6 },
+  emptyFriendsTitle: { fontSize: 15, fontWeight: '700' },
+  emptyFriendsSub: { fontSize: 12, textAlign: 'center', marginBottom: 6 },
+  codeChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, marginTop: 4 },
+  codeChipTxt: { fontSize: 16, fontWeight: '800', letterSpacing: 2, fontFamily: 'Menlo' },
 });

@@ -77,6 +77,8 @@ create table if not exists public.profiles (
   -- Datos opcionales
   birth_year           int,
   locale               text default 'es-ES',
+  -- Código corto único para que otros usuarios te añadan como amigo (ej. "ABCD-1234")
+  friend_code          text unique,
   -- Vinculación autoescuela (puede ser null = estudiante independiente)
   autoescuela_id       uuid references public.autoescuelas(id) on delete set null,
   -- Flags
@@ -85,6 +87,9 @@ create table if not exists public.profiles (
   -- Soft delete para GDPR (no borramos inmediato)
   deleted_at           timestamptz
 );
+
+-- Migración para BDs ya creadas sin la columna friend_code
+alter table public.profiles add column if not exists friend_code text unique;
 
 create index if not exists idx_profiles_autoescuela
   on public.profiles(autoescuela_id)
@@ -494,6 +499,224 @@ as $$
 $$;
 
 grant execute on function public.get_weekly_leaderboard(text) to authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- 14. SISTEMA DE AMIGOS: friend_code + RPCs
+-- ─────────────────────────────────────────────────────────────────────
+-- Cada usuario tiene un código corto único (formato XXXX-YYYY, 8 chars
+-- de [ABCDEFGHJKLMNPQRSTUVWXYZ23456789] — descartamos I/L/O/0/1 para
+-- evitar ambigüedad al leerlo). El código se autogenera al crear el
+-- profile vía trigger; los usuarios existentes se rellenan en la
+-- migración.
+
+create or replace function public.generate_friend_code()
+returns text
+language plpgsql
+as $$
+declare
+  chars text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  raw   text;
+  code  text;
+  taken boolean;
+  i     int;
+begin
+  loop
+    raw := '';
+    for i in 1..8 loop
+      raw := raw || substr(chars, 1 + floor(random() * length(chars))::int, 1);
+    end loop;
+    code := substr(raw, 1, 4) || '-' || substr(raw, 5, 4);
+    select exists (select 1 from public.profiles where friend_code = code) into taken;
+    exit when not taken;
+  end loop;
+  return code;
+end;
+$$;
+
+create or replace function public.set_friend_code_if_null()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.friend_code is null then
+    new.friend_code := public.generate_friend_code();
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_profiles_friend_code on public.profiles;
+create trigger trg_profiles_friend_code
+  before insert on public.profiles
+  for each row execute function public.set_friend_code_if_null();
+
+-- Rellenar usuarios existentes sin código (idempotente)
+update public.profiles
+  set friend_code = public.generate_friend_code()
+  where friend_code is null;
+
+-- ── RPC 14.1 — pedir amistad por código ──────────────────────────────
+-- Si el otro usuario ya te pidió a ti, esta llamada acepta la suya.
+-- Si no, crea una solicitud pendiente.
+create or replace function public.request_friendship_by_code(p_code text)
+returns table (other_user_id uuid, status text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me       uuid;
+  v_other    uuid;
+  v_lo       uuid;
+  v_hi       uuid;
+  v_existing record;
+begin
+  v_me := auth.uid();
+  if v_me is null then
+    raise exception 'No autenticado.';
+  end if;
+
+  -- Normalizar el código del input (mayúsculas + sin espacios/separadores diferentes)
+  p_code := upper(regexp_replace(p_code, '[^A-Z0-9\-]', '', 'g'));
+
+  select id into v_other
+    from public.profiles
+    where friend_code = p_code and deleted_at is null;
+  if v_other is null then
+    raise exception 'CODE_NOT_FOUND';
+  end if;
+
+  if v_other = v_me then
+    raise exception 'CANNOT_ADD_SELF';
+  end if;
+
+  if v_me < v_other then v_lo := v_me; v_hi := v_other;
+  else v_lo := v_other; v_hi := v_me; end if;
+
+  select * into v_existing from public.friendships
+    where user_id_a = v_lo and user_id_b = v_hi;
+
+  if found then
+    if v_existing.status = 'accepted' then
+      raise exception 'ALREADY_FRIENDS';
+    elsif v_existing.status = 'blocked' then
+      raise exception 'BLOCKED';
+    elsif v_existing.status = 'pending' and v_existing.requested_by = v_me then
+      raise exception 'ALREADY_REQUESTED';
+    elsif v_existing.status = 'pending' then
+      -- El otro ya te lo envió → aceptamos la suya.
+      update public.friendships
+        set status = 'accepted'
+        where user_id_a = v_lo and user_id_b = v_hi;
+      return query select v_other, 'accepted'::text;
+      return;
+    end if;
+  end if;
+
+  insert into public.friendships (user_id_a, user_id_b, status, requested_by)
+    values (v_lo, v_hi, 'pending', v_me);
+
+  return query select v_other, 'pending'::text;
+end;
+$$;
+
+grant execute on function public.request_friendship_by_code(text) to authenticated;
+
+-- ── RPC 14.2 — responder solicitud entrante ──────────────────────────
+create or replace function public.respond_friendship(p_other_user_id uuid, p_accept boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid;
+  v_lo uuid;
+  v_hi uuid;
+begin
+  v_me := auth.uid();
+  if v_me is null then
+    raise exception 'No autenticado.';
+  end if;
+
+  if v_me < p_other_user_id then v_lo := v_me; v_hi := p_other_user_id;
+  else v_lo := p_other_user_id; v_hi := v_me; end if;
+
+  if not exists (
+    select 1 from public.friendships
+      where user_id_a = v_lo
+        and user_id_b = v_hi
+        and status = 'pending'
+        and requested_by = p_other_user_id
+  ) then
+    raise exception 'NO_PENDING_REQUEST';
+  end if;
+
+  if p_accept then
+    update public.friendships
+      set status = 'accepted'
+      where user_id_a = v_lo and user_id_b = v_hi;
+  else
+    delete from public.friendships
+      where user_id_a = v_lo and user_id_b = v_hi;
+  end if;
+end;
+$$;
+
+grant execute on function public.respond_friendship(uuid, boolean) to authenticated;
+
+-- ── RPC 14.3 — listar mis amigos (aceptados + pendientes) ────────────
+-- Devuelve el otro usuario con sus campos públicos + el estado de la
+-- amistad. is_incoming = true si la solicitud me la enviaron a mí (yo
+-- debería decidir aceptar/rechazar).
+create or replace function public.get_my_friends()
+returns table (
+  user_id           uuid,
+  name              text,
+  avatar_emoji      text,
+  profile_photo_url text,
+  xp                int,
+  weekly_xp         int,
+  streak            int,
+  league            text,
+  status            text,
+  is_incoming       boolean
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with my_friendships as (
+    select
+      f.*,
+      case when f.user_id_a = auth.uid() then f.user_id_b else f.user_id_a end as other_id
+    from public.friendships f
+    where auth.uid() in (f.user_id_a, f.user_id_b)
+      and f.status in ('accepted', 'pending')
+  )
+  select
+    mf.other_id,
+    p.display_name,
+    p.avatar_emoji,
+    p.profile_photo_url,
+    up.xp,
+    up.weekly_xp,
+    up.streak,
+    up.league,
+    mf.status,
+    (mf.status = 'pending' and mf.requested_by <> auth.uid()) as is_incoming
+  from my_friendships mf
+  inner join public.profiles      p  on p.id  = mf.other_id and p.deleted_at is null
+  inner join public.user_progress up on up.user_id = mf.other_id
+  order by
+    case when mf.status = 'pending' and mf.requested_by <> auth.uid() then 0
+         when mf.status = 'accepted'                                  then 1
+         else 2 end,
+    up.weekly_xp desc;
+$$;
+
+grant execute on function public.get_my_friends() to authenticated;
 
 commit;
 
