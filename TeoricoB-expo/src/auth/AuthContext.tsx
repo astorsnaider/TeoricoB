@@ -329,11 +329,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isSupabaseConfigured) {
       return { ok: false, error: 'Supabase no configurado' };
     }
-    // Type cast: la RPC delete_my_account no está en el Database tipado
-    // todavía (es una función SQL custom). Cuando integremos
-    // supabase gen types se autogenerará.
-    const { error } = await (supabase.rpc as unknown as (name: string) => Promise<{ error: { message: string } | null }>)('delete_my_account');
-    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    // IMPORTANTE: llamar siempre como `supabase.rpc(...)`. Extraer
+    // `supabase.rpc` a variable suelta pierde el `this` binding y
+    // explota en runtime. La función no está tipada en
+    // Database.Functions todavía (lo añadimos cuando integremos
+    // supabase gen types), por eso el cast.
+    try {
+      const { error } = await (supabase as unknown as {
+        rpc: (name: string) => Promise<{ error: { message: string } | null }>;
+      }).rpc('delete_my_account');
+      if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error de red al borrar la cuenta';
+      return { ok: false, error: msg };
+    }
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);

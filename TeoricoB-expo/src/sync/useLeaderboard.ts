@@ -54,29 +54,45 @@ export function useLeaderboard(league: LeagueType | undefined): LeaderboardState
     setLoading(true);
     setError(null);
 
-    type RpcResult = { data: RpcRow[] | null; error: { message: string } | null };
-    const rpc = supabase.rpc as unknown as (
-      name: string,
-      args: Record<string, unknown>,
-    ) => Promise<RpcResult>;
+    // IMPORTANTE: NO extraer `supabase.rpc` a una variable suelta — pierde
+    // el `this` binding y la llamada explota en runtime con "cannot read
+    // property of undefined". Hay que llamarlo siempre como
+    // `supabase.rpc(...)`. El cast a `any` es porque la función no está
+    // declarada en Database.Functions todavía (lo añadimos cuando
+    // integremos supabase gen types).
+    (async () => {
+      try {
+        const { data, error: rpcError } = await (supabase as unknown as {
+          rpc: (name: string, args: Record<string, unknown>) => Promise<{
+            data: RpcRow[] | null;
+            error: { message: string } | null;
+          }>;
+        }).rpc('get_weekly_leaderboard', { p_league: league });
 
-    rpc('get_weekly_leaderboard', { p_league: league }).then(({ data, error }) => {
-      if (cancelled) return;
-      setLoading(false);
-      if (error) {
-        setError(error.message);
-        return;
+        if (cancelled) return;
+        setLoading(false);
+
+        if (rpcError) {
+          setError(rpcError.message);
+          return;
+        }
+        const rows = (data ?? []) as RpcRow[];
+        const mapped: LeagueStanding[] = rows.map(row => ({
+          name: row.name,
+          avatarEmoji: row.avatar_emoji,
+          xp: row.xp,
+          rank: Number(row.rank_in_league),
+          isCurrentUser: row.user_id === user.id,
+        }));
+        setStandings(mapped);
+      } catch (e) {
+        if (cancelled) return;
+        setLoading(false);
+        const msg = e instanceof Error ? e.message : 'Error de red';
+        if (__DEV__) console.warn('[leaderboard] fetch error:', msg);
+        setError(msg);
       }
-      const rows = (data ?? []) as RpcRow[];
-      const mapped: LeagueStanding[] = rows.map(row => ({
-        name: row.name,
-        avatarEmoji: row.avatar_emoji,
-        xp: row.xp,
-        rank: Number(row.rank_in_league),
-        isCurrentUser: row.user_id === user.id,
-      }));
-      setStandings(mapped);
-    });
+    })();
 
     return () => {
       cancelled = true;
