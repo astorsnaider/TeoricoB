@@ -27,7 +27,11 @@
         "backgroundColor": "#E63946"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -44,6 +48,12 @@
           "defaultChannel": "default"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5fe56c79-db43-411f-b7eb-b23b5432f9bb"
+      }
+    },
+    "owner": "astorsnaider"
   }
 }
