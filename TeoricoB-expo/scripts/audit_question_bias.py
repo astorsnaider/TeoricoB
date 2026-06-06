@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
-"""Audita el banco de preguntas para detectar sesgo de longitud
-   ('la opción correcta tiende a ser la más larga')."""
+"""Audita el banco de preguntas para detectar SESGOS DE FORMA que
+delatan la opción correcta sin necesidad de entender la materia.
+
+Cubre:
+- Sesgo de longitud (la correcta tiende a ser la más larga)
+- Sesgo de paréntesis (paréntesis solo en la correcta)
+- Sesgo de punto y coma (estructura ; solo en la correcta)
+- Sesgo de calificadores ("salvo", "excepto", "siempre que" solo en correcta)
+- Sesgo de listas (correcta enumera más elementos)
+"""
 import re
 import sys
 from collections import defaultdict
@@ -32,7 +40,7 @@ def parse_options_array(opts_raw: str) -> list[str]:
     return opts
 
 
-def main() -> int:
+def parse_questions() -> list[dict]:
     text = QUESTIONS_FILE.read_text(encoding='utf-8')
     questions = []
     for line in text.splitlines():
@@ -53,59 +61,94 @@ def main() -> int:
             'options': opts,
             'correctIndex': int(m_ci.group(1)),
         })
+    return questions
 
+
+CALIFIERS = ['salvo', 'excepto', 'siempre que', 'incluso si', 'aunque ']
+
+
+def detect_giveaways(q: dict) -> list[str]:
+    """Devuelve los marcadores de forma que delatan la correcta."""
+    correct = q['options'][q['correctIndex']]
+    others = [o for i, o in enumerate(q['options']) if i != q['correctIndex']]
+    flags = []
+
+    # 1. Paréntesis solo en correcta
+    if '(' in correct and not any('(' in o for o in others):
+        flags.append('PAREN_solo_correcta')
+
+    # 2. Punto y coma solo en correcta
+    if ';' in correct and not any(';' in o for o in others):
+        flags.append('SEMI_solo_correcta')
+
+    # 3. Calificadores cautelosos solo en correcta
+    cl = correct.lower()
+    for cal in CALIFIERS:
+        if cal in cl and not any(cal in o.lower() for o in others):
+            flags.append(f'CALIF_{cal.strip()}_solo_correcta')
+            break
+
+    # 4. Longitud: correcta es la más larga Y >30% más larga que la media
+    lens = [len(o) for o in q['options']]
+    correct_len = lens[q['correctIndex']]
+    others_avg = sum(lens[i] for i in range(len(lens)) if i != q['correctIndex']) / max(1, len(lens) - 1)
+    if correct_len == max(lens) and correct_len > others_avg * 1.30:
+        flags.append(f'LONG_+{(correct_len/others_avg-1)*100:.0f}%')
+
+    # 5. Longitud: correcta es la más corta Y <70% de la media (el reverso)
+    if correct_len == min(lens) and correct_len < others_avg * 0.70:
+        flags.append(f'CORTA_-{(1-correct_len/others_avg)*100:.0f}%')
+
+    # 6. Lista de coma/y: correcta tiene más comas que las distractoras
+    correct_commas = correct.count(',')
+    avg_commas = sum(o.count(',') for o in others) / max(1, len(others))
+    if correct_commas >= 3 and correct_commas > avg_commas + 1.5:
+        flags.append(f'LISTA_{correct_commas}_comas')
+
+    return flags
+
+
+def main() -> int:
+    questions = parse_questions()
     n = len(questions)
-    print(f'Total preguntas extraídas: {n}')
-    print()
 
-    correct_is_longest = 0
-    correct_is_top2 = 0
-    length_diffs = []
-    critical = []
-    by_cat: dict[str, dict] = defaultdict(lambda: {'total': 0, 'longest': 0, 'sum_diff': 0.0})
+    # Análisis por categoría
+    cat_totals = defaultdict(int)
+    cat_flagged = defaultdict(int)
+    cat_giveaways = defaultdict(lambda: defaultdict(int))
+    flagged_qs = []
 
     for q in questions:
-        lens = [len(o) for o in q['options']]
-        sorted_by_len = sorted(range(len(lens)), key=lambda i: -lens[i])
-        pos = sorted_by_len.index(q['correctIndex'])
-        is_longest = pos == 0
-        if is_longest:
-            correct_is_longest += 1
-        if pos <= 1:
-            correct_is_top2 += 1
-        correct_len = lens[q['correctIndex']]
-        others = [l for i, l in enumerate(lens) if i != q['correctIndex']]
-        others_avg = sum(others) / max(1, len(others))
-        diff_pct = (correct_len - others_avg) / max(1, others_avg) * 100
-        length_diffs.append(diff_pct)
-        if is_longest and diff_pct > 40:
-            critical.append((q, diff_pct))
-        by_cat[q['category']]['total'] += 1
-        if is_longest:
-            by_cat[q['category']]['longest'] += 1
-        by_cat[q['category']]['sum_diff'] += diff_pct
+        cat_totals[q['category']] += 1
+        flags = detect_giveaways(q)
+        if flags:
+            cat_flagged[q['category']] += 1
+            for f in flags:
+                # Agrupar por tipo (sin valores numéricos)
+                key = re.sub(r'[\d+\-%]', '', f)
+                cat_giveaways[q['category']][key] += 1
+            flagged_qs.append((q, flags))
 
-    print(f'Correcta = opción MÁS LARGA:        {correct_is_longest:3d}/{n}  ({100 * correct_is_longest / n:5.1f}%)')
-    print(f'Correcta en TOP 2 por longitud:      {correct_is_top2:3d}/{n}  ({100 * correct_is_top2 / n:5.1f}%)')
-    print(f'Sesgo medio (correcta vs distractoras): {sum(length_diffs) / n:+.1f}%')
-    print(f'CRÍTICAS (correcta más larga Y >40% más larga que media): {len(critical)}/{n} ({100 * len(critical) / n:.1f}%)')
+    print(f'Total preguntas: {n}')
+    print(f'Preguntas con al menos UN marcador delatador: {len(flagged_qs)} ({100*len(flagged_qs)/n:.1f}%)')
     print()
     print('--- Por categoría (ordenado de peor a mejor) ---')
-    for cat, s in sorted(by_cat.items(), key=lambda kv: -kv[1]['longest'] / max(1, kv[1]['total'])):
-        pct = 100 * s['longest'] / max(1, s['total'])
-        avg = s['sum_diff'] / max(1, s['total'])
-        bar = '█' * int(pct / 5)
-        print(f'  {cat:18s}  longest:{s["longest"]:3d}/{s["total"]:3d}  ({pct:5.1f}%)  sesgo medio:{avg:+5.0f}%  {bar}')
+    for cat in sorted(cat_totals, key=lambda c: -cat_flagged[c] / max(1, cat_totals[c])):
+        flagged = cat_flagged[cat]
+        total = cat_totals[cat]
+        pct = 100 * flagged / total
+        bar = '#' * int(pct / 5)
+        print(f'  {cat:18s} {flagged:3d}/{total:3d}  ({pct:5.1f}%) {bar}')
+        # detalle de tipos
+        if cat_giveaways[cat]:
+            details = ', '.join(f'{k}:{v}' for k, v in sorted(cat_giveaways[cat].items(), key=lambda kv: -kv[1])[:3])
+            print(f'                       top: {details}')
 
     print()
-    print('--- 8 ejemplos del top de sesgo ---')
-    for q, diff in sorted(critical, key=lambda x: -x[1])[:8]:
-        lens = [len(o) for o in q['options']]
-        print(f'  [{q["id"]}] ({q["category"]}) longitudes={lens}  correcta=#{q["correctIndex"]}  (+{diff:.0f}%)')
-        for i, o in enumerate(q['options']):
-            mark = '✓' if i == q['correctIndex'] else ' '
-            print(f'    {mark} ({len(o):3d}) {o[:90]}{"…" if len(o) > 90 else ""}')
-        print()
+    print('--- 15 preguntas con MÁS marcadores ---')
+    flagged_qs.sort(key=lambda x: -len(x[1]))
+    for q, flags in flagged_qs[:15]:
+        print(f'  [{q["id"]}] ({q["category"]}) {len(flags)} flags: {", ".join(flags)}')
 
     return 0
 
