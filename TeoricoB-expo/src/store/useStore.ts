@@ -86,6 +86,7 @@ interface AppStore {
   acceptDisclaimer: () => void;
   setProfilePhoto: (uri: string | undefined) => void;
   setAvatarColor: (color: string) => void;
+  setUserName: (name: string) => void;
   requestedManualChapter: string | null;
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
@@ -214,6 +215,7 @@ export const useStore = create<AppStore>()(
       acceptDisclaimer: () => set({ disclaimerAccepted: true }),
       setProfilePhoto: (uri) => set(s => ({ user: { ...s.user, profilePhotoUri: uri } })),
       setAvatarColor: (color) => set(s => ({ user: { ...s.user, avatarEmoji: color, profilePhotoUri: undefined } })),
+      setUserName: (name) => set(s => ({ user: { ...s.user, name: name.trim().slice(0, 32) } })),
       requestedManualChapter: null,
       requestManualChapter: (chapterId) => set({ requestedManualChapter: chapterId }),
       clearRequestedManualChapter: () => set({ requestedManualChapter: null }),
