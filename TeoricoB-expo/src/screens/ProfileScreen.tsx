@@ -111,18 +111,15 @@ function ProfileMain({
   })();
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      {/* Mancha roja detrás del top para que el bounce hacia abajo
-          (pull-to-refresh) muestre el mismo color del hero y no el fondo
-          oscuro del root. */}
-      <View
-        pointerEvents="none"
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 600, backgroundColor: theme.primary }}
-      />
+    // El root va en rojo (theme.primary) para que el bounce hacia abajo
+    // muestre el mismo color del hero en lugar del fondo oscuro. El body
+    // del scroll tiene su propio fondo theme.bg que cubre ese rojo cuando
+    // el scroll está en posición normal.
+    <View style={{ flex: 1, backgroundColor: theme.primary }}>
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 32, backgroundColor: theme.bg }}
       >
         {/* === HEADER ROJO con AVATAR (scrolla y desaparece) === */}
         {/* paddingTop deja hueco bajo la barra sticky para que no se solape. */}
