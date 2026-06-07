@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ import { Topic, Lesson } from '../types';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
 import SubPage from '../components/SubPage';
-import { useLockPagerSwipe } from '../components/PagerControl';
+import { useLockPagerSwipe, useTabResetEffect } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function LearnScreen() {
@@ -19,11 +19,15 @@ export default function LearnScreen() {
   const theme = useTheme();
   const playSound = useSoundEffect();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  useTabResetEffect('learn', useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, []));
 
   return (
     <View style={{ flex: 1 }}>
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <Text style={[s.title, { color: theme.textPrimary }]}>Aprender</Text>
         <Text style={[s.subtitle, { color: theme.textSecondary }]}>Selecciona un tema para estudiar</Text>
 

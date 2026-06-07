@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabResetEffect } from '../components/PagerControl';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore, getLeagueInfo } from '../store/useStore';
@@ -37,6 +38,11 @@ export default function HomeScreen() {
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [practiceQs, setPracticeQs] = useState<any[]>([]);
 
+  const scrollRef = useRef<ScrollView>(null);
+  useTabResetEffect('home', useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, []));
+
   useEffect(() => {
     generateDailyQuests();
   }, [generateDailyQuests]);
@@ -64,7 +70,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Header */}
         <View style={s.header}>

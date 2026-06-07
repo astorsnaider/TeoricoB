@@ -6,7 +6,7 @@
  *  - ChapterView: renderiza un capítulo con bloques de contenido variados
  *  - SignCatalogView: renderiza un grupo de señales (existente)
  */
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Linking, Alert,
@@ -18,7 +18,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
 import SubPage from '../components/SubPage';
-import { useLockPagerSwipe } from '../components/PagerControl';
+import { useLockPagerSwipe, useTabResetEffect } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
 import { MANUAL_CHAPTERS, ManualChapter, ContentBlock } from '../data/manualContent';
@@ -314,6 +314,10 @@ export default function ManualScreen() {
   const clearRequestedChapter = useStore(s => s.clearRequestedManualChapter);
   const playSound = useSoundEffect();
   useLockPagerSwipe(view.type !== 'home');
+  const scrollRef = useRef<ScrollView>(null);
+  useTabResetEffect('manual', useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, []));
 
   // Si otra pantalla pide abrir un capítulo concreto, navegar a él
   useEffect(() => {
@@ -334,7 +338,7 @@ export default function ManualScreen() {
   return (
     <View style={{ flex: 1 }}>
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Hero */}
         <LinearGradient colors={['#1A237E', '#283593']} style={s.hero}>

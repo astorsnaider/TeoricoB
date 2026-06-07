@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { LeagueType, LeagueStanding } from '../types';
 import { useLeaderboard } from '../sync/useLeaderboard';
 import { useFriends } from '../friends/useFriends';
 import FriendsScreen from './FriendsScreen';
+import { useTabResetEffect } from '../components/PagerControl';
 
 export default function LeagueScreen() {
   const user = useStore(s => s.user);
@@ -42,9 +43,14 @@ export default function LeagueScreen() {
     return <Text style={[s.rankNum, { color: theme.textSecondary }]}>#{rank}</Text>;
   };
 
+  const scrollRef = useRef<ScrollView>(null);
+  useTabResetEffect('league', useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, []));
+
   return (
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* League header */}
         <LinearGradient colors={[league.color + '28', league.color + '06']} style={s.leagueHeader}>

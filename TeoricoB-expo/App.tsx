@@ -71,8 +71,15 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
   const pagerRef = useRef<TabPagerHandle>(null);
-  const { enabled: pagerEnabled } = usePagerControl();
+  const { enabled: pagerEnabled, signalTabReset } = usePagerControl();
   const tabBarAnim = useRef(new Animated.Value(1)).current;
+
+  // Cada vez que el tab activo cambia (swipe o tap), pedimos a la pantalla
+  // que resetee su scroll. NO se dispara cuando se cierra una subpágina
+  // (swipe-back) porque entonces activeTab no cambia.
+  useEffect(() => {
+    signalTabReset(activeTab);
+  }, [activeTab, signalTabReset]);
 
   useEffect(() => {
     Animated.timing(tabBarAnim, {
@@ -268,7 +275,7 @@ function AppContent() {
               >
                 <Ionicons
                   name={active ? tab.iconActive : tab.icon}
-                  size={26}
+                  size={24}
                   color={active ? theme.primary : theme.textTertiary}
                 />
                 <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '500' }]}>
@@ -285,8 +292,8 @@ function AppContent() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    paddingTop: 10,
+    paddingTop: 8,
   },
-  tabItem: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 },
-  tabLabel: { fontSize: 11 },
+  tabItem: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 3 },
+  tabLabel: { fontSize: 10 },
 });

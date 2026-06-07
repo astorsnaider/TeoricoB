@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ import { useSoundEffect } from '../audio/useSoundEffect';
 import { useAuth } from '../auth/AuthContext';
 import AuthScreen from '../auth/AuthScreen';
 import { useSyncStatus, syncStatusLabel } from '../sync/useSyncStatus';
-import { useLockPagerSwipe } from '../components/PagerControl';
+import { useLockPagerSwipe, useTabResetEffect } from '../components/PagerControl';
 import SubPage from '../components/SubPage';
 
 export default function ProfileScreen() {
@@ -46,6 +46,10 @@ export default function ProfileScreen() {
 }
 
 function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: () => void; onShowStats: () => void; onShowAuth: () => void }) {
+  const scrollRef = useRef<ScrollView>(null);
+  useTabResetEffect('profile', useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, []));
   const { user: authUser, signOut, deleteAccount } = useAuth();
   const syncStatus = useSyncStatus();
   const user = useStore(s => s.user);
@@ -157,7 +161,7 @@ function ProfileMain({ onShowLegal, onShowStats, onShowAuth }: { onShowLegal: ()
 
   return (
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Avatar */}
         <View style={s.profileHeader}>
