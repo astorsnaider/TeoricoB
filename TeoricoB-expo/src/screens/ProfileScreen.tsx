@@ -111,15 +111,23 @@ function ProfileMain({
   })();
 
   return (
-    // El root va en rojo (theme.primary) para que el bounce hacia abajo
-    // muestre el mismo color del hero en lugar del fondo oscuro. El body
-    // del scroll tiene su propio fondo theme.bg que cubre ese rojo cuando
-    // el scroll está en posición normal.
-    <View style={{ flex: 1, backgroundColor: theme.primary }}>
+    <View style={{ flex: 1, backgroundColor: theme.bg }}>
+      {/* Mancha roja DETRÁS del scroll, solo cubriendo el hero. El bounce
+          hacia abajo (descubre el área del top) deja ver este rojo. El
+          bouncing abajo (descubre el área del fondo) deja ver el theme.bg
+          del root. */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: insets.top + STICKY_HEIGHT + 250,
+          backgroundColor: theme.primary,
+        }}
+      />
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32, backgroundColor: theme.bg }}
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
         {/* === HEADER ROJO con AVATAR (scrolla y desaparece) === */}
         {/* paddingTop deja hueco bajo la barra sticky para que no se solape. */}
@@ -144,7 +152,7 @@ function ProfileMain({
           </View>
         </View>
 
-        <View style={s.body}>
+        <View style={[s.body, { backgroundColor: theme.bg }]}>
           {/* === SUBTÍTULO @user · Se unió en YYYY === */}
           <Text style={[s.handleSub, { color: theme.textSecondary }]}>
             {myUsername ? `@${myUsername}` : '@—'} · Se unió en {joinYear}
