@@ -18,7 +18,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.astorsnaider.teoric",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSContactsUsageDescription": "Usamos tus contactos para ayudarte a encontrar amigos que ya están en Teoric. Solo procesamos los emails localmente y no guardamos tu libreta."
+      }
     },
     "android": {
       "package": "com.astorsnaider.teoric",
@@ -31,7 +34,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_CONTACTS"
       ]
     },
     "web": {
@@ -47,6 +51,12 @@
         {
           "color": "#E63946",
           "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Usamos tus contactos para ayudarte a encontrar amigos que ya están en Teoric. Solo procesamos los emails localmente y no guardamos tu libreta."
         }
       ]
     ],

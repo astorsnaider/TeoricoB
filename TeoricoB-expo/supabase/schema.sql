@@ -966,6 +966,73 @@ $$;
 
 grant execute on function public.get_my_friends() to authenticated;
 
+-- ─────────────────────────────────────────────────────────────────────
+-- 16. CONTACTOS DEL MÓVIL: matching por email_hash determinista
+-- ─────────────────────────────────────────────────────────────────────
+-- El cliente lee los emails de los contactos del teléfono, los hashea con
+-- sha256('teoric_v1:' || lower(trim(email))) y envía la lista de hashes.
+-- El backend devuelve usuarios cuyo email_hash coincida. No se almacenan
+-- contactos.
+
+create extension if not exists pgcrypto;
+
+alter table public.profiles add column if not exists email_hash text;
+
+create index if not exists idx_profiles_email_hash
+  on public.profiles (email_hash)
+  where email_hash is not null and deleted_at is null;
+
+create or replace function public.compute_email_hash(p_email text)
+returns text language sql immutable
+as $$
+  select encode(digest('teoric_v1:' || lower(trim(coalesce(p_email, ''))), 'sha256'), 'hex');
+$$;
+
+create or replace function public.sync_email_hash()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+begin
+  if new.email is not null then
+    update public.profiles
+      set email_hash = public.compute_email_hash(new.email)
+      where id = new.id;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_email_change on auth.users;
+create trigger on_auth_user_email_change
+  after insert or update of email on auth.users
+  for each row execute function public.sync_email_hash();
+
+create or replace function public.find_users_by_email_hashes(p_hashes text[])
+returns table (
+  user_id      uuid,
+  username     text,
+  display_name text,
+  avatar_emoji text,
+  league       text,
+  email_hash   text
+)
+language sql security definer set search_path = public stable
+as $$
+  select p.id, p.username, p.display_name, p.avatar_emoji, up.league, p.email_hash
+  from public.profiles p
+  inner join public.user_progress up on up.user_id = p.id
+  where p.email_hash = any(p_hashes)
+    and p.deleted_at is null
+    and p.id <> auth.uid()
+    and not exists (
+      select 1 from public.friendships f
+      where (f.user_id_a = auth.uid() and f.user_id_b = p.id)
+         or (f.user_id_b = auth.uid() and f.user_id_a = p.id)
+    )
+  limit 100;
+$$;
+
+grant execute on function public.find_users_by_email_hashes(text[]) to authenticated;
+
 commit;
 
 -- ─────────────────────────────────────────────────────────────────────

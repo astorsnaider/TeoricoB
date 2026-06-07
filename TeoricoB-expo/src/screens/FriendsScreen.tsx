@@ -14,7 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
-  Alert, Share, ActivityIndicator,
+  Alert, Share, ActivityIndicator, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,10 @@ import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
 import { useFriends, FriendEntry, UserSearchResult } from '../friends/useFriends';
 import { getLeagueInfo } from '../store/useStore';
+import {
+  getContactsPermission, requestContactsPermission,
+  findFriendsInContacts, ContactMatch,
+} from '../friends/contacts';
 
 interface Props {
   onClose: () => void;
@@ -48,6 +52,12 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
 
   // Username chooser
   const [chooserOpen, setChooserOpen] = useState(false);
+
+  // Contactos del móvil (fase 2)
+  const [contactsLoading, setContactsLoading] = useState(false);
+  const [contactsMatches, setContactsMatches] = useState<ContactMatch[] | null>(null);
+  const [contactsError, setContactsError] = useState<string | null>(null);
+  const [contactsHidden, setContactsHidden] = useState(false);
 
   // Si llega un deep link teoric://u/<username>, precarga buscador
   useEffect(() => {
@@ -110,6 +120,30 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
   const onAccept = async (entry: FriendEntry) => {
     const r = await acceptFriend(entry.userId);
     if (!r.ok) Alert.alert('Error', r.error ?? 'No se pudo aceptar.');
+  };
+
+  const runContactsImport = async () => {
+    setContactsLoading(true);
+    setContactsError(null);
+    try {
+      let permission = await getContactsPermission();
+      if (permission !== 'granted') {
+        permission = await requestContactsPermission();
+      }
+      if (permission !== 'granted') {
+        setContactsError('Permiso denegado. Habilítalo en Ajustes para encontrar amigos.');
+        return;
+      }
+      const matches = await findFriendsInContacts();
+      setContactsMatches(matches);
+      if (matches.length === 0) {
+        setContactsError('Ninguno de tus contactos usa Teoric todavía.');
+      }
+    } catch (e) {
+      setContactsError(e instanceof Error ? e.message : 'No se pudo importar.');
+    } finally {
+      setContactsLoading(false);
+    }
   };
 
   const onReject = (entry: FriendEntry) => {
@@ -241,6 +275,104 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
             </View>
           )}
         </View>
+
+        {/* Contactos del móvil */}
+        {!contactsHidden && (
+          <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[s.cardLabel, { color: theme.textSecondary }]}>Encuentra a tus contactos</Text>
+            {contactsMatches === null ? (
+              <>
+                <Text style={[s.cardHint, { color: theme.textSecondary }]}>
+                  Te mostraremos qué contactos de tu móvil ya usan Teoric. Solo procesamos los emails con un hash; no guardamos tu libreta.
+                </Text>
+                <View style={s.contactsBtnRow}>
+                  <TouchableOpacity
+                    style={[s.contactsBtn, { backgroundColor: theme.primary }]}
+                    onPress={runContactsImport}
+                    disabled={contactsLoading}
+                  >
+                    {contactsLoading
+                      ? <ActivityIndicator color="#fff" />
+                      : <>
+                          <Ionicons name="people" size={16} color="#fff" />
+                          <Text style={s.contactsBtnTxt}>Importar contactos</Text>
+                        </>}
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setContactsHidden(true)} hitSlop={10}>
+                    <Text style={[s.contactsDismiss, { color: theme.textTertiary }]}>Ahora no</Text>
+                  </TouchableOpacity>
+                </View>
+                {contactsError && (
+                  <View style={s.feedbackRow}>
+                    <Ionicons name="alert-circle" size={14} color={theme.wrong} />
+                    <Text style={[s.feedbackTxt, { color: theme.wrong }]}>{contactsError}</Text>
+                  </View>
+                )}
+                {contactsError?.includes('Ajustes') && (
+                  <TouchableOpacity onPress={() => Linking.openSettings()} hitSlop={6}>
+                    <Text style={[s.contactsDismiss, { color: theme.primary }]}>Abrir Ajustes</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <>
+                <View style={s.contactsHeaderRow}>
+                  <Text style={[s.cardHint, { color: theme.textSecondary, flex: 1 }]}>
+                    {contactsMatches.length === 0
+                      ? 'Ninguno de tus contactos está en Teoric todavía.'
+                      : `Encontrados ${contactsMatches.length} contacto${contactsMatches.length === 1 ? '' : 's'} en Teoric.`}
+                  </Text>
+                  <TouchableOpacity onPress={runContactsImport} hitSlop={6}>
+                    <Ionicons name="refresh" size={16} color={theme.textTertiary} />
+                  </TouchableOpacity>
+                </View>
+                {contactsMatches.map(m => {
+                  const added = m.username ? addedIds[m.username] : undefined;
+                  return (
+                    <View key={m.userId} style={s.resultRow}>
+                      <AvatarView
+                        color={m.avatarEmoji.startsWith('#') ? m.avatarEmoji : getLeagueInfo(m.league).color}
+                        name={m.name}
+                        size={36}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.resultName, { color: theme.textPrimary }]} numberOfLines={1}>{m.name}</Text>
+                        {m.username && (
+                          <Text style={[s.resultHandle, { color: theme.textSecondary }]} numberOfLines={1}>@{m.username}</Text>
+                        )}
+                      </View>
+                      {!m.username ? (
+                        <View style={[s.addedPill, { backgroundColor: theme.bg2 }]}>
+                          <Text style={[s.addedPillTxt, { color: theme.textTertiary }]}>Sin @</Text>
+                        </View>
+                      ) : added === 'accepted' ? (
+                        <View style={[s.addedPill, { backgroundColor: theme.correct + '22' }]}>
+                          <Ionicons name="checkmark" size={14} color={theme.correct} />
+                          <Text style={[s.addedPillTxt, { color: theme.correct }]}>Amigos</Text>
+                        </View>
+                      ) : added === 'pending' ? (
+                        <View style={[s.addedPill, { backgroundColor: theme.bg2 }]}>
+                          <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
+                          <Text style={[s.addedPillTxt, { color: theme.textSecondary }]}>Enviada</Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={[s.addBtnSmall, { backgroundColor: theme.primary }]}
+                          onPress={() => onAdd(m.username!)}
+                          disabled={adding === m.username}
+                        >
+                          {adding === m.username
+                            ? <ActivityIndicator color="#fff" size="small" />
+                            : <Text style={s.addBtnSmallTxt}>Añadir</Text>}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })}
+              </>
+            )}
+          </View>
+        )}
 
         {/* Solicitudes recibidas */}
         {incoming.length > 0 && (
@@ -542,4 +674,10 @@ const s = StyleSheet.create({
   modalBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
   lockBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, borderWidth: 1, padding: 10 },
   lockBannerTxt: { fontSize: 12, flex: 1 },
+
+  contactsBtnRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 2 },
+  contactsBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 11, borderRadius: 12, ...SHADOWS.small },
+  contactsBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  contactsDismiss: { fontSize: 13, fontWeight: '600' },
+  contactsHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
 });
