@@ -70,6 +70,11 @@ export interface FriendsState {
   loading: boolean;
   /** Mi @username público (null si aún no he escogido uno). */
   myUsername: string | null;
+  /** Cuándo podré cambiar el username otra vez (ISO). null si nunca lo he
+   *  fijado o ya pasaron los 14 días de cooldown. */
+  nextUsernameChangeAt: string | null;
+  /** Días enteros restantes hasta poder cambiar. 0 si ya puedo. */
+  usernameCooldownDays: number;
   /** Solo amistades aceptadas. */
   friends: FriendEntry[];
   /** Solicitudes que ME han enviado (yo decido). */
@@ -95,6 +100,7 @@ function friendlyError(raw: string): string {
     case 'USERNAME_BAD_CHARS':  return 'Solo letras minúsculas, números y guion bajo.';
     case 'USERNAME_TAKEN':      return 'Ese nombre ya está en uso, prueba otro.';
     case 'USERNAME_RESERVED':   return 'Ese nombre está reservado.';
+    case 'USERNAME_COOLDOWN':   return 'Solo puedes cambiar tu username cada 14 días.';
     case 'CANNOT_ADD_SELF':     return 'No puedes añadirte a ti mismo.';
     case 'ALREADY_FRIENDS':     return 'Ya sois amigos.';
     case 'ALREADY_REQUESTED':   return 'Ya enviaste la solicitud, está pendiente.';
@@ -228,10 +234,24 @@ export function useFriends(): FriendsState {
   const incoming = rows.filter(r => r.status === 'pending' && r.isIncoming);
   const outgoing = rows.filter(r => r.status === 'pending' && !r.isIncoming);
 
+  // Cooldown: 14 días desde el último cambio.
+  const COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
+  let nextUsernameChangeAt: string | null = null;
+  let usernameCooldownDays = 0;
+  if (profile?.username_updated_at) {
+    const next = new Date(profile.username_updated_at).getTime() + COOLDOWN_MS;
+    if (next > Date.now()) {
+      nextUsernameChangeAt = new Date(next).toISOString();
+      usernameCooldownDays = Math.ceil((next - Date.now()) / (24 * 60 * 60 * 1000));
+    }
+  }
+
   return {
     available: Boolean(isSupabaseConfigured && user),
     loading,
     myUsername: profile?.username ?? null,
+    nextUsernameChangeAt,
+    usernameCooldownDays,
     friends,
     incoming,
     outgoing,

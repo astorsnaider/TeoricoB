@@ -35,7 +35,8 @@ const SHARE_BASE = 'teoric://u/';
 export default function FriendsScreen({ onClose, prefillUsername }: Props) {
   const theme = useTheme();
   const {
-    available, loading, myUsername, friends, incoming, outgoing,
+    available, loading, myUsername, usernameCooldownDays,
+    friends, incoming, outgoing,
     setUsername, searchUsers, addFriendByUsername, acceptFriend, rejectFriend, refresh,
   } = useFriends();
 
@@ -355,6 +356,7 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
       <UsernameChooserModal
         visible={chooserOpen}
         currentUsername={myUsername}
+        cooldownDays={usernameCooldownDays}
         onClose={() => setChooserOpen(false)}
         onSubmit={setUsername}
       />
@@ -363,10 +365,11 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
 }
 
 function UsernameChooserModal({
-  visible, currentUsername, onClose, onSubmit,
+  visible, currentUsername, cooldownDays, onClose, onSubmit,
 }: {
   visible: boolean;
   currentUsername: string | null;
+  cooldownDays: number;
   onClose: () => void;
   onSubmit: (u: string) => Promise<{ ok: boolean; username?: string; error?: string }>;
 }) {
@@ -374,6 +377,7 @@ function UsernameChooserModal({
   const [value, setValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locked = !!currentUsername && cooldownDays > 0;
 
   useEffect(() => {
     if (visible) {
@@ -385,6 +389,7 @@ function UsernameChooserModal({
   if (!visible) return null;
 
   const onConfirm = async () => {
+    if (locked) return;
     setSubmitting(true);
     setError(null);
     const r = await onSubmit(value);
@@ -410,7 +415,18 @@ function UsernameChooserModal({
         <Text style={[s.modalHint, { color: theme.textSecondary }]}>
           3 a 20 caracteres. Letras minúsculas, números y guion bajo.
         </Text>
-        <View style={[s.modalInputWrap, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
+        {locked && (
+          <View style={[s.lockBanner, { backgroundColor: theme.yellow + '18', borderColor: theme.yellow + '40' }]}>
+            <Ionicons name="time-outline" size={14} color={theme.orange} />
+            <Text style={[s.lockBannerTxt, { color: theme.textPrimary }]}>
+              Podrás cambiarlo en {cooldownDays} día{cooldownDays === 1 ? '' : 's'}.
+            </Text>
+          </View>
+        )}
+        <View style={[s.modalInputWrap, {
+          backgroundColor: locked ? theme.bg : theme.bg2,
+          borderColor: theme.border, opacity: locked ? 0.6 : 1,
+        }]}>
           <Text style={[s.modalAt, { color: theme.textTertiary }]}>@</Text>
           <TextInput
             style={[s.modalInput, { color: theme.textPrimary }]}
@@ -421,7 +437,8 @@ function UsernameChooserModal({
             autoCapitalize="none"
             autoCorrect={false}
             maxLength={20}
-            autoFocus
+            editable={!locked}
+            autoFocus={!locked}
             onSubmitEditing={onConfirm}
           />
         </View>
@@ -432,9 +449,9 @@ function UsernameChooserModal({
           </View>
         )}
         <TouchableOpacity
-          style={[s.modalBtn, { backgroundColor: value.length >= 3 && !submitting ? theme.primary : theme.border }]}
+          style={[s.modalBtn, { backgroundColor: !locked && value.length >= 3 && !submitting ? theme.primary : theme.border }]}
           onPress={onConfirm}
-          disabled={value.length < 3 || submitting}
+          disabled={locked || value.length < 3 || submitting}
         >
           {submitting
             ? <ActivityIndicator color="#fff" />
@@ -523,4 +540,6 @@ const s = StyleSheet.create({
   modalInput: { flex: 1, fontSize: 17, fontWeight: '600', paddingVertical: 12 },
   modalBtn: { padding: 13, borderRadius: 12, alignItems: 'center', ...SHADOWS.small },
   modalBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  lockBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, borderWidth: 1, padding: 10 },
+  lockBannerTxt: { fontSize: 12, flex: 1 },
 });

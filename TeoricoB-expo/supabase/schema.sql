@@ -727,6 +727,8 @@ grant execute on function public.get_my_friends() to authenticated;
 -- compatibilidad pero no se usa en la UI nueva.
 
 alter table public.profiles add column if not exists username text;
+-- Marca temporal del último cambio de username (para enforce de cooldown 14d)
+alter table public.profiles add column if not exists username_updated_at timestamptz;
 
 -- Índice único case-insensitive (sin duplicar "Astor" vs "astor")
 create unique index if not exists idx_profiles_username_lower
@@ -750,26 +752,30 @@ as $$
 declare
   v_me uuid;
   v_clean text;
+  v_current text;
+  v_last_change timestamptz;
+  v_cooldown_days int := 14;
 begin
   v_me := auth.uid();
-  if v_me is null then
-    raise exception 'No autenticado.';
-  end if;
+  if v_me is null then raise exception 'No autenticado.'; end if;
 
   v_clean := lower(trim(coalesce(p_username, '')));
 
-  if length(v_clean) < 3 then
-    raise exception 'USERNAME_TOO_SHORT';
-  end if;
-  if length(v_clean) > 20 then
-    raise exception 'USERNAME_TOO_LONG';
-  end if;
-  if v_clean !~ '^[a-z0-9_]+$' then
-    raise exception 'USERNAME_BAD_CHARS';
-  end if;
-  -- Reservados básicos
+  if length(v_clean) < 3  then raise exception 'USERNAME_TOO_SHORT'; end if;
+  if length(v_clean) > 20 then raise exception 'USERNAME_TOO_LONG'; end if;
+  if v_clean !~ '^[a-z0-9_]+$' then raise exception 'USERNAME_BAD_CHARS'; end if;
   if v_clean in ('admin','administrator','teoric','support','help','soporte','root','system','null','undefined') then
     raise exception 'USERNAME_RESERVED';
+  end if;
+
+  select username, username_updated_at into v_current, v_last_change
+    from public.profiles where id = v_me;
+
+  -- Cooldown 14 días para cambios (la primera vez NO aplica).
+  if v_current is not null and v_current <> v_clean then
+    if v_last_change is not null and v_last_change > now() - (v_cooldown_days || ' days')::interval then
+      raise exception 'USERNAME_COOLDOWN';
+    end if;
   end if;
 
   if exists (
@@ -781,7 +787,13 @@ begin
     raise exception 'USERNAME_TAKEN';
   end if;
 
-  update public.profiles set username = v_clean where id = v_me;
+  update public.profiles
+    set username = v_clean,
+        username_updated_at = case
+          when v_current is distinct from v_clean then now()
+          else username_updated_at
+        end
+    where id = v_me;
   return v_clean;
 end;
 $$;
