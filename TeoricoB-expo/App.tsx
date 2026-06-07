@@ -71,15 +71,21 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
   const pagerRef = useRef<TabPagerHandle>(null);
-  const { enabled: pagerEnabled, signalTabReset } = usePagerControl();
+  const { enabled: pagerEnabled, signalTabsReset } = usePagerControl();
   const tabBarAnim = useRef(new Animated.Value(1)).current;
 
-  // Cada vez que el tab activo cambia (swipe o tap), pedimos a la pantalla
-  // que resetee su scroll. NO se dispara cuando se cierra una subpágina
-  // (swipe-back) porque entonces activeTab no cambia.
+  // Al cambiar de tab pedimos al tab que dejamos atrás que resetee su
+  // scroll. Como en ese momento ya está fuera de vista, el reset es
+  // invisible y la próxima vez que el usuario vuelva, ve la pantalla
+  // arrancada desde arriba sin saltos. No se dispara cuando se cierra
+  // una subpágina (activeTab no cambia).
+  const prevTabRef = useRef(activeTab);
   useEffect(() => {
-    signalTabReset(activeTab);
-  }, [activeTab, signalTabReset]);
+    if (prevTabRef.current !== activeTab) {
+      signalTabsReset([prevTabRef.current]);
+      prevTabRef.current = activeTab;
+    }
+  }, [activeTab, signalTabsReset]);
 
   useEffect(() => {
     Animated.timing(tabBarAnim, {
