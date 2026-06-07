@@ -14,25 +14,34 @@ import { useAuth } from '../auth/AuthContext';
 import AuthScreen from '../auth/AuthScreen';
 import { useSyncStatus, syncStatusLabel } from '../sync/useSyncStatus';
 import { useLockPagerSwipe } from '../components/PagerControl';
+import SubPage from '../components/SubPage';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   useLockPagerSwipe(showLegal || showStats || showAuth);
-  if (showLegal) return <LegalScreen onBack={() => setShowLegal(false)} />;
-  if (showStats) return <StatsScreen onBack={() => setShowStats(false)} />;
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <ProfileMain
         onShowLegal={() => setShowLegal(true)}
         onShowStats={() => setShowStats(true)}
         onShowAuth={() => setShowAuth(true)}
       />
+      {showStats && (
+        <SubPage onBack={() => setShowStats(false)}>
+          <StatsScreen onBack={() => setShowStats(false)} />
+        </SubPage>
+      )}
+      {showLegal && (
+        <SubPage onBack={() => setShowLegal(false)}>
+          <LegalScreen onBack={() => setShowLegal(false)} />
+        </SubPage>
+      )}
       <Modal visible={showAuth} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAuth(false)}>
         <AuthScreen onClose={() => setShowAuth(false)} />
       </Modal>
-    </>
+    </View>
   );
 }
 

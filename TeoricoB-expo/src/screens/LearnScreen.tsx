@@ -9,7 +9,7 @@ import { SHADOWS } from '../theme';
 import { Topic, Lesson } from '../types';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
-import SwipeBack from '../components/SwipeBack';
+import SubPage from '../components/SubPage';
 import { useLockPagerSwipe } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 
@@ -20,11 +20,8 @@ export default function LearnScreen() {
   const playSound = useSoundEffect();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
 
-  if (selectedTopic) {
-    return <TopicDetail topic={selectedTopic} onBack={() => setSelectedTopic(null)} />;
-  }
-
   return (
+    <View style={{ flex: 1 }}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <Text style={[s.title, { color: theme.textPrimary }]}>Aprender</Text>
@@ -64,6 +61,12 @@ export default function LearnScreen() {
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
+    {selectedTopic && (
+      <SubPage onBack={() => setSelectedTopic(null)}>
+        <TopicDetail topic={selectedTopic} onBack={() => setSelectedTopic(null)} />
+      </SubPage>
+    )}
+    </View>
   );
 }
 
@@ -79,7 +82,6 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
     d === 'Básico' ? '#4CAF50' : d === 'Intermedio' ? '#FF9800' : '#F44336';
 
   return (
-    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -161,7 +163,6 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
         />
       )}
     </SafeAreaView>
-    </SwipeBack>
   );
 }
 

@@ -10,7 +10,7 @@ import { LEGAL } from '../legal/config';
 import {
   AVISO_LEGAL, TERMINOS, PRIVACIDAD, CREDITOS,
 } from '../legal/legalTexts';
-import SwipeBack from '../components/SwipeBack';
+import SubPage from '../components/SubPage';
 
 type DocId = 'aviso' | 'terminos' | 'privacidad' | 'creditos';
 
@@ -29,29 +29,10 @@ export default function LegalScreen({ onBack }: Props) {
   const theme = useTheme();
   const [selected, setSelected] = useState<DocId | null>(null);
 
-  if (selected) {
-    const doc = DOCS.find(d => d.id === selected)!;
-    return (
-      <SwipeBack onBack={() => setSelected(null)}>
-      <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
-        <View style={[s.docHeader, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-          <TouchableOpacity onPress={() => setSelected(null)} style={s.headerBack}>
-            <Ionicons name="arrow-back" size={20} color={theme.primary} />
-            <Text style={[s.headerBackTxt, { color: theme.primary }]}>Legal</Text>
-          </TouchableOpacity>
-          <Text style={[s.docTitle, { color: theme.textPrimary }]}>{doc.title}</Text>
-        </View>
-        <ScrollView contentContainerStyle={s.docBody}>
-          <Text style={[s.docText, { color: theme.textPrimary }]}>{doc.text}</Text>
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      </SafeAreaView>
-      </SwipeBack>
-    );
-  }
+  const activeDoc = selected ? DOCS.find(d => d.id === selected) ?? null : null;
 
   return (
-    <SwipeBack onBack={onBack}>
+    <View style={{ flex: 1 }}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -101,7 +82,25 @@ export default function LegalScreen({ onBack }: Props) {
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
-    </SwipeBack>
+
+    {activeDoc && (
+      <SubPage onBack={() => setSelected(null)}>
+        <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
+          <View style={[s.docHeader, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+            <TouchableOpacity onPress={() => setSelected(null)} style={s.headerBack}>
+              <Ionicons name="arrow-back" size={20} color={theme.primary} />
+              <Text style={[s.headerBackTxt, { color: theme.primary }]}>Legal</Text>
+            </TouchableOpacity>
+            <Text style={[s.docTitle, { color: theme.textPrimary }]}>{activeDoc.title}</Text>
+          </View>
+          <ScrollView contentContainerStyle={s.docBody}>
+            <Text style={[s.docText, { color: theme.textPrimary }]}>{activeDoc.text}</Text>
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </SafeAreaView>
+      </SubPage>
+    )}
+    </View>
   );
 }
 

@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TabPager, { TabPagerHandle } from './src/components/TabPager';
@@ -69,6 +69,15 @@ function AppContent() {
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
   const pagerRef = useRef<TabPagerHandle>(null);
   const { enabled: pagerEnabled } = usePagerControl();
+  const tabBarAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(tabBarAnim, {
+      toValue: pagerEnabled ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [pagerEnabled, tabBarAnim]);
 
   const goToTab = (tab: Tab) => {
     const idx = TABS.findIndex(t => t.key === tab);
@@ -232,8 +241,20 @@ function AppContent() {
           <View key="profile" style={{ flex: 1 }}><ProfileScreen /></View>
         </TabPager>
 
-        {/* Tab bar */}
-        <View style={[styles.tabBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+        {/* Tab bar — se anima fuera de pantalla al entrar en cualquier subpágina */}
+        <Animated.View
+          pointerEvents={pagerEnabled ? 'auto' : 'none'}
+          style={[
+            styles.tabBar,
+            { backgroundColor: theme.card, borderTopColor: theme.border },
+            {
+              opacity: tabBarAnim,
+              transform: [{
+                translateY: tabBarAnim.interpolate({ inputRange: [0, 1], outputRange: [80, 0] }),
+              }],
+            },
+          ]}
+        >
           {TABS.map(tab => {
             const active = activeTab === tab.key;
             return (
@@ -254,7 +275,7 @@ function AppContent() {
               </TouchableOpacity>
             );
           })}
-        </View>
+        </Animated.View>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

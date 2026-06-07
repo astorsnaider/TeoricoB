@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
 import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
-import SwipeBack from '../components/SwipeBack';
+import SubPage from '../components/SubPage';
 import { useLockPagerSwipe } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
@@ -162,7 +162,6 @@ export function ChapterView({ chapter, theme, onBack }: {
     .catch(() => Alert.alert('Error', 'No se pudo abrir el enlace.'));
 
   return (
-    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -215,7 +214,6 @@ export function ChapterView({ chapter, theme, onBack }: {
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
-    </SwipeBack>
   );
 }
 
@@ -227,7 +225,6 @@ function SignGroupView({ group, theme, onBack }: {
   onBack: () => void;
 }) {
   return (
-    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -255,7 +252,6 @@ function SignGroupView({ group, theme, onBack }: {
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
-    </SwipeBack>
   );
 }
 
@@ -331,16 +327,12 @@ export default function ManualScreen() {
     Alert.alert('Error', 'No se pudo abrir el enlace. Comprueba tu conexión.')
   );
 
-  if (view.type === 'chapter') {
-    const chapter = MANUAL_CHAPTERS.find(c => c.id === view.chapterId);
-    if (chapter) return <ChapterView chapter={chapter} theme={theme} onBack={() => setView({ type: 'home' })} />;
-  }
-  if (view.type === 'signGroup') {
-    const group = ALL_SIGN_GROUPS[view.groupIndex];
-    if (group) return <SignGroupView group={group} theme={theme} onBack={() => setView({ type: 'home' })} />;
-  }
+  const goHome = () => setView({ type: 'home' });
+  const activeChapter = view.type === 'chapter' ? MANUAL_CHAPTERS.find(c => c.id === view.chapterId) : null;
+  const activeGroup = view.type === 'signGroup' ? ALL_SIGN_GROUPS[view.groupIndex] : null;
 
   return (
+    <View style={{ flex: 1 }}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
@@ -443,6 +435,18 @@ export default function ManualScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
+
+    {activeChapter && (
+      <SubPage onBack={goHome}>
+        <ChapterView chapter={activeChapter} theme={theme} onBack={goHome} />
+      </SubPage>
+    )}
+    {activeGroup && (
+      <SubPage onBack={goHome}>
+        <SignGroupView group={activeGroup} theme={theme} onBack={goHome} />
+      </SubPage>
+    )}
+    </View>
   );
 }
 
