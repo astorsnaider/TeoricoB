@@ -1,9 +1,10 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TabPager, { TabPagerHandle } from './src/components/TabPager';
+import { PagerControlProvider, usePagerControl } from './src/components/PagerControl';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
@@ -42,7 +43,9 @@ const TABS: TabDef[] = [
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <PagerControlProvider>
+        <AppContent />
+      </PagerControlProvider>
     </AuthProvider>
   );
 }
@@ -65,6 +68,7 @@ function AppContent() {
   const theme = useTheme();
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
   const pagerRef = useRef<TabPagerHandle>(null);
+  const { enabled: pagerEnabled } = usePagerControl();
 
   const goToTab = (tab: Tab) => {
     const idx = TABS.findIndex(t => t.key === tab);
@@ -215,6 +219,7 @@ function AppContent() {
           ref={pagerRef}
           style={{ flex: 1, backgroundColor: theme.bg }}
           initialPage={0}
+          scrollEnabled={pagerEnabled}
           onPageSelected={position => {
             const key = TABS[position]?.key;
             if (key && key !== activeTab) setActiveTab(key);

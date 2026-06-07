@@ -7,12 +7,14 @@
  *  - Historial de exámenes (últimos 10) con fecha, nota y tiempo
  */
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
+import SwipeBack from '../components/SwipeBack';
 
 // Mapeo de categoría de pregunta a tema visual (color e icono)
 const CATEGORY_META: Record<string, { name: string; color: string; icon: keyof typeof Ionicons.glyphMap }> = {
@@ -64,6 +66,7 @@ export default function StatsScreen({ onBack }: Props) {
   const totalStudyMin = Math.floor(totalStudyTimeSec / 60);
 
   return (
+    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
@@ -206,6 +209,7 @@ export default function StatsScreen({ onBack }: Props) {
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
+    </SwipeBack>
   );
 }
 

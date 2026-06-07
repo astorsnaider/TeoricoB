@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
+import { StyleSheet, ViewStyle, StyleProp, Platform, Animated, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 interface Props {
@@ -11,47 +11,83 @@ interface Props {
 }
 
 /**
- * Envuelve una pantalla con una zona detectora de gesto desde el borde
- * izquierdo (estilo swipe-back de iOS). Cuando el usuario arrastra desde
- * los primeros `edgeWidth` px hacia la derecha al menos `threshold` px,
- * se dispara `onBack`.
- *
- * En web cae a un wrapper sin gesto.
+ * Wrapper de pantalla con gesto swipe-back desde el borde izquierdo,
+ * estilo iOS. El contenido se arrastra siguiendo al dedo; si al soltar
+ * se supera `threshold`, anima la salida hacia la derecha y llama a
+ * `onBack`. Si no, vuelve a su posición original.
  */
 export default function SwipeBack({
   onBack,
   children,
   style,
-  edgeWidth = 24,
-  threshold = 80,
+  edgeWidth = 28,
+  threshold = 90,
 }: Props) {
   if (Platform.OS === 'web') {
-    return <View style={[styles.fill, style]}>{children}</View>;
+    return <Animated.View style={[styles.fill, style]}>{children}</Animated.View>;
   }
 
-  // Refs locales para guardar el punto de inicio sin recrear el gesto en cada render.
+  const screenW = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(0)).current;
   const startX = useRef(0);
 
+  const animateBack = () => {
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animateOut = () => {
+    Animated.timing(translateX, {
+      toValue: screenW,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        onBack();
+        // Reset para la próxima entrada
+        translateX.setValue(0);
+      }
+    });
+  };
+
   const pan = Gesture.Pan()
-    .activeOffsetX(10)
-    .failOffsetY([-15, 15])
+    .activeOffsetX(8)
+    .failOffsetY([-18, 18])
     .runOnJS(true)
     .onBegin(e => {
       startX.current = e.absoluteX;
     })
+    .onUpdate(e => {
+      if (startX.current > edgeWidth) return;
+      const dx = Math.max(0, e.translationX);
+      translateX.setValue(dx);
+    })
     .onEnd(e => {
-      if (
-        startX.current <= edgeWidth &&
-        e.translationX > threshold &&
-        e.velocityX > 0
-      ) {
-        onBack();
+      if (startX.current > edgeWidth) {
+        animateBack();
+        return;
       }
+      if (e.translationX > threshold && e.velocityX >= 0) {
+        animateOut();
+      } else {
+        animateBack();
+      }
+    })
+    .onFinalize(() => {
+      // Por si el gesto se cancela (multitouch, foreground change…)
+      // y no llegó al onEnd, asegurar reset visual.
     });
 
   return (
     <GestureDetector gesture={pan}>
-      <View style={[styles.fill, style]}>{children}</View>
+      <Animated.View
+        style={[styles.fill, style, { transform: [{ translateX }] }]}
+      >
+        {children}
+      </Animated.View>
     </GestureDetector>
   );
 }

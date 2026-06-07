@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Linking,
+  Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { LEGAL } from '../legal/config';
 import {
   AVISO_LEGAL, TERMINOS, PRIVACIDAD, CREDITOS,
 } from '../legal/legalTexts';
+import SwipeBack from '../components/SwipeBack';
 
 type DocId = 'aviso' | 'terminos' | 'privacidad' | 'creditos';
 
@@ -30,6 +32,7 @@ export default function LegalScreen({ onBack }: Props) {
   if (selected) {
     const doc = DOCS.find(d => d.id === selected)!;
     return (
+      <SwipeBack onBack={() => setSelected(null)}>
       <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
         <View style={[s.docHeader, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
           <TouchableOpacity onPress={() => setSelected(null)} style={s.headerBack}>
@@ -43,10 +46,12 @@ export default function LegalScreen({ onBack }: Props) {
           <View style={{ height: 40 }} />
         </ScrollView>
       </SafeAreaView>
+      </SwipeBack>
     );
   }
 
   return (
+    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -96,6 +101,7 @@ export default function LegalScreen({ onBack }: Props) {
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
+    </SwipeBack>
   );
 }
 

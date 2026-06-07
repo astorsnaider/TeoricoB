@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
@@ -9,6 +10,7 @@ import { Topic, Lesson } from '../types';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
 import SwipeBack from '../components/SwipeBack';
+import { useLockPagerSwipe } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function LearnScreen() {
@@ -71,6 +73,7 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
   const theme = useTheme();
   const playSound = useSoundEffect();
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+  useLockPagerSwipe(true);
 
   const diffColor = (d: string) =>
     d === 'Básico' ? '#4CAF50' : d === 'Intermedio' ? '#FF9800' : '#F44336';

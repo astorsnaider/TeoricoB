@@ -7,6 +7,7 @@ export interface TabPagerHandle {
 
 interface Props {
   initialPage?: number;
+  scrollEnabled?: boolean; // ignorado en web
   onPageSelected?: (position: number) => void;
   children: React.ReactNode;
   style?: any;

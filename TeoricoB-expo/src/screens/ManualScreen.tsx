@@ -9,14 +9,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Linking, Alert,
+  Linking, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
 import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
 import SwipeBack from '../components/SwipeBack';
+import { useLockPagerSwipe } from '../components/PagerControl';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
 import { MANUAL_CHAPTERS, ManualChapter, ContentBlock } from '../data/manualContent';
@@ -315,6 +317,7 @@ export default function ManualScreen() {
   const requestedChapter = useStore(s => s.requestedManualChapter);
   const clearRequestedChapter = useStore(s => s.clearRequestedManualChapter);
   const playSound = useSoundEffect();
+  useLockPagerSwipe(view.type !== 'home');
 
   // Si otra pantalla pide abrir un capítulo concreto, navegar a él
   useEffect(() => {

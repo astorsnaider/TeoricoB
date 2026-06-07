@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert, Switch, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useStore, getAllAchievements, getLeagueInfo } from '../store/useStore';
@@ -12,11 +13,13 @@ import { useSoundEffect } from '../audio/useSoundEffect';
 import { useAuth } from '../auth/AuthContext';
 import AuthScreen from '../auth/AuthScreen';
 import { useSyncStatus, syncStatusLabel } from '../sync/useSyncStatus';
+import { useLockPagerSwipe } from '../components/PagerControl';
 
 export default function ProfileScreen() {
   const [showLegal, setShowLegal] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  useLockPagerSwipe(showLegal || showStats || showAuth);
   if (showLegal) return <LegalScreen onBack={() => setShowLegal(false)} />;
   if (showStats) return <StatsScreen onBack={() => setShowStats(false)} />;
   return (
