@@ -43,7 +43,7 @@ export default function LeagueScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
+    <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* League header */}

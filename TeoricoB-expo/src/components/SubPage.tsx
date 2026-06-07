@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Platform, View, Modal } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 interface Props {
   onBack: () => void;
@@ -92,13 +93,15 @@ export default function SubPage({ onBack, children, edgeWidth = 28, threshold = 
       onRequestClose={animateOut}
       statusBarTranslucent
     >
-      {pan ? (
-        <GestureDetector gesture={pan}>
+      <SafeAreaProvider>
+        {pan ? (
+          <GestureDetector gesture={pan}>
+            <View style={styles.fill}>{content}</View>
+          </GestureDetector>
+        ) : (
           <View style={styles.fill}>{content}</View>
-        </GestureDetector>
-      ) : (
-        <View style={styles.fill}>{content}</View>
-      )}
+        )}
+      </SafeAreaProvider>
     </Modal>
   );
 }

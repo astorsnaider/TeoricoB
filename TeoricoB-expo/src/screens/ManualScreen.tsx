@@ -333,7 +333,7 @@ export default function ManualScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-    <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
+    <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
         {/* Hero */}

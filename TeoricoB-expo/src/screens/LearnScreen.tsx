@@ -22,7 +22,7 @@ export default function LearnScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-    <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
+    <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <Text style={[s.title, { color: theme.textPrimary }]}>Aprender</Text>
         <Text style={[s.subtitle, { color: theme.textSecondary }]}>Selecciona un tema para estudiar</Text>

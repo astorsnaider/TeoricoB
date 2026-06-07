@@ -42,11 +42,13 @@ const TABS: TabDef[] = [
 
 export default function App() {
   return (
-    <AuthProvider>
-      <PagerControlProvider>
-        <AppContent />
-      </PagerControlProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <PagerControlProvider>
+          <AppContent />
+        </PagerControlProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -66,6 +68,7 @@ function AppContent() {
 
   const [activeTab, setActiveTab] = React.useState<Tab>('home');
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
   const pagerRef = useRef<TabPagerHandle>(null);
   const { enabled: pagerEnabled } = usePagerControl();
@@ -191,34 +194,33 @@ function AppContent() {
   // Disclaimer first — legally required acceptance before any use
   if (!disclaimerAccepted) {
     return (
-      <SafeAreaProvider>
+      <>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <DisclaimerScreen />
-      </SafeAreaProvider>
+      </>
     );
   }
 
   if (!isOnboardingComplete) {
     return (
-      <SafeAreaProvider>
+      <>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <OnboardingScreen />
-      </SafeAreaProvider>
+      </>
     );
   }
 
   if (!tutorialSeen) {
     return (
-      <SafeAreaProvider>
+      <>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <TutorialScreen />
-      </SafeAreaProvider>
+      </>
     );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.card }}>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
         {/* Achievement modal animado */}
@@ -246,11 +248,11 @@ function AppContent() {
           pointerEvents={pagerEnabled ? 'auto' : 'none'}
           style={[
             styles.tabBar,
-            { backgroundColor: theme.card, borderTopColor: theme.border },
+            { backgroundColor: theme.card, paddingBottom: Math.max(insets.bottom, 8) },
             {
               opacity: tabBarAnim,
               transform: [{
-                translateY: tabBarAnim.interpolate({ inputRange: [0, 1], outputRange: [80, 0] }),
+                translateY: tabBarAnim.interpolate({ inputRange: [0, 1], outputRange: [90, 0] }),
               }],
             },
           ]}
@@ -266,17 +268,16 @@ function AppContent() {
               >
                 <Ionicons
                   name={active ? tab.iconActive : tab.icon}
-                  size={22}
+                  size={26}
                   color={active ? theme.primary : theme.textTertiary}
                 />
-                <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '400' }]}>
+                <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '500' }]}>
                   {tab.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </Animated.View>
-      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
@@ -284,10 +285,8 @@ function AppContent() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    borderTopWidth: 0.5,
-    paddingBottom: 24,
-    paddingTop: 8,
+    paddingTop: 10,
   },
-  tabItem: { flex: 1, alignItems: 'center', gap: 3 },
-  tabLabel: { fontSize: 10 },
+  tabItem: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 },
+  tabLabel: { fontSize: 11 },
 });
