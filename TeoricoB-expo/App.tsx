@@ -1,6 +1,9 @@
+import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import TabPager, { TabPagerHandle } from './src/components/TabPager';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from './src/store/useStore';
@@ -61,6 +64,13 @@ function AppContent() {
   const [activeTab, setActiveTab] = React.useState<Tab>('home');
   const theme = useTheme();
   const requestedManualChapter = useStore(s => s.requestedManualChapter);
+  const pagerRef = useRef<TabPagerHandle>(null);
+
+  const goToTab = (tab: Tab) => {
+    const idx = TABS.findIndex(t => t.key === tab);
+    if (idx >= 0) pagerRef.current?.setPage(idx);
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
     if (isOnboardingComplete && disclaimerAccepted) {
@@ -85,7 +95,7 @@ function AppContent() {
 
   // Si una pantalla solicita abrir un capítulo del manual, cambia al tab Manual
   useEffect(() => {
-    if (requestedManualChapter) setActiveTab('manual');
+    if (requestedManualChapter) goToTab('manual');
   }, [requestedManualChapter]);
 
   // ── Cableado global de sonidos basado en cambios del store ─────────────
@@ -193,51 +203,55 @@ function AppContent() {
     );
   }
 
-  const renderScreen = () => {
-    switch (activeTab) {
-      case 'home':    return <HomeScreen />;
-      case 'learn':   return <LearnScreen />;
-      case 'manual':  return <ManualScreen />;
-      case 'league':  return <LeagueScreen />;
-      case 'profile': return <ProfileScreen />;
-    }
-  };
-
   return (
-    <SafeAreaProvider>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      {/* Achievement modal animado */}
-      <AchievementUnlockModal achievement={newAchievement} onClose={clearNewAchievement} />
+        {/* Achievement modal animado */}
+        <AchievementUnlockModal achievement={newAchievement} onClose={clearNewAchievement} />
 
-      <View style={{ flex: 1, backgroundColor: theme.bg }}>
-        {renderScreen()}
-      </View>
+        <TabPager
+          ref={pagerRef}
+          style={{ flex: 1, backgroundColor: theme.bg }}
+          initialPage={0}
+          onPageSelected={position => {
+            const key = TABS[position]?.key;
+            if (key && key !== activeTab) setActiveTab(key);
+          }}
+        >
+          <View key="home"    style={{ flex: 1 }}><HomeScreen /></View>
+          <View key="learn"   style={{ flex: 1 }}><LearnScreen /></View>
+          <View key="manual"  style={{ flex: 1 }}><ManualScreen /></View>
+          <View key="league"  style={{ flex: 1 }}><LeagueScreen /></View>
+          <View key="profile" style={{ flex: 1 }}><ProfileScreen /></View>
+        </TabPager>
 
-      {/* Tab bar */}
-      <View style={[styles.tabBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
-        {TABS.map(tab => {
-          const active = activeTab === tab.key;
-          return (
-            <TouchableOpacity
-              key={tab.key}
-              style={styles.tabItem}
-              onPress={() => setActiveTab(tab.key)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={active ? tab.iconActive : tab.icon}
-                size={22}
-                color={active ? theme.primary : theme.textTertiary}
-              />
-              <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '400' }]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </SafeAreaProvider>
+        {/* Tab bar */}
+        <View style={[styles.tabBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+          {TABS.map(tab => {
+            const active = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={styles.tabItem}
+                onPress={() => goToTab(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={active ? tab.iconActive : tab.icon}
+                  size={22}
+                  color={active ? theme.primary : theme.textTertiary}
+                />
+                <Text style={[styles.tabLabel, { color: active ? theme.primary : theme.textTertiary, fontWeight: active ? '700' : '400' }]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

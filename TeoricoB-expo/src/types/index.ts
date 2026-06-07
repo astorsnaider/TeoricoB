@@ -65,6 +65,12 @@ export interface ExamTemplateStats {
   bestPassed: boolean;     // alguna vez aprobado
 }
 
+export interface LessonStat {
+  bestWrong: number;     // menor nº de fallos conseguido en esta lección
+  xpClaimed: number;     // XP máximo ya cobrado por esta lección (techo acumulado)
+  completedAt: string;   // ISO de la primera vez que se completó
+}
+
 export interface MistakeEntry {
   questionId: string;
   category: string;
@@ -85,6 +91,7 @@ export interface UserState {
   league: LeagueType;
   leagueXP: number;
   completedLessons: string[];
+  lessonStats: Record<string, LessonStat>; // estadísticas por lección (fallos mín. y XP cobrado)
   completedTopics: string[];
   achievements: string[];
   lastActiveDate: string;

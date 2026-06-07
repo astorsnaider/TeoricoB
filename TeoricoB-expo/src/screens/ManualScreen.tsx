@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../hooks/useTheme';
 import { useStore } from '../store/useStore';
 import { TrafficSign } from '../components/TrafficSign';
+import SwipeBack from '../components/SwipeBack';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { ALL_SIGN_GROUPS, CatalogSign, SignType } from '../data/signCatalog';
 import { MANUAL_CHAPTERS, ManualChapter, ContentBlock } from '../data/manualContent';
@@ -150,7 +151,7 @@ function ContentBlockRenderer({ block, theme }: { block: ContentBlock; theme: Re
 
 // ─── VISTA DE UN CAPÍTULO ────────────────────────────────────────
 
-function ChapterView({ chapter, theme, onBack }: {
+export function ChapterView({ chapter, theme, onBack }: {
   chapter: ManualChapter;
   theme: ReturnType<typeof useTheme>;
   onBack: () => void;
@@ -159,6 +160,7 @@ function ChapterView({ chapter, theme, onBack }: {
     .catch(() => Alert.alert('Error', 'No se pudo abrir el enlace.'));
 
   return (
+    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -211,6 +213,7 @@ function ChapterView({ chapter, theme, onBack }: {
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
+    </SwipeBack>
   );
 }
 
@@ -222,6 +225,7 @@ function SignGroupView({ group, theme, onBack }: {
   onBack: () => void;
 }) {
   return (
+    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -249,6 +253,7 @@ function SignGroupView({ group, theme, onBack }: {
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
+    </SwipeBack>
   );
 }
 

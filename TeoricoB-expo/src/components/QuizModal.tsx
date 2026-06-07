@@ -15,6 +15,7 @@ import { TrafficScene } from './TrafficScene';
 import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { shuffleQuestion } from '../utils/shuffleQuestion';
+import ManualChapterModal from './ManualChapterModal';
 
 interface Props {
   visible: boolean;
@@ -23,7 +24,7 @@ interface Props {
   isExam?: boolean;
   isPractice?: boolean;
   onClose: () => void;
-  onComplete: (xpEarned: number, perfect: boolean, bestCombo?: number) => void;
+  onComplete: (xpEarned: number, perfect: boolean, bestCombo?: number, wrongCount?: number) => void;
 }
 
 type AnswerState = 'idle' | 'correct' | 'wrong' | 'dimmed';
@@ -50,6 +51,8 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
   const [showReview, setShowReview] = useState(false);
   // Preguntas barajadas (opciones aleatorias) — se regenera al abrir el modal
   const [shuffled, setShuffled] = useState<Question[]>([]);
+  // Capítulo del manual abierto como overlay sobre el quiz (al pulsar "Ampliar en el Manual")
+  const [openManualChapter, setOpenManualChapter] = useState<string | null>(null);
 
   const user = useStore(s => s.user);
   const recordAnswer = useStore(s => s.recordAnswer);
@@ -58,7 +61,6 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
   const registerMistakeRecovery = useStore(s => s.registerMistakeRecovery);
   const buyHeartWithGems = useStore(s => s.buyHeartWithGems);
   const minutesToNextHeart = useStore(s => s.minutesToNextHeart);
-  const requestManualChapter = useStore(s => s.requestManualChapter);
   const saveExamResult = useStore(s => s.saveExamResult);
   const soundsEnabled = useStore(s => s.soundsEnabled);
   const playSound = useSoundEffect();
@@ -366,7 +368,7 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect, bestCombo)}>
+            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect, bestCombo, wrongCount)}>
               <LinearGradient colors={[theme.primary, theme.primary + 'CC']} style={rs.btn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <Text style={rs.btnTxt}>Continuar</Text>
                 <Ionicons name="arrow-forward" size={18} color="#fff" />
@@ -533,10 +535,7 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
                   return (
                     <TouchableOpacity
                       style={[qs.boeBtn, { backgroundColor: theme.blue + '15', borderColor: theme.blue + '40' }]}
-                      onPress={() => {
-                        requestManualChapter(chapterId);
-                        onClose();
-                      }}
+                      onPress={() => setOpenManualChapter(chapterId)}
                       activeOpacity={0.7}
                     >
                       <Ionicons name="book-outline" size={14} color={theme.blue} />
@@ -570,6 +569,15 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
               </LinearGradient>
             </TouchableOpacity>
           </View>
+        )}
+
+        {/* Manual del capítulo asociado, como overlay sobre el quiz */}
+        {openManualChapter && (
+          <ManualChapterModal
+            visible
+            chapterId={openManualChapter}
+            onClose={() => setOpenManualChapter(null)}
+          />
         )}
       </SafeAreaView>
     </Modal>

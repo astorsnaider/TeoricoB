@@ -8,6 +8,7 @@ import { SHADOWS } from '../theme';
 import { Topic, Lesson } from '../types';
 import { TopicIcon } from '../components/TopicIcon';
 import QuizModal from '../components/QuizModal';
+import SwipeBack from '../components/SwipeBack';
 import { useSoundEffect } from '../audio/useSoundEffect';
 
 export default function LearnScreen() {
@@ -65,7 +66,7 @@ export default function LearnScreen() {
 }
 
 function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
-  const isLessonCompleted = useStore(s => s.isLessonCompleted);
+  const lessonStats = useStore(s => s.user.lessonStats);
   const completeLesson = useStore(s => s.completeLesson);
   const theme = useTheme();
   const playSound = useSoundEffect();
@@ -75,6 +76,7 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
     d === 'Básico' ? '#4CAF50' : d === 'Intermedio' ? '#FF9800' : '#F44336';
 
   return (
+    <SwipeBack onBack={onBack}>
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
@@ -100,22 +102,27 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
 
         <Text style={[s.lessonsSectionTitle, { color: theme.textPrimary }]}>Lecciones</Text>
         {topic.lessons.map((lesson, idx) => {
-          const done = isLessonCompleted(lesson.id);
+          const stats = lessonStats?.[lesson.id];
+          const status: 'todo' | 'wrong' | 'perfect' =
+            !stats ? 'todo' : stats.bestWrong === 0 ? 'perfect' : 'wrong';
+          const accentColor = status === 'perfect' ? theme.correct : status === 'wrong' ? theme.orange : null;
           return (
             <TouchableOpacity
               key={lesson.id}
               style={[
                 s.lessonCard, { backgroundColor: theme.card, borderColor: theme.border },
-                done && { borderLeftWidth: 4, borderLeftColor: topic.colorHex },
+                accentColor && { borderLeftWidth: 4, borderLeftColor: accentColor },
                 SHADOWS.small,
               ]}
               onPress={() => { playSound('tap'); setActiveLesson(lesson); }}
               activeOpacity={0.85}
             >
-              <View style={[s.lessonNum, { backgroundColor: done ? topic.colorHex : theme.bg2 }]}>
-                {done
+              <View style={[s.lessonNum, { backgroundColor: accentColor ?? theme.bg2 }]}>
+                {status === 'perfect'
                   ? <Ionicons name="checkmark" size={18} color="#fff" />
-                  : <Text style={[s.lessonNumTxt, { color: theme.textSecondary }]}>{idx + 1}</Text>
+                  : status === 'wrong'
+                    ? <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>{stats!.bestWrong}</Text>
+                    : <Text style={[s.lessonNumTxt, { color: theme.textSecondary }]}>{idx + 1}</Text>
                 }
               </View>
               <View style={{ flex: 1, gap: 3 }}>
@@ -125,10 +132,13 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
                   <Text style={[s.diffBadge, { color: diffColor(lesson.difficulty), backgroundColor: diffColor(lesson.difficulty) + '18' }]}>
                     {lesson.difficulty}
                   </Text>
-                  <Text style={[s.lessonQCount, { color: theme.textTertiary }]}>{lesson.questions.length} preguntas</Text>
+                  <Text style={[s.lessonQCount, { color: theme.textTertiary }]}>
+                    {lesson.questions.length} preguntas
+                    {status === 'wrong' && ` · ${stats!.bestWrong} fallo${stats!.bestWrong === 1 ? '' : 's'}`}
+                  </Text>
                 </View>
               </View>
-              <Ionicons name={done ? 'refresh' : 'play'} size={16} color={topic.colorHex} />
+              <Ionicons name={status !== 'todo' ? 'refresh' : 'play'} size={16} color={topic.colorHex} />
             </TouchableOpacity>
           );
         })}
@@ -141,13 +151,14 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
           questions={activeLesson.questions}
           title={activeLesson.title}
           onClose={() => setActiveLesson(null)}
-          onComplete={(xp, perfect, bestCombo) => {
-            completeLesson(activeLesson.id, topic.id, xp, perfect, bestCombo);
+          onComplete={(_xp, _perfect, bestCombo, wrongCount) => {
+            completeLesson(activeLesson.id, topic.id, activeLesson.questions.length, wrongCount ?? 0, bestCombo);
             setActiveLesson(null);
           }}
         />
       )}
     </SafeAreaView>
+    </SwipeBack>
   );
 }
 

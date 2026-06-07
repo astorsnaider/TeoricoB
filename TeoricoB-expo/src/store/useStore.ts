@@ -66,7 +66,7 @@ interface AppStore {
   buyHeartWithGems: () => boolean;
   tickHeartRegen: () => void;
   recordAnswer: (correct: boolean, category?: string) => void;
-  completeLesson: (lessonId: string, topicId: string, xpEarned: number, perfect: boolean, bestCombo?: number) => void;
+  completeLesson: (lessonId: string, topicId: string, totalQuestions: number, wrongCount: number, bestCombo?: number) => void;
   completeDailyChallenge: () => void;
   updateStreak: () => void;
   clearNewAchievement: () => void;
@@ -124,6 +124,7 @@ const defaultUser: UserState = {
   league: 'Bronce',
   leagueXP: 0,
   completedLessons: [],
+  lessonStats: {},
   completedTopics: [],
   achievements: [],
   lastActiveDate: new Date().toISOString(),
@@ -391,15 +392,31 @@ export const useStore = create<AppStore>()(
         };
       }),
 
-      completeLesson: (lessonId, topicId, xpEarned, perfect, bestCombo) => {
+      completeLesson: (lessonId, topicId, totalQuestions, wrongCount, bestCombo) => {
+        // XP por lección con techo claimable: cada fallo resta 10 XP del máximo
+        // teórico de la lección. Solo se otorga el delta sobre lo ya cobrado.
+        const xpMax = totalQuestions * 10;
+        const xpEarnedThisRun = Math.max(0, xpMax - wrongCount * 10);
+        const perfect = wrongCount === 0;
+        let xpDelta = 0;
         set(s => {
+          const prevStat = s.user.lessonStats?.[lessonId];
+          xpDelta = Math.max(0, xpEarnedThisRun - (prevStat?.xpClaimed ?? 0));
+          const newStat: import('../types').LessonStat = prevStat
+            ? {
+                bestWrong: Math.min(prevStat.bestWrong, wrongCount),
+                xpClaimed: Math.max(prevStat.xpClaimed, xpEarnedThisRun),
+                completedAt: prevStat.completedAt,
+              }
+            : { bestWrong: wrongCount, xpClaimed: xpEarnedThisRun, completedAt: new Date().toISOString() };
+          const lessonStats = { ...(s.user.lessonStats ?? {}), [lessonId]: newStat };
+
           const completedLessons = s.user.completedLessons.includes(lessonId)
             ? s.user.completedLessons : [...s.user.completedLessons, lessonId];
           const topic = ALL_TOPICS.find(t => t.id === topicId);
           const allDone = topic?.lessons.every(l => completedLessons.includes(l.id)) ?? false;
           const completedTopics = allDone && !s.user.completedTopics.includes(topicId)
             ? [...s.user.completedTopics, topicId] : s.user.completedTopics;
-          // ¿Todos los topics del banco entero completados?
           const allTopicsDone = ALL_TOPICS.every(t => completedTopics.includes(t.id));
           const newAchievements = [...s.user.achievements];
           if (!newAchievements.includes('first_lesson')) newAchievements.push('first_lesson');
@@ -409,7 +426,6 @@ export const useStore = create<AppStore>()(
           if (completedLessons.length >= 50 && !newAchievements.includes('lessons_50')) newAchievements.push('lessons_50');
           if ((bestCombo ?? 0) >= 10 && !newAchievements.includes('combo_10')) newAchievements.push('combo_10');
           const reward = rewardForNewAchievements(s.user.achievements, newAchievements);
-          // Avanzar quest "Completa 1 lección"
           const today = todayKey();
           const isNewCompletion = !s.user.completedLessons.includes(lessonId);
           const dq = isNewCompletion && s.dailyQuests && s.dailyQuests.date === today ? {
@@ -424,6 +440,7 @@ export const useStore = create<AppStore>()(
             user: {
               ...s.user,
               completedLessons,
+              lessonStats,
               completedTopics,
               achievements: newAchievements,
               gems: s.user.gems + reward.gems,
@@ -433,7 +450,7 @@ export const useStore = create<AppStore>()(
             dailyQuests: dq,
           };
         });
-        get().addXP(xpEarned);
+        if (xpDelta > 0) get().addXP(xpDelta);
         get().updateStreak();
       },
 
@@ -695,7 +712,7 @@ export const useStore = create<AppStore>()(
       merge: (persisted: any, current) => ({
         ...current,
         ...persisted,
-        user: { ...defaultUser, ...(persisted as any)?.user, friends: MOCK_FRIENDS },
+        user: { ...defaultUser, ...(persisted as any)?.user, friends: MOCK_FRIENDS, lessonStats: (persisted as any)?.user?.lessonStats ?? {} },
       }),
     }
   )
