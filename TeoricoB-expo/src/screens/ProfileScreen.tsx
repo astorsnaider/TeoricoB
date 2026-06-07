@@ -20,7 +20,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated,
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore, getAllAchievements, getLeagueInfo } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
@@ -97,6 +97,7 @@ function ProfileMain({
   const theme = useTheme();
   const playSound = useSoundEffect();
   const { friends: friendsList, myUsername } = useFriends();
+  const insets = useSafeAreaInsets();
 
   const league = getLeagueInfo(user.league);
   const allAchievements = getAllAchievements().map(a => ({ ...a, isUnlocked: user.achievements.includes(a.id) }));
@@ -116,14 +117,17 @@ function ProfileMain({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* === HEADER ROJO === */}
-        <SafeAreaView edges={['top']} style={[s.heroWrap, { backgroundColor: theme.primary }]}>
-          <View style={s.heroTopRow}>
-            <Text style={s.heroName} numberOfLines={1}>{user.name}</Text>
-            <TouchableOpacity onPress={onShowSettings} hitSlop={12} style={s.gearBtn}>
-              <Ionicons name="settings-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
+        {/* === HEADER ROJO con AVATAR (scrolla y desaparece) === */}
+        {/* paddingTop deja hueco bajo la barra sticky para que no se solape. */}
+        <View
+          style={[
+            s.heroWrap,
+            {
+              backgroundColor: theme.primary,
+              paddingTop: insets.top + STICKY_HEIGHT + 8,
+            },
+          ]}
+        >
           <View style={s.heroAvatarRow}>
             <AvatarView
               color={user.avatarEmoji}
@@ -134,7 +138,7 @@ function ProfileMain({
               borderWidth={3}
             />
           </View>
-        </SafeAreaView>
+        </View>
 
         <View style={s.body}>
           {/* === SUBTÍTULO @user · Se unió en YYYY === */}
@@ -260,9 +264,34 @@ function ProfileMain({
           </View>
         </View>
       </ScrollView>
+
+      {/* === BARRA STICKY (nombre + ajustes) === */}
+      {/* Se queda congelada en lo alto al hacer scroll. El avatar y el resto
+          del hero rojo viajan bajo ella y desaparecen. */}
+      <View
+        pointerEvents="box-none"
+        style={[
+          s.stickyHeader,
+          {
+            backgroundColor: theme.primary,
+            paddingTop: insets.top,
+            height: insets.top + STICKY_HEIGHT,
+          },
+        ]}
+      >
+        <View style={s.heroTopRow}>
+          <Text style={s.heroName} numberOfLines={1}>{user.name}</Text>
+          <TouchableOpacity onPress={onShowSettings} hitSlop={12} style={s.gearBtn}>
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
+
+// Altura del bloque "nombre + gear" (sin contar el inset superior).
+const STICKY_HEIGHT = 50;
 
 // ─── STAT CARD EXPANDIBLE ─────────────────────────────────────────────
 
@@ -411,13 +440,17 @@ function AllAchievementsScreen({ onBack }: { onBack: () => void }) {
 
 const s = StyleSheet.create({
   heroWrap: { paddingBottom: 24 },
+  stickyHeader: {
+    position: 'absolute', top: 0, left: 0, right: 0,
+    zIndex: 10,
+  },
   heroTopRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingTop: 8, paddingBottom: 6,
+    paddingHorizontal: 18, height: 50,
   },
   heroName: { flex: 1, fontSize: 24, fontWeight: '800', color: '#fff' },
   gearBtn: { padding: 4 },
-  heroAvatarRow: { alignItems: 'center', marginTop: 8 },
+  heroAvatarRow: { alignItems: 'center' },
 
   body: { paddingHorizontal: 16, paddingTop: 16, gap: 14 },
 
