@@ -27,6 +27,7 @@ export interface ProfileRow {
   birth_year: number | null;
   locale: string;
   friend_code: string;
+  username: string | null;
   autoescuela_id: string | null;
   disclaimer_accepted: boolean;
   tutorial_seen: boolean;

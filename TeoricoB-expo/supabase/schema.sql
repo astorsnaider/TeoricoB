@@ -718,6 +718,242 @@ $$;
 
 grant execute on function public.get_my_friends() to authenticated;
 
+-- ─────────────────────────────────────────────────────────────────────
+-- 15. USERNAME PÚBLICO + BÚSQUEDA / INVITACIÓN POR @username
+-- ─────────────────────────────────────────────────────────────────────
+-- El username es el handle público que el usuario elige (3-20 chars,
+-- a-z, 0-9, _, único case-insensitive). Sustituye al friend_code como
+-- mecanismo de invitación principal: friend_code se mantiene por
+-- compatibilidad pero no se usa en la UI nueva.
+
+alter table public.profiles add column if not exists username text;
+
+-- Índice único case-insensitive (sin duplicar "Astor" vs "astor")
+create unique index if not exists idx_profiles_username_lower
+  on public.profiles (lower(username))
+  where username is not null and deleted_at is null;
+
+-- Índice de búsqueda por prefijo (lower) para autocompletado rápido
+create index if not exists idx_profiles_username_search
+  on public.profiles (lower(username) text_pattern_ops)
+  where username is not null and deleted_at is null;
+
+-- ── RPC 15.1 — escoger / cambiar mi username ─────────────────────────
+-- Devuelve el username normalizado en caso de éxito. Lanza excepción
+-- con códigos estables para que el cliente los traduzca.
+create or replace function public.set_username(p_username text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid;
+  v_clean text;
+begin
+  v_me := auth.uid();
+  if v_me is null then
+    raise exception 'No autenticado.';
+  end if;
+
+  v_clean := lower(trim(coalesce(p_username, '')));
+
+  if length(v_clean) < 3 then
+    raise exception 'USERNAME_TOO_SHORT';
+  end if;
+  if length(v_clean) > 20 then
+    raise exception 'USERNAME_TOO_LONG';
+  end if;
+  if v_clean !~ '^[a-z0-9_]+$' then
+    raise exception 'USERNAME_BAD_CHARS';
+  end if;
+  -- Reservados básicos
+  if v_clean in ('admin','administrator','teoric','support','help','soporte','root','system','null','undefined') then
+    raise exception 'USERNAME_RESERVED';
+  end if;
+
+  if exists (
+    select 1 from public.profiles
+    where lower(username) = v_clean
+      and id <> v_me
+      and deleted_at is null
+  ) then
+    raise exception 'USERNAME_TAKEN';
+  end if;
+
+  update public.profiles set username = v_clean where id = v_me;
+  return v_clean;
+end;
+$$;
+
+grant execute on function public.set_username(text) to authenticated;
+
+-- ── RPC 15.2 — buscar usuarios por prefijo ───────────────────────────
+-- Devuelve hasta 20 usuarios cuyo username empiece por p_query (case
+-- insensitive). Excluye al propio usuario y a los que ya tengan
+-- amistad/solicitud con él (cualquier estado).
+create or replace function public.search_users_by_username(p_query text)
+returns table (
+  user_id      uuid,
+  username     text,
+  display_name text,
+  avatar_emoji text,
+  league       text
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with q as (
+    select lower(trim(coalesce(p_query, ''))) as v
+  )
+  select
+    p.id,
+    p.username,
+    p.display_name,
+    p.avatar_emoji,
+    up.league
+  from public.profiles p
+  inner join public.user_progress up on up.user_id = p.id
+  cross join q
+  where p.username is not null
+    and p.deleted_at is null
+    and p.id <> auth.uid()
+    and length(q.v) >= 2
+    and lower(p.username) like q.v || '%'
+    and not exists (
+      select 1 from public.friendships f
+      where (f.user_id_a = auth.uid() and f.user_id_b = p.id)
+         or (f.user_id_b = auth.uid() and f.user_id_a = p.id)
+    )
+  order by length(p.username), lower(p.username)
+  limit 20;
+$$;
+
+grant execute on function public.search_users_by_username(text) to authenticated;
+
+-- ── RPC 15.3 — pedir amistad por username ────────────────────────────
+-- Mismo comportamiento que request_friendship_by_code: si el otro ya
+-- te pidió, acepta automáticamente; si no, crea solicitud pending.
+create or replace function public.request_friendship_by_username(p_username text)
+returns table (other_user_id uuid, status text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me      uuid;
+  v_other   uuid;
+  v_lo      uuid;
+  v_hi      uuid;
+  v_existing record;
+  v_clean   text;
+begin
+  v_me := auth.uid();
+  if v_me is null then
+    raise exception 'No autenticado.';
+  end if;
+
+  v_clean := lower(trim(coalesce(p_username, '')));
+  if length(v_clean) < 3 then
+    raise exception 'USERNAME_NOT_FOUND';
+  end if;
+
+  select id into v_other
+    from public.profiles
+    where lower(username) = v_clean and deleted_at is null;
+  if v_other is null then
+    raise exception 'USERNAME_NOT_FOUND';
+  end if;
+
+  if v_other = v_me then
+    raise exception 'CANNOT_ADD_SELF';
+  end if;
+
+  if v_me < v_other then v_lo := v_me; v_hi := v_other;
+  else v_lo := v_other; v_hi := v_me; end if;
+
+  select * into v_existing from public.friendships
+    where user_id_a = v_lo and user_id_b = v_hi;
+
+  if found then
+    if v_existing.status = 'accepted' then
+      raise exception 'ALREADY_FRIENDS';
+    elsif v_existing.status = 'blocked' then
+      raise exception 'BLOCKED';
+    elsif v_existing.status = 'pending' and v_existing.requested_by = v_me then
+      raise exception 'ALREADY_REQUESTED';
+    elsif v_existing.status = 'pending' then
+      update public.friendships
+        set status = 'accepted'
+        where user_id_a = v_lo and user_id_b = v_hi;
+      return query select v_other, 'accepted'::text;
+      return;
+    end if;
+  end if;
+
+  insert into public.friendships (user_id_a, user_id_b, status, requested_by)
+    values (v_lo, v_hi, 'pending', v_me);
+
+  return query select v_other, 'pending'::text;
+end;
+$$;
+
+grant execute on function public.request_friendship_by_username(text) to authenticated;
+
+-- ── Actualizar get_my_friends para devolver también username ─────────
+create or replace function public.get_my_friends()
+returns table (
+  user_id           uuid,
+  name              text,
+  username          text,
+  avatar_emoji      text,
+  profile_photo_url text,
+  xp                int,
+  weekly_xp         int,
+  streak            int,
+  league            text,
+  status            text,
+  is_incoming       boolean
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with my_friendships as (
+    select
+      f.*,
+      case when f.user_id_a = auth.uid() then f.user_id_b else f.user_id_a end as other_id
+    from public.friendships f
+    where auth.uid() in (f.user_id_a, f.user_id_b)
+      and f.status in ('accepted', 'pending')
+  )
+  select
+    mf.other_id,
+    p.display_name,
+    p.username,
+    p.avatar_emoji,
+    p.profile_photo_url,
+    up.xp,
+    up.weekly_xp,
+    up.streak,
+    up.league,
+    mf.status,
+    (mf.status = 'pending' and mf.requested_by <> auth.uid()) as is_incoming
+  from my_friendships mf
+  inner join public.profiles      p  on p.id  = mf.other_id and p.deleted_at is null
+  inner join public.user_progress up on up.user_id = mf.other_id
+  order by
+    case when mf.status = 'pending' and mf.requested_by <> auth.uid() then 0
+         when mf.status = 'accepted'                                  then 1
+         else 2 end,
+    up.weekly_xp desc;
+$$;
+
+grant execute on function public.get_my_friends() to authenticated;
+
 commit;
 
 -- ─────────────────────────────────────────────────────────────────────

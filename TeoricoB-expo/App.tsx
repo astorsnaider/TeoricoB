@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Linking } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TabPager, { TabPagerHandle } from './src/components/TabPager';
@@ -126,6 +126,25 @@ function AppContent() {
   useEffect(() => {
     if (requestedManualChapter) goToTab('manual');
   }, [requestedManualChapter]);
+
+  // Deep link teoric://u/<username> → tab Liga + precarga el username
+  // en el buscador de amigos.
+  const requestAddFriend = useStore(s => s.requestAddFriend);
+  const pendingFriendUsername = useStore(s => s.pendingFriendUsername);
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      // Aceptamos teoric://u/<name> y https://teoric.app/u/<name>
+      const m = url.match(/(?:teoric:\/\/u\/|teoric\.app\/u\/)([a-z0-9_]+)/i);
+      if (m) requestAddFriend(m[1]);
+    };
+    Linking.getInitialURL().then(handleUrl).catch(() => undefined);
+    const sub = Linking.addEventListener('url', e => handleUrl(e.url));
+    return () => sub.remove();
+  }, [requestAddFriend]);
+  useEffect(() => {
+    if (pendingFriendUsername) goToTab('league');
+  }, [pendingFriendUsername]);
 
   // ── Cableado global de sonidos basado en cambios del store ─────────────
   const playSound = useSoundEffect();

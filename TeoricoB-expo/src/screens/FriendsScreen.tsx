@@ -1,42 +1,74 @@
 /**
- * FriendsScreen — gestión completa de amistades.
+ * FriendsScreen — gestión moderna de amistades (estilo Duolingo).
  *
  * Estructura:
- * 1. Mi código (botón compartir)
- * 2. Input para añadir por código
- * 3. Solicitudes recibidas (con aceptar/rechazar)
- * 4. Lista de amigos
- * 5. Solicitudes enviadas (pendientes)
+ * 1. Mi @username (botón compartir teoric://u/<username>).
+ *    Si no tiene username, banner para escogerlo.
+ * 2. Buscador por @username con autocompletado.
+ * 3. Solicitudes recibidas (aceptar/rechazar).
+ * 4. Lista de amigos.
+ * 5. Solicitudes enviadas (pendientes).
  *
  * Se invoca como Modal desde LeagueScreen.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
   Alert, Share, ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
-import { useFriends, FriendEntry } from '../friends/useFriends';
+import { useFriends, FriendEntry, UserSearchResult } from '../friends/useFriends';
 import { getLeagueInfo } from '../store/useStore';
 
 interface Props {
   onClose: () => void;
+  /** Si llega un username via deep link, lo precargamos en el buscador. */
+  prefillUsername?: string;
 }
 
-export default function FriendsScreen({ onClose }: Props) {
+const SHARE_BASE = 'teoric://u/';
+
+export default function FriendsScreen({ onClose, prefillUsername }: Props) {
   const theme = useTheme();
   const {
-    available, loading, myCode, friends, incoming, outgoing,
-    addFriendByCode, acceptFriend, rejectFriend, refresh,
+    available, loading, myUsername, friends, incoming, outgoing,
+    setUsername, searchUsers, addFriendByUsername, acceptFriend, rejectFriend, refresh,
   } = useFriends();
 
-  const [codeInput, setCodeInput] = useState('');
-  const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [addSuccess, setAddSuccess] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<UserSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [addedIds, setAddedIds] = useState<Record<string, 'pending' | 'accepted'>>({});
+
+  // Username chooser
+  const [chooserOpen, setChooserOpen] = useState(false);
+
+  // Si llega un deep link teoric://u/<username>, precarga buscador
+  useEffect(() => {
+    if (prefillUsername) setQuery(prefillUsername);
+  }, [prefillUsername]);
+
+  // Búsqueda con debounce
+  useEffect(() => {
+    const clean = query.trim();
+    if (clean.length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const found = await searchUsers(clean);
+      setResults(found);
+      setSearching(false);
+    }, 220);
+    return () => clearTimeout(t);
+  }, [query, searchUsers]);
 
   if (!available) {
     return (
@@ -52,34 +84,25 @@ export default function FriendsScreen({ onClose }: Props) {
     );
   }
 
-  const onShareCode = async () => {
-    if (!myCode) return;
+  const shareLink = myUsername ? `${SHARE_BASE}${myUsername}` : null;
+
+  const onShare = async () => {
+    if (!myUsername || !shareLink) return;
     try {
       await Share.share({
-        message: `Añádeme en Teoric con mi código: ${myCode}`,
+        message: `Soy @${myUsername} en Teoric. Añádeme como amigo: ${shareLink}`,
       });
-    } catch {
-      // Share cancelado; sin acción
-    }
+    } catch { /* cancelado */ }
   };
 
-  const onAdd = async () => {
-    const code = codeInput.trim().toUpperCase();
-    if (!code) return;
-    setAdding(true);
-    setAddError(null);
-    setAddSuccess(null);
-    const result = await addFriendByCode(code);
-    setAdding(false);
-    if (result.ok) {
-      setCodeInput('');
-      if (result.status === 'accepted') {
-        setAddSuccess('¡Ya sois amigos!');
-      } else {
-        setAddSuccess('Solicitud enviada.');
-      }
-    } else {
-      setAddError(result.error ?? 'Error desconocido');
+  const onAdd = async (uname: string) => {
+    setAdding(uname);
+    const r = await addFriendByUsername(uname);
+    setAdding(null);
+    if (r.ok && r.status) {
+      setAddedIds(prev => ({ ...prev, [uname]: r.status! }));
+    } else if (!r.ok) {
+      Alert.alert('No se pudo añadir', r.error ?? 'Error desconocido');
     }
   };
 
@@ -90,18 +113,13 @@ export default function FriendsScreen({ onClose }: Props) {
 
   const onReject = (entry: FriendEntry) => {
     Alert.alert(
-      'Rechazar solicitud',
-      `¿Rechazar la solicitud de ${entry.name}?`,
+      'Rechazar solicitud', `¿Rechazar la solicitud de ${entry.name}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Rechazar',
-          style: 'destructive',
-          onPress: async () => {
+        { text: 'Rechazar', style: 'destructive', onPress: async () => {
             const r = await rejectFriend(entry.userId);
             if (!r.ok) Alert.alert('Error', r.error ?? 'No se pudo rechazar.');
-          },
-        },
+        } },
       ]
     );
   };
@@ -112,63 +130,113 @@ export default function FriendsScreen({ onClose }: Props) {
 
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
 
-        {/* Mi código */}
-        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[s.cardLabel, { color: theme.textSecondary }]}>Tu código</Text>
-          <View style={s.codeRow}>
-            <Text style={[s.codeBig, { color: theme.textPrimary }]}>
-              {myCode ?? '— — — —'}
-            </Text>
-            <TouchableOpacity onPress={onShareCode} style={[s.shareBtn, { backgroundColor: theme.primary }]}>
-              <Ionicons name="share-outline" size={16} color="#fff" />
-              <Text style={s.shareBtnTxt}>Compartir</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={[s.cardHint, { color: theme.textTertiary }]}>
-            Comparte este código para que otra persona te añada como amigo.
-          </Text>
-        </View>
-
-        {/* Añadir por código */}
-        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[s.cardLabel, { color: theme.textSecondary }]}>Añadir amigo</Text>
-          <View style={s.addRow}>
-            <TextInput
-              style={[s.codeInput, { color: theme.textPrimary, borderColor: theme.border }]}
-              value={codeInput}
-              onChangeText={t => {
-                setCodeInput(t.toUpperCase());
-                setAddError(null);
-                setAddSuccess(null);
-              }}
-              placeholder="ABCD-1234"
-              placeholderTextColor={theme.textTertiary}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={9}
-              editable={!adding}
-              onSubmitEditing={onAdd}
-            />
-            <TouchableOpacity
-              style={[s.addBtn, { backgroundColor: codeInput.length >= 4 && !adding ? theme.primary : theme.border }]}
-              onPress={onAdd}
-              disabled={codeInput.length < 4 || adding}
-            >
-              {adding
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={s.addBtnTxt}>Añadir</Text>}
-            </TouchableOpacity>
-          </View>
-          {addError && (
-            <View style={s.feedbackRow}>
-              <Ionicons name="alert-circle" size={14} color={theme.wrong} />
-              <Text style={[s.feedbackTxt, { color: theme.wrong }]}>{addError}</Text>
+        {/* Mi @username */}
+        {myUsername ? (
+          <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[s.cardLabel, { color: theme.textSecondary }]}>Tu nombre de usuario</Text>
+            <View style={s.handleRow}>
+              <Text style={[s.handleBig, { color: theme.textPrimary }]}>@{myUsername}</Text>
+              <TouchableOpacity onPress={() => setChooserOpen(true)} hitSlop={10}>
+                <Ionicons name="pencil" size={16} color={theme.textTertiary} />
+              </TouchableOpacity>
             </View>
-          )}
-          {addSuccess && (
-            <View style={s.feedbackRow}>
-              <Ionicons name="checkmark-circle" size={14} color={theme.correct} />
-              <Text style={[s.feedbackTxt, { color: theme.correct }]}>{addSuccess}</Text>
+            <TouchableOpacity onPress={onShare} style={[s.shareBtn, { backgroundColor: theme.primary }]}>
+              <Ionicons name="share-outline" size={16} color="#fff" />
+              <Text style={s.shareBtnTxt}>Compartir enlace</Text>
+            </TouchableOpacity>
+            <Text style={[s.cardHint, { color: theme.textTertiary }]}>
+              Cualquiera con el enlace abrirá Teoric con tu solicitud lista para enviar.
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[s.bannerCard, { backgroundColor: theme.primary + '18', borderColor: theme.primary + '40' }]}
+            onPress={() => setChooserOpen(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="at-circle" size={26} color={theme.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.bannerTitle, { color: theme.textPrimary }]}>Elige tu @username</Text>
+              <Text style={[s.bannerSub, { color: theme.textSecondary }]}>
+                Para que otros te encuentren al buscarte.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={theme.primary} />
+          </TouchableOpacity>
+        )}
+
+        {/* Buscador */}
+        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[s.cardLabel, { color: theme.textSecondary }]}>Buscar amigos</Text>
+          <View style={[s.searchRow, { borderColor: theme.border, backgroundColor: theme.bg2 }]}>
+            <Ionicons name="search" size={16} color={theme.textTertiary} />
+            <TextInput
+              style={[s.searchInput, { color: theme.textPrimary }]}
+              value={query}
+              onChangeText={setQuery}
+              placeholder="@username"
+              placeholderTextColor={theme.textTertiary}
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={20}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery('')} hitSlop={10}>
+                <Ionicons name="close-circle" size={16} color={theme.textTertiary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {query.trim().length >= 2 && (
+            <View style={{ gap: 8, marginTop: 6 }}>
+              {searching && (
+                <View style={s.searchStatus}>
+                  <ActivityIndicator size="small" color={theme.textTertiary} />
+                  <Text style={[s.searchStatusTxt, { color: theme.textTertiary }]}>Buscando…</Text>
+                </View>
+              )}
+              {!searching && results.length === 0 && (
+                <Text style={[s.searchStatusTxt, { color: theme.textTertiary, paddingVertical: 4 }]}>
+                  Sin resultados para «{query.trim()}»
+                </Text>
+              )}
+              {!searching && results.map(r => {
+                const added = addedIds[r.username];
+                return (
+                  <View key={r.userId} style={s.resultRow}>
+                    <AvatarView
+                      color={r.avatarEmoji.startsWith('#') ? r.avatarEmoji : getLeagueInfo(r.league).color}
+                      name={r.name}
+                      size={36}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.resultName, { color: theme.textPrimary }]} numberOfLines={1}>{r.name}</Text>
+                      <Text style={[s.resultHandle, { color: theme.textSecondary }]} numberOfLines={1}>@{r.username}</Text>
+                    </View>
+                    {added === 'accepted' ? (
+                      <View style={[s.addedPill, { backgroundColor: theme.correct + '22' }]}>
+                        <Ionicons name="checkmark" size={14} color={theme.correct} />
+                        <Text style={[s.addedPillTxt, { color: theme.correct }]}>Amigos</Text>
+                      </View>
+                    ) : added === 'pending' ? (
+                      <View style={[s.addedPill, { backgroundColor: theme.bg2 }]}>
+                        <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
+                        <Text style={[s.addedPillTxt, { color: theme.textSecondary }]}>Enviada</Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={[s.addBtnSmall, { backgroundColor: theme.primary }]}
+                        onPress={() => onAdd(r.username)}
+                        disabled={adding === r.username}
+                      >
+                        {adding === r.username
+                          ? <ActivityIndicator color="#fff" size="small" />
+                          : <Text style={s.addBtnSmallTxt}>Añadir</Text>}
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           )}
         </View>
@@ -187,13 +255,12 @@ export default function FriendsScreen({ onClose }: Props) {
                 >
                   <AvatarView
                     color={entry.avatarEmoji.startsWith('#') ? entry.avatarEmoji : getLeagueInfo(entry.league).color}
-                    name={entry.name}
-                    size={36}
+                    name={entry.name} size={36}
                   />
                   <View style={{ flex: 1 }}>
                     <Text style={[s.entryName, { color: theme.textPrimary }]} numberOfLines={1}>{entry.name}</Text>
                     <Text style={[s.entryMeta, { color: theme.textSecondary }]}>
-                      {getLeagueInfo(entry.league).emoji} {entry.league}
+                      {entry.username ? `@${entry.username} · ` : ''}{getLeagueInfo(entry.league).emoji} {entry.league}
                     </Text>
                   </View>
                   <TouchableOpacity onPress={() => onAccept(entry)} style={[s.iconBtn, { backgroundColor: theme.correct }]}>
@@ -220,7 +287,7 @@ export default function FriendsScreen({ onClose }: Props) {
           <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, alignItems: 'center', gap: 6 }]}>
             <Ionicons name="people-outline" size={28} color={theme.textTertiary} />
             <Text style={[s.cardHint, { color: theme.textSecondary, textAlign: 'center' }]}>
-              Cuando aceptes una solicitud o el otro acepte la tuya, aparecerán aquí.
+              Busca a tus amigos por @username o comparte tu enlace para que te añadan.
             </Text>
           </View>
         ) : (
@@ -232,12 +299,12 @@ export default function FriendsScreen({ onClose }: Props) {
               >
                 <AvatarView
                   color={entry.avatarEmoji.startsWith('#') ? entry.avatarEmoji : getLeagueInfo(entry.league).color}
-                  name={entry.name}
-                  size={36}
+                  name={entry.name} size={36}
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={[s.entryName, { color: theme.textPrimary }]} numberOfLines={1}>{entry.name}</Text>
                   <View style={s.entryMetaRow}>
+                    {entry.username && <Text style={[s.entryMeta, { color: theme.textTertiary }]}>@{entry.username}</Text>}
                     <Text style={[s.entryMeta, { color: theme.textSecondary }]}>
                       {getLeagueInfo(entry.league).emoji} {entry.league}
                     </Text>
@@ -265,12 +332,13 @@ export default function FriendsScreen({ onClose }: Props) {
                 >
                   <AvatarView
                     color={entry.avatarEmoji.startsWith('#') ? entry.avatarEmoji : getLeagueInfo(entry.league).color}
-                    name={entry.name}
-                    size={36}
+                    name={entry.name} size={36}
                   />
                   <View style={{ flex: 1 }}>
                     <Text style={[s.entryName, { color: theme.textPrimary }]} numberOfLines={1}>{entry.name}</Text>
-                    <Text style={[s.entryMeta, { color: theme.textTertiary }]}>Esperando respuesta…</Text>
+                    <Text style={[s.entryMeta, { color: theme.textTertiary }]}>
+                      {entry.username ? `@${entry.username} · ` : ''}Esperando respuesta…
+                    </Text>
                   </View>
                   <TouchableOpacity onPress={() => onReject(entry)} style={[s.iconBtn, { backgroundColor: theme.bg2 }]}>
                     <Ionicons name="close" size={18} color={theme.textSecondary} />
@@ -283,7 +351,97 @@ export default function FriendsScreen({ onClose }: Props) {
 
         <View style={{ height: 32 }} />
       </ScrollView>
+
+      <UsernameChooserModal
+        visible={chooserOpen}
+        currentUsername={myUsername}
+        onClose={() => setChooserOpen(false)}
+        onSubmit={setUsername}
+      />
     </SafeAreaView>
+  );
+}
+
+function UsernameChooserModal({
+  visible, currentUsername, onClose, onSubmit,
+}: {
+  visible: boolean;
+  currentUsername: string | null;
+  onClose: () => void;
+  onSubmit: (u: string) => Promise<{ ok: boolean; username?: string; error?: string }>;
+}) {
+  const theme = useTheme();
+  const [value, setValue] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setValue(currentUsername ?? '');
+      setError(null);
+    }
+  }, [visible, currentUsername]);
+
+  if (!visible) return null;
+
+  const onConfirm = async () => {
+    setSubmitting(true);
+    setError(null);
+    const r = await onSubmit(value);
+    setSubmitting(false);
+    if (r.ok) {
+      onClose();
+    } else {
+      setError(r.error ?? 'Error desconocido');
+    }
+  };
+
+  return (
+    <View style={[s.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
+      <View style={[s.modalSheet, { backgroundColor: theme.card }]}>
+        <View style={s.modalHeader}>
+          <Text style={[s.modalTitle, { color: theme.textPrimary }]}>
+            {currentUsername ? 'Cambiar @username' : 'Elige tu @username'}
+          </Text>
+          <TouchableOpacity onPress={onClose} hitSlop={10}>
+            <Ionicons name="close" size={22} color={theme.textSecondary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[s.modalHint, { color: theme.textSecondary }]}>
+          3 a 20 caracteres. Letras minúsculas, números y guion bajo.
+        </Text>
+        <View style={[s.modalInputWrap, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
+          <Text style={[s.modalAt, { color: theme.textTertiary }]}>@</Text>
+          <TextInput
+            style={[s.modalInput, { color: theme.textPrimary }]}
+            value={value}
+            onChangeText={t => { setValue(t.toLowerCase()); setError(null); }}
+            placeholder="tu_nombre"
+            placeholderTextColor={theme.textTertiary}
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={20}
+            autoFocus
+            onSubmitEditing={onConfirm}
+          />
+        </View>
+        {error && (
+          <View style={s.feedbackRow}>
+            <Ionicons name="alert-circle" size={14} color={theme.wrong} />
+            <Text style={[s.feedbackTxt, { color: theme.wrong }]}>{error}</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={[s.modalBtn, { backgroundColor: value.length >= 3 && !submitting ? theme.primary : theme.border }]}
+          onPress={onConfirm}
+          disabled={value.length < 3 || submitting}
+        >
+          {submitting
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={s.modalBtnTxt}>Guardar</Text>}
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -298,9 +456,7 @@ function Header({ onClose, title, theme, onRefresh }: { onClose: () => void; tit
         <TouchableOpacity onPress={onRefresh} style={s.headerBtn} hitSlop={10}>
           <Ionicons name="refresh" size={20} color={theme.textSecondary} />
         </TouchableOpacity>
-      ) : (
-        <View style={s.headerBtn} />
-      )}
+      ) : <View style={s.headerBtn} />}
     </View>
   );
 }
@@ -314,27 +470,57 @@ const s = StyleSheet.create({
   headerBtn: { width: 36, alignItems: 'center', justifyContent: 'center', padding: 4 },
   headerTitle: { fontSize: 17, fontWeight: '800' },
   content: { padding: 16, gap: 14 },
-  card: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 8 },
+  card: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
   cardLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
   cardHint: { fontSize: 12, lineHeight: 16 },
-  codeRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  codeBig: { flex: 1, fontSize: 24, fontWeight: '800', letterSpacing: 4, fontFamily: 'Menlo' },
-  shareBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, ...SHADOWS.small },
-  shareBtnTxt: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  addRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  codeInput: { flex: 1, fontSize: 16, fontWeight: '600', letterSpacing: 2, fontFamily: 'Menlo', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
-  addBtn: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10, ...SHADOWS.small },
-  addBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+
+  handleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  handleBig: { flex: 1, fontSize: 22, fontWeight: '800' },
+  shareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 11, borderRadius: 10, ...SHADOWS.small },
+  shareBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+
+  bannerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1, padding: 14 },
+  bannerTitle: { fontSize: 14, fontWeight: '700' },
+  bannerSub: { fontSize: 12, marginTop: 2 },
+
+  searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },
+  searchInput: { flex: 1, fontSize: 15, paddingVertical: 0 },
+  searchStatus: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  searchStatusTxt: { fontSize: 12 },
+  resultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  resultName: { fontSize: 14, fontWeight: '600' },
+  resultHandle: { fontSize: 12, marginTop: 1 },
+  addBtnSmall: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  addBtnSmallTxt: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  addedPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  addedPillTxt: { fontSize: 12, fontWeight: '700' },
+
   feedbackRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   feedbackTxt: { fontSize: 12 },
+
   sectionTitle: { fontSize: 15, fontWeight: '700', marginTop: 4 },
   entryRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 11 },
   entryDivider: { borderBottomWidth: 0.5 },
   entryName: { fontSize: 14, fontWeight: '600' },
   entryMeta: { fontSize: 11 },
-  entryMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  entryMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   entryXP: { fontSize: 12, fontWeight: '700' },
   iconBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+
   unauthBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 14 },
   unauthTxt: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+
+  modalOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center', justifyContent: 'center', padding: 24,
+  },
+  modalSheet: { width: '100%', borderRadius: 18, padding: 20, gap: 12, ...SHADOWS.small },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  modalTitle: { fontSize: 17, fontWeight: '800' },
+  modalHint: { fontSize: 12, lineHeight: 17 },
+  modalInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12 },
+  modalAt: { fontSize: 18, fontWeight: '700' },
+  modalInput: { flex: 1, fontSize: 17, fontWeight: '600', paddingVertical: 12 },
+  modalBtn: { padding: 13, borderRadius: 12, alignItems: 'center', ...SHADOWS.small },
+  modalBtnTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
 });

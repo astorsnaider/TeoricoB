@@ -89,6 +89,12 @@ interface AppStore {
   requestedManualChapter: string | null;
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
+
+  /** Username llegado por deep link (teoric://u/<username>) — la UI lo
+   *  precarga en el buscador de Amigos y debe limpiarlo al consumirlo. */
+  pendingFriendUsername: string | null;
+  requestAddFriend: (username: string) => void;
+  clearPendingFriend: () => void;
   saveExamResult: (result: import('../types').ExamResult) => void;
   recordExamTemplateAttempt: (examId: string, correct: number, wrong: number, durationSec: number) => void;
 
@@ -211,6 +217,10 @@ export const useStore = create<AppStore>()(
       requestedManualChapter: null,
       requestManualChapter: (chapterId) => set({ requestedManualChapter: chapterId }),
       clearRequestedManualChapter: () => set({ requestedManualChapter: null }),
+
+      pendingFriendUsername: null,
+      requestAddFriend: (username) => set({ pendingFriendUsername: username.toLowerCase() }),
+      clearPendingFriend: () => set({ pendingFriendUsername: null }),
       topics: ALL_TOPICS,
       leagueStandings: [],
       dailyChallenge: null,

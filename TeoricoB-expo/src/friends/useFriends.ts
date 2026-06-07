@@ -1,10 +1,12 @@
 /**
  * useFriends — capa cliente del sistema de amistades.
  *
- * Backend (Supabase RPC, ver supabase/schema.sql §14):
+ * Backend (Supabase RPC, ver supabase/schema.sql §14 y §15):
  * - get_my_friends() → lista amigos aceptados + solicitudes pendientes.
- * - request_friendship_by_code(code) → enviar petición o auto-aceptar
- *   si el otro ya te pidió.
+ * - set_username(p_username) → escoger / cambiar mi @username.
+ * - search_users_by_username(p_query) → autocompletado por prefijo.
+ * - request_friendship_by_username(p_username) → enviar petición o
+ *   auto-aceptar si el otro ya te pidió.
  * - respond_friendship(uuid, accept) → aceptar/rechazar pendientes.
  *
  * Auto-refresh cada 60s mientras el hook está montado; refresh() manual
@@ -21,6 +23,7 @@ import { LeagueType } from '../types';
 export interface FriendEntry {
   userId: string;
   name: string;
+  username: string | null;
   avatarEmoji: string;
   profilePhotoUrl: string | null;
   xp: number;
@@ -32,9 +35,18 @@ export interface FriendEntry {
   isIncoming: boolean;
 }
 
+export interface UserSearchResult {
+  userId: string;
+  username: string;
+  name: string;
+  avatarEmoji: string;
+  league: LeagueType;
+}
+
 interface RpcRow {
   user_id: string;
   name: string;
+  username: string | null;
   avatar_emoji: string;
   profile_photo_url: string | null;
   xp: number;
@@ -45,11 +57,19 @@ interface RpcRow {
   is_incoming: boolean;
 }
 
+interface SearchRpcRow {
+  user_id: string;
+  username: string;
+  display_name: string;
+  avatar_emoji: string;
+  league: LeagueType;
+}
+
 export interface FriendsState {
   available: boolean;
   loading: boolean;
-  /** Mi propio friend_code para compartir (ej. "ABCD-1234"). */
-  myCode: string | null;
+  /** Mi @username público (null si aún no he escogido uno). */
+  myUsername: string | null;
   /** Solo amistades aceptadas. */
   friends: FriendEntry[];
   /** Solicitudes que ME han enviado (yo decido). */
@@ -58,7 +78,9 @@ export interface FriendsState {
   outgoing: FriendEntry[];
   error: string | null;
   refresh: () => void;
-  addFriendByCode: (code: string) => Promise<{ ok: boolean; status?: 'pending' | 'accepted'; error?: string }>;
+  setUsername: (username: string) => Promise<{ ok: boolean; username?: string; error?: string }>;
+  searchUsers: (query: string) => Promise<UserSearchResult[]>;
+  addFriendByUsername: (username: string) => Promise<{ ok: boolean; status?: 'pending' | 'accepted'; error?: string }>;
   acceptFriend: (otherUserId: string) => Promise<{ ok: boolean; error?: string }>;
   rejectFriend: (otherUserId: string) => Promise<{ ok: boolean; error?: string }>;
 }
@@ -67,18 +89,22 @@ const REFRESH_MS = 60_000;
 
 function friendlyError(raw: string): string {
   switch (raw) {
-    case 'CODE_NOT_FOUND':    return 'Ese código no existe o esa cuenta fue eliminada.';
-    case 'CANNOT_ADD_SELF':   return 'No puedes añadirte a ti mismo.';
-    case 'ALREADY_FRIENDS':   return 'Ya sois amigos.';
-    case 'ALREADY_REQUESTED': return 'Ya enviaste la solicitud, está pendiente de respuesta.';
-    case 'BLOCKED':           return 'No es posible establecer amistad con esa cuenta.';
-    case 'NO_PENDING_REQUEST': return 'Esa solicitud ya no está disponible.';
-    case 'No autenticado.':   return 'Inicia sesión para gestionar amigos.';
-    default:                   return raw;
+    case 'USERNAME_NOT_FOUND':  return 'Ese usuario no existe.';
+    case 'USERNAME_TOO_SHORT':  return 'El nombre debe tener al menos 3 caracteres.';
+    case 'USERNAME_TOO_LONG':   return 'El nombre no puede superar los 20 caracteres.';
+    case 'USERNAME_BAD_CHARS':  return 'Solo letras minúsculas, números y guion bajo.';
+    case 'USERNAME_TAKEN':      return 'Ese nombre ya está en uso, prueba otro.';
+    case 'USERNAME_RESERVED':   return 'Ese nombre está reservado.';
+    case 'CANNOT_ADD_SELF':     return 'No puedes añadirte a ti mismo.';
+    case 'ALREADY_FRIENDS':     return 'Ya sois amigos.';
+    case 'ALREADY_REQUESTED':   return 'Ya enviaste la solicitud, está pendiente.';
+    case 'BLOCKED':             return 'No es posible establecer amistad con esa cuenta.';
+    case 'NO_PENDING_REQUEST':  return 'Esa solicitud ya no está disponible.';
+    case 'No autenticado.':     return 'Inicia sesión para gestionar amigos.';
+    default:                    return raw;
   }
 }
 
-// Wrapper que mantiene el `this` binding al llamar supabase.rpc
 async function callRpc<T>(name: string, args: Record<string, unknown> = {}): Promise<{ data: T | null; error: { message: string } | null }> {
   try {
     return await (supabase as unknown as {
@@ -93,7 +119,7 @@ async function callRpc<T>(name: string, args: Record<string, unknown> = {}): Pro
 }
 
 export function useFriends(): FriendsState {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [rows, setRows] = useState<FriendEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +146,7 @@ export function useFriends(): FriendsState {
       const mapped: FriendEntry[] = (data ?? []).map(r => ({
         userId: r.user_id,
         name: r.name,
+        username: r.username,
         avatarEmoji: r.avatar_emoji,
         profilePhotoUrl: r.profile_photo_url,
         xp: r.xp,
@@ -132,30 +159,48 @@ export function useFriends(): FriendsState {
       setRows(mapped);
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user, tick]);
 
-  // Auto-refresh cada 60s
   useEffect(() => {
     if (!user) return;
     const id = setInterval(refresh, REFRESH_MS);
     return () => clearInterval(id);
   }, [user, refresh]);
 
-  const addFriendByCode = useCallback(async (code: string) => {
+  const setUsername = useCallback(async (username: string) => {
+    if (!isSupabaseConfigured || !user) {
+      return { ok: false, error: 'Inicia sesión para gestionar amigos.' };
+    }
+    const { data, error: rpcError } = await callRpc<string>('set_username', { p_username: username });
+    if (rpcError) return { ok: false, error: friendlyError(rpcError.message) };
+    if (refreshProfile) await refreshProfile();
+    return { ok: true, username: data ?? undefined };
+  }, [user, refreshProfile]);
+
+  const searchUsers = useCallback(async (query: string): Promise<UserSearchResult[]> => {
+    const clean = query.trim().toLowerCase();
+    if (clean.length < 2) return [];
+    const { data, error: rpcError } = await callRpc<SearchRpcRow[]>('search_users_by_username', { p_query: clean });
+    if (rpcError || !data) return [];
+    return data.map(r => ({
+      userId: r.user_id,
+      username: r.username,
+      name: r.display_name,
+      avatarEmoji: r.avatar_emoji,
+      league: r.league,
+    }));
+  }, []);
+
+  const addFriendByUsername = useCallback(async (username: string) => {
     if (!isSupabaseConfigured || !user) {
       return { ok: false, error: 'Inicia sesión para gestionar amigos.' };
     }
     const { data, error: rpcError } = await callRpc<{ other_user_id: string; status: 'pending' | 'accepted' }[]>(
-      'request_friendship_by_code',
-      { p_code: code },
+      'request_friendship_by_username',
+      { p_username: username },
     );
-    if (rpcError) {
-      return { ok: false, error: friendlyError(rpcError.message) };
-    }
-    // data es un array de 1 fila (returns table)
+    if (rpcError) return { ok: false, error: friendlyError(rpcError.message) };
     const status = data?.[0]?.status;
     refresh();
     return { ok: true, status };
@@ -163,8 +208,7 @@ export function useFriends(): FriendsState {
 
   const acceptFriend = useCallback(async (otherUserId: string) => {
     const { error: rpcError } = await callRpc<null>('respond_friendship', {
-      p_other_user_id: otherUserId,
-      p_accept: true,
+      p_other_user_id: otherUserId, p_accept: true,
     });
     if (rpcError) return { ok: false, error: friendlyError(rpcError.message) };
     refresh();
@@ -173,8 +217,7 @@ export function useFriends(): FriendsState {
 
   const rejectFriend = useCallback(async (otherUserId: string) => {
     const { error: rpcError } = await callRpc<null>('respond_friendship', {
-      p_other_user_id: otherUserId,
-      p_accept: false,
+      p_other_user_id: otherUserId, p_accept: false,
     });
     if (rpcError) return { ok: false, error: friendlyError(rpcError.message) };
     refresh();
@@ -188,13 +231,15 @@ export function useFriends(): FriendsState {
   return {
     available: Boolean(isSupabaseConfigured && user),
     loading,
-    myCode: profile?.friend_code ?? null,
+    myUsername: profile?.username ?? null,
     friends,
     incoming,
     outgoing,
     error,
     refresh,
-    addFriendByCode,
+    setUsername,
+    searchUsers,
+    addFriendByUsername,
     acceptFriend,
     rejectFriend,
   };

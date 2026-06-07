@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,14 @@ export default function LeagueScreen() {
   const remote = useLeaderboard(user.league);
   const friendsState = useFriends();
   const [showFriends, setShowFriends] = useState(false);
+  const pendingFriendUsername = useStore(s => s.pendingFriendUsername);
+  const clearPendingFriend = useStore(s => s.clearPendingFriend);
+
+  // Cuando llega un deep link teoric://u/<username>, abrimos automáticamente
+  // el sheet de amigos con ese username precargado en el buscador.
+  useEffect(() => {
+    if (pendingFriendUsername) setShowFriends(true);
+  }, [pendingFriendUsername]);
   // Si el usuario está autenticado y la query terminó con datos, usamos
   // el ranking real. En cualquier otro caso (no autenticado, todavía
   // cargando, o fallo de red) caemos al ranking simulado del store
@@ -147,11 +155,11 @@ export default function LeagueScreen() {
                     Aún no tienes amigos
                   </Text>
                   <Text style={[s.emptyFriendsSub, { color: theme.textSecondary }]}>
-                    Comparte tu código o introduce el de un amigo.
+                    Busca a tus amigos por @username o comparte tu enlace.
                   </Text>
-                  {friendsState.myCode && (
+                  {friendsState.myUsername && (
                     <View style={[s.codeChip, { backgroundColor: theme.bg2 }]}>
-                      <Text style={[s.codeChipTxt, { color: theme.textPrimary }]}>{friendsState.myCode}</Text>
+                      <Text style={[s.codeChipTxt, { color: theme.textPrimary }]}>@{friendsState.myUsername}</Text>
                     </View>
                   )}
                 </View>
@@ -249,8 +257,16 @@ export default function LeagueScreen() {
         <View style={{ height: 32 }} />
       </ScrollView>
 
-      <Modal visible={showFriends} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowFriends(false)}>
-        <FriendsScreen onClose={() => setShowFriends(false)} />
+      <Modal
+        visible={showFriends}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => { setShowFriends(false); clearPendingFriend(); }}
+      >
+        <FriendsScreen
+          onClose={() => { setShowFriends(false); clearPendingFriend(); }}
+          prefillUsername={pendingFriendUsername ?? undefined}
+        />
       </Modal>
     </SafeAreaView>
   );

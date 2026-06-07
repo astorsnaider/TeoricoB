@@ -2,6 +2,7 @@
   "expo": {
     "name": "Teoric",
     "slug": "teoric",
+    "scheme": "teoric",
     "version": "0.6.0",
     "description": "App de estudio para los permisos de conducción de la DGT. Material educativo basado en la normativa oficial.",
     "primaryColor": "#E63946",
