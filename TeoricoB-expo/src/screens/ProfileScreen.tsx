@@ -112,6 +112,13 @@ function ProfileMain({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
+      {/* Mancha roja detrás del top para que el bounce hacia abajo
+          (pull-to-refresh) muestre el mismo color del hero y no el fondo
+          oscuro del root. */}
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 600, backgroundColor: theme.primary }}
+      />
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
