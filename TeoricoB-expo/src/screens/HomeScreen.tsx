@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabResetEffect } from '../components/PagerControl';
+import { Lesson, Topic } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore, getLeagueInfo } from '../store/useStore';
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const getExamQuestions = useStore(s => s.getExamQuestions);
   const getMistakeQuestions = useStore(s => s.getMistakeQuestions);
   const mistakeCount = useStore(s => s.mistakeCount);
+  const completeLesson = useStore(s => s.completeLesson);
   const canBuyStreakFreeze = useStore(s => s.canBuyStreakFreeze);
   const buyStreakFreeze = useStore(s => s.buyStreakFreeze);
   const isStreakFrozen = useStore(s => s.isStreakFrozen);
@@ -37,10 +39,15 @@ export default function HomeScreen() {
   const [examListOpen, setExamListOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [practiceQs, setPracticeQs] = useState<any[]>([]);
+  const [activeRecLesson, setActiveRecLesson] = useState<{ topic: Topic; lesson: Lesson } | null>(null);
+  // Seed que cambia cada vez que se entra al tab Inicio para que las
+  // recomendaciones se rebajeren al volver.
+  const [recSeed, setRecSeed] = useState(() => Math.random());
 
   const scrollRef = useRef<ScrollView>(null);
   useTabResetEffect('home', useCallback(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
+    setRecSeed(Math.random());
   }, []));
 
   useEffect(() => {
@@ -67,6 +74,51 @@ export default function HomeScreen() {
     user.streak < 3   ? `${user.streak} día${user.streak > 1 ? 's' : ''} seguido` :
     user.streak < 7   ? `Racha de ${user.streak} días` :
                         `Racha increíble: ${user.streak} días`;
+
+  // Recomendaciones: 2 lecciones de temas flojos + 2 aleatorias entre las
+  // que aún no se han hecho perfectas. Se rebajeran al entrar al tab.
+  const recommendations: { topic: Topic; lesson: Lesson; weak: boolean }[] = useMemo(() => {
+    const lessonStats = user.lessonStats ?? {};
+    const topicStats = user.topicStats ?? {};
+    const open = topics.flatMap(t =>
+      t.lessons
+        .filter(l => {
+          const st = lessonStats[l.id];
+          return !st || st.bestWrong > 0;
+        })
+        .map(l => ({ topic: t, lesson: l }))
+    );
+    if (open.length === 0) return [];
+
+    const weakTopicIds = new Set(
+      topics
+        .filter(t => {
+          const s = topicStats[t.id];
+          return s && s.total >= 5 && s.correct / s.total < 0.7;
+        })
+        .map(t => t.id)
+    );
+
+    // Shuffle determinista por recSeed para evitar saltos entre renders
+    const rngShuffle = <T,>(arr: T[]): T[] => {
+      const out = [...arr];
+      let r = recSeed;
+      for (let i = out.length - 1; i > 0; i--) {
+        r = (r * 9301 + 49297) % 233280;
+        const j = Math.floor((r / 233280) * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    };
+
+    const weak = rngShuffle(open.filter(o => weakTopicIds.has(o.topic.id))).slice(0, 2);
+    const weakIds = new Set(weak.map(w => w.lesson.id));
+    const others = rngShuffle(open.filter(o => !weakIds.has(o.lesson.id))).slice(0, 4 - weak.length);
+    return [
+      ...weak.map(w => ({ ...w, weak: true })),
+      ...others.map(o => ({ ...o, weak: false })),
+    ];
+  }, [topics, user.lessonStats, user.topicStats, recSeed]);
 
   return (
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
@@ -242,23 +294,40 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Recent topics */}
-        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Seguir estudiando</Text>
-        <View style={s.topicsGrid}>
-          {topics.slice(0, 4).map(topic => {
-            const prog = progressForTopic(topic.id);
-            return (
-              <View key={topic.id} style={[s.topicCard, { backgroundColor: theme.card }, SHADOWS.small]}>
-                <TopicIcon topicId={topic.id} size={40} />
-                <Text style={[s.topicName, { color: theme.textPrimary }]} numberOfLines={2}>{topic.name}</Text>
-                <View style={[s.miniBarBg, { backgroundColor: theme.bg2 }]}>
-                  <View style={[s.miniBarFill, { width: `${prog * 100}%`, backgroundColor: topic.colorHex }]} />
-                </View>
-                <Text style={[s.topicPct, { color: theme.textSecondary }]}>{Math.round(prog * 100)}%</Text>
-              </View>
-            );
-          })}
-        </View>
+        {/* Lecciones recomendadas */}
+        {recommendations.length > 0 && (
+          <>
+            <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Seguir estudiando</Text>
+            <View style={s.topicsGrid}>
+              {recommendations.map(({ topic, lesson, weak }) => {
+                const stats = user.lessonStats?.[lesson.id];
+                return (
+                  <TouchableOpacity
+                    key={lesson.id}
+                    style={[s.topicCard, { backgroundColor: theme.card }, SHADOWS.small]}
+                    onPress={() => { playSound('tap'); setActiveRecLesson({ topic, lesson }); }}
+                    activeOpacity={0.85}
+                  >
+                    <TopicIcon topicId={topic.id} size={36} />
+                    <Text style={[s.topicName, { color: theme.textPrimary }]} numberOfLines={2}>{lesson.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      {weak && <Ionicons name="trending-down" size={11} color={theme.orange} />}
+                      <Text
+                        style={[
+                          s.topicPct,
+                          { color: weak ? theme.orange : stats?.bestWrong ? theme.orange : theme.textSecondary },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {weak ? 'Punto débil' : stats?.bestWrong ? `${stats.bestWrong} fallo${stats.bestWrong === 1 ? '' : 's'}` : topic.name}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        )}
 
         {/* Exam button */}
         <TouchableOpacity
@@ -304,6 +373,24 @@ export default function HomeScreen() {
         onClose={() => setPracticeOpen(false)}
         onComplete={(xp) => { addXP(xp); setPracticeOpen(false); }}
       />
+      {activeRecLesson && (
+        <QuizModal
+          visible
+          questions={activeRecLesson.lesson.questions}
+          title={activeRecLesson.lesson.title}
+          onClose={() => setActiveRecLesson(null)}
+          onComplete={(_xp, _perfect, bestCombo, wrongCount) => {
+            completeLesson(
+              activeRecLesson.lesson.id,
+              activeRecLesson.topic.id,
+              activeRecLesson.lesson.questions.length,
+              wrongCount ?? 0,
+              bestCombo,
+            );
+            setActiveRecLesson(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

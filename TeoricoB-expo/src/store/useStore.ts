@@ -142,7 +142,7 @@ const defaultUser: UserState = {
   dailyQuestStreak: 0,
 };
 
-const RECOVERIES_TO_CLEAR = 2;        // aciertos consecutivos para limpiar fallo
+const RECOVERIES_TO_CLEAR = 1;        // aciertos consecutivos para limpiar fallo
 const STREAK_FREEZE_COST = 30;        // gemas
 const STREAK_FREEZES_PER_MONTH = 3;
 const PRACTICE_XP_PER_CORRECT = 5;    // vs 10 en modo normal
