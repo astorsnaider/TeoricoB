@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Modal,
-  SafeAreaView, ScrollView, Animated, Platform,
+  SafeAreaView, ScrollView, Animated, Platform, Share,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import { getChapterIdForCategory, getChapterLabel } from '../legal/manualLinks';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { shuffleQuestion } from '../utils/shuffleQuestion';
 import ManualChapterModal from './ManualChapterModal';
+import ConfettiBurst from './ConfettiBurst';
 
 interface Props {
   visible: boolean;
@@ -53,6 +54,10 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
   const [shuffled, setShuffled] = useState<Question[]>([]);
   // Capítulo del manual abierto como overlay sobre el quiz (al pulsar "Ampliar en el Manual")
   const [openManualChapter, setOpenManualChapter] = useState<string | null>(null);
+  // Confeti y animación del trofeo en la pantalla de resultados.
+  const [resultBurst, setResultBurst] = useState(0);
+  const trophyScale = useRef(new Animated.Value(0.4)).current;
+  const trophyOpacity = useRef(new Animated.Value(0)).current;
 
   const user = useStore(s => s.user);
   const recordAnswer = useStore(s => s.recordAnswer);
@@ -115,6 +120,28 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
       useNativeDriver: false, tension: 50,
     }).start();
   }, [index, questions.length]);
+
+  // Animación de entrada del trofeo + confeti en estados celebratorios.
+  // Se dispara al pasar a `done = true`.
+  useEffect(() => {
+    if (!done) {
+      trophyScale.setValue(0.4);
+      trophyOpacity.setValue(0);
+      return;
+    }
+    Animated.parallel([
+      Animated.spring(trophyScale, { toValue: 1, friction: 5, tension: 100, useNativeDriver: true }),
+      Animated.timing(trophyOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+    ]).start();
+    const noHearts = !isExam && !isPractice && currentHearts <= 0 && index < questions.length - 1;
+    const passed = isExam ? wrongCount <= EXAM_MAX_ERRORS : null;
+    const perfectNow = wrongCount === 0 && index === questions.length - 1;
+    const celebrating = !noHearts && (perfectNow || passed === true);
+    if (celebrating) {
+      setResultBurst(b => b + 1);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+    }
+  }, [done]);
 
   if (!questions.length) return null;
 
@@ -317,63 +344,139 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
       );
     }
 
+    // Estado celebratorio: lección perfecta o examen aprobado.
+    const celebrate = !noHeartsEarly && (perfect || examPassed === true);
+    // Gradient del header según el estado.
+    const heroGradient: [string, string] =
+      noHeartsEarly       ? [theme.wrong, theme.wrong + 'CC'] :
+      examTooManyErrors   ? [theme.wrong, theme.wrong + 'CC'] :
+      examTimeOut         ? [theme.orange, theme.orange + 'CC'] :
+      perfect             ? [theme.yellow, theme.orange] :
+      examPassed === true ? [theme.correct, '#00897B'] :
+                            [theme.primary, theme.primary + 'CC'];
+    const heroTitle =
+      noHeartsEarly       ? 'Sin vidas' :
+      isExam              ? (examPassed ? '¡Examen aprobado!' : 'No esta vez') :
+      perfect             ? '¡Lección perfecta!' :
+                            grade;
+    const heroSubtitle =
+      noHeartsEarly       ? 'Espera a que se recarguen tus vidas para volver a intentarlo.' :
+      examTimeOut         ? `Se acabó el tiempo con ${wrongCount} errores.` :
+      examTooManyErrors   ? `${wrongCount} errores · Máx. permitido ${EXAM_MAX_ERRORS}.` :
+      examPassed          ? 'Habrías aprobado el teórico real.' :
+      perfect             ? `${correctCount}/${answered} aciertos · ¡Sin fallos!` :
+                            `${correctCount}/${answered} aciertos`;
+    const heroIcon =
+      noHeartsEarly         ? 'heart-dislike' :
+      examTooManyErrors     ? 'close-circle' :
+      examTimeOut           ? 'time-outline' :
+      celebrate             ? 'trophy' :
+                              'checkmark-circle';
+
+    const shareText = celebrate
+      ? (isExam
+          ? `Acabo de aprobar un examen DGT con ${correctCount}/${questions.length} en Teoric 🚗`
+          : `Acabo de hacer una lección perfecta en Teoric: ${correctCount}/${questions.length} 🎯`)
+      : `Estudiando para la DGT con Teoric: ${correctCount}/${questions.length} aciertos.`;
+
+    const onShare = () => {
+      Share.share({ message: shareText }).catch(() => undefined);
+    };
+
     return (
       <Modal visible={visible} animationType="slide">
         <SafeAreaView style={[rs.safe, { backgroundColor: theme.bg }]}>
+          {celebrate && <ConfettiBurst trigger={resultBurst} count={220} />}
           <ScrollView contentContainerStyle={rs.content}>
-            <View style={[rs.iconCircle, { backgroundColor: resultColor + '18' }]}>
-              <Ionicons name={resultIcon} size={52} color={resultColor} />
-            </View>
-            <Text style={[rs.resultTitle, { color: theme.textPrimary }]}>
-              {noHeartsEarly ? 'Sin vidas' :
-                isExam ? (examPassed ? 'Examen Superado' : 'Examen No Superado') :
-                perfect ? 'Lección Perfecta' : 'Completado'}
-            </Text>
-            {isExam && (
-              <Text style={[rs.examResult, { color: examPassed ? theme.correct : theme.wrong }]}>
-                {examTimeOut ? `Se acabó el tiempo · ${wrongCount} errores` :
-                 examTooManyErrors ? `${wrongCount} errores — máx. ${EXAM_MAX_ERRORS} permitidos` :
-                 examPassed ? 'Habrías aprobado el teórico real' :
-                 `${wrongCount} errores — máx. ${EXAM_MAX_ERRORS} permitidos`}
-              </Text>
-            )}
-            <View style={[rs.statsBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              {[
-                { label: 'Correctas', value: `${correctCount}/${answered}`, color: theme.correct, show: true },
-                { label: 'Fallos', value: `${wrongCount}${isExam ? `/${EXAM_MAX_ERRORS}` : ''}`, color: wrongCount > 0 ? theme.wrong : theme.textSecondary, show: true },
-                { label: 'Porcentaje', value: `${pct}%`, color: theme.textPrimary, show: true },
-                { label: 'Tiempo', value: `${mmExam}:${ssExam.toString().padStart(2, '0')}`, color: theme.textPrimary, show: isExam },
-                { label: 'Mejor combo', value: `${bestCombo}`, color: theme.orange, show: !isExam },
-                { label: 'Calificación', value: grade, color: theme.textPrimary, show: !isExam },
-                { label: 'XP ganados', value: `+${xpEarned} XP`, color: theme.yellow, show: !isExam },
-              ].filter(s => s.show).map(({ label, value, color }) => (
-                <View key={label} style={[rs.statRow, { borderBottomColor: theme.border }]}>
-                  <Text style={[rs.statLabel, { color: theme.textSecondary }]}>{label}</Text>
-                  <Text style={[rs.statValue, { color }]}>{value}</Text>
-                </View>
-              ))}
+            {/* HERO */}
+            <LinearGradient
+              colors={heroGradient}
+              style={rs.hero}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            >
+              <Animated.View
+                style={[
+                  rs.heroIconCircle,
+                  { transform: [{ scale: trophyScale }], opacity: trophyOpacity },
+                ]}
+              >
+                <Ionicons name={heroIcon} size={56} color="#fff" />
+              </Animated.View>
+              <Text style={rs.heroTitle}>{heroTitle}</Text>
+              <Text style={rs.heroSub}>{heroSubtitle}</Text>
+            </LinearGradient>
+
+            {/* STAT TILES en 2 columnas */}
+            <View style={rs.tileGrid}>
+              <StatTile
+                label="Aciertos"
+                value={`${correctCount}/${answered}`}
+                color={theme.correct}
+                icon="checkmark"
+                theme={theme}
+              />
+              <StatTile
+                label={isExam ? 'Fallos' : 'Mejor combo'}
+                value={isExam ? `${wrongCount}/${EXAM_MAX_ERRORS}` : `${bestCombo}`}
+                color={isExam ? (wrongCount > EXAM_MAX_ERRORS ? theme.wrong : theme.textPrimary) : theme.orange}
+                icon={isExam ? 'close' : 'flame'}
+                theme={theme}
+              />
+              <StatTile
+                label="Tiempo"
+                value={`${mmExam}:${ssExam.toString().padStart(2, '0')}`}
+                color={theme.blue}
+                icon="time-outline"
+                theme={theme}
+              />
+              <StatTile
+                label={isExam ? 'Acierto' : 'XP ganada'}
+                value={isExam ? `${pct}%` : `+${xpEarned}`}
+                color={theme.yellow}
+                icon={isExam ? 'stats-chart' : 'star'}
+                theme={theme}
+              />
             </View>
 
-            {/* Boton de repaso solo si hay fallos */}
+            {/* Botón de repaso solo si hay fallos */}
             {wrongAnswers.length > 0 && (
               <TouchableOpacity
-                style={{ width: '100%', borderRadius: 14, borderWidth: 1.5, borderColor: theme.blue, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={[rs.reviewBtn, { borderColor: theme.blue }]}
                 onPress={() => setShowReview(true)}
                 activeOpacity={0.7}
               >
                 <Ionicons name="book-outline" size={18} color={theme.blue} />
-                <Text style={{ color: theme.blue, fontSize: 15, fontWeight: '700' }}>
+                <Text style={[rs.reviewBtnTxt, { color: theme.blue }]}>
                   Repasar {wrongAnswers.length} fallo{wrongAnswers.length === 1 ? '' : 's'}
                 </Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={{ width: '100%', borderRadius: 16, overflow: 'hidden' }} onPress={() => onComplete(xpEarned, perfect, bestCombo, wrongCount)}>
-              <LinearGradient colors={[theme.primary, theme.primary + 'CC']} style={rs.btn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                <Text style={rs.btnTxt}>Continuar</Text>
-                <Ionicons name="arrow-forward" size={18} color="#fff" />
-              </LinearGradient>
-            </TouchableOpacity>
+            {/* CTAs */}
+            <View style={{ width: '100%', gap: 10 }}>
+              <TouchableOpacity
+                style={{ borderRadius: 16, overflow: 'hidden' }}
+                onPress={() => onComplete(xpEarned, perfect, bestCombo, wrongCount)}
+                activeOpacity={0.85}
+              >
+                <LinearGradient
+                  colors={[theme.primary, theme.primary + 'CC']}
+                  style={rs.btn}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                >
+                  <Text style={rs.btnTxt}>Continuar</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[rs.secondaryBtn, { borderColor: theme.border }]}
+                onPress={onShare}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="share-outline" size={16} color={theme.textSecondary} />
+                <Text style={[rs.secondaryBtnTxt, { color: theme.textSecondary }]}>Compartir</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -601,17 +704,56 @@ const nh = StyleSheet.create({
 
 const rs = StyleSheet.create({
   safe: { flex: 1 },
-  content: { flexGrow: 1, padding: 24, paddingTop: 40, alignItems: 'center', gap: 14 },
-  iconCircle: { width: 90, height: 90, borderRadius: 45, alignItems: 'center', justifyContent: 'center' },
-  resultTitle: { fontSize: 24, fontWeight: '800', textAlign: 'center' },
-  examResult: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
-  statsBox: { width: '100%', borderRadius: 18, padding: 16, borderWidth: 1, gap: 0 },
-  statRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 0.5 },
-  statLabel: { fontSize: 14 },
-  statValue: { fontSize: 14, fontWeight: '700' },
+  content: { flexGrow: 1, padding: 20, paddingTop: 24, alignItems: 'center', gap: 16 },
+  hero: { width: '100%', borderRadius: 24, padding: 26, alignItems: 'center', gap: 10 },
+  heroIconCircle: {
+    width: 96, height: 96, borderRadius: 48,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    marginBottom: 4,
+  },
+  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', textAlign: 'center' },
+  heroSub: { color: 'rgba(255,255,255,0.92)', fontSize: 14, fontWeight: '600', textAlign: 'center', lineHeight: 20 },
+
+  tileGrid: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  tile: { flexBasis: '48%', flexGrow: 1, borderRadius: 16, padding: 14, gap: 6, borderWidth: 1 },
+  tileTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  tileLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  tileValue: { fontSize: 22, fontWeight: '900' },
+
+  reviewBtn: {
+    width: '100%', borderRadius: 14, borderWidth: 1.5,
+    padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
+  reviewBtnTxt: { fontSize: 15, fontWeight: '700' },
+
   btn: { padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   btnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
+
+  secondaryBtn: {
+    width: '100%', borderRadius: 14, borderWidth: 1,
+    padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
+  secondaryBtnTxt: { fontSize: 14, fontWeight: '700' },
 });
+
+function StatTile({ label, value, color, icon, theme }: {
+  label: string;
+  value: string;
+  color: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  theme: ReturnType<typeof useTheme>;
+}) {
+  return (
+    <View style={[rs.tile, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View style={rs.tileTopRow}>
+        <Text style={[rs.tileLabel, { color: theme.textTertiary }]}>{label}</Text>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <Text style={[rs.tileValue, { color }]}>{value}</Text>
+    </View>
+  );
+}
 
 const qs = StyleSheet.create({
   safe: { flex: 1 },
