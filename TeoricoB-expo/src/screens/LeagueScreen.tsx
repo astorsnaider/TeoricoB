@@ -21,35 +21,27 @@ export default function LeagueScreen() {
   const [showFriends, setShowFriends] = useState(false);
   const pendingFriendUsername = useStore(s => s.pendingFriendUsername);
   const clearPendingFriend = useStore(s => s.clearPendingFriend);
+  const theme = useTheme();
 
-  // Cuando llega un deep link teoric://u/<username>, abrimos automáticamente
-  // el sheet de amigos con ese username precargado en el buscador.
   useEffect(() => {
     if (pendingFriendUsername) setShowFriends(true);
   }, [pendingFriendUsername]);
-  // Si el usuario está autenticado y la query terminó con datos, usamos
-  // el ranking real. En cualquier otro caso (no autenticado, todavía
-  // cargando, o fallo de red) caemos al ranking simulado del store
-  // para no dejar la pantalla vacía.
+
   const standings: LeagueStanding[] =
     remote.available && remote.standings.length > 0
       ? remote.standings
       : fallbackStandings;
-  const theme = useTheme();
 
   const league = getLeagueInfo(user.league);
   const leagueIdx = LEAGUES.findIndex(l => l.name === user.league);
   const nextLeague = leagueIdx < LEAGUES.length - 1 ? LEAGUES[leagueIdx + 1] : null;
-  const xpToNext = nextLeague ? nextLeague.xpRequired - user.xp : 0;
+  const xpToNext = nextLeague ? Math.max(0, nextLeague.xpRequired - user.xp) : 0;
   const promoPct = nextLeague ? Math.min(1, user.xp / nextLeague.xpRequired) : 1;
   const mockFriends = user.friends ?? [];
 
-  const rankIcon = (rank: number) => {
-    if (rank === 1) return <Ionicons name="trophy" size={20} color="#FFD700" />;
-    if (rank === 2) return <Ionicons name="trophy" size={20} color="#A8A9AD" />;
-    if (rank === 3) return <Ionicons name="trophy" size={20} color="#CD7F32" />;
-    return <Text style={[s.rankNum, { color: theme.textSecondary }]}>#{rank}</Text>;
-  };
+  const top3 = standings.slice(0, 3);
+  const rest = standings.slice(3);
+  const showPodium = top3.length === 3;
 
   const scrollRef = useRef<ScrollView>(null);
   useTabResetEffect('league', useCallback(() => {
@@ -60,94 +52,132 @@ export default function LeagueScreen() {
     <SafeAreaView edges={['top']} style={[s.safe, { backgroundColor: theme.bg }]}>
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
 
-        {/* League header */}
-        <LinearGradient colors={[league.color + '28', league.color + '06']} style={s.leagueHeader}>
-          <Text style={s.leagueEmoji}>{league.emoji}</Text>
-          <Text style={[s.leagueName, { color: league.color }]}>Liga {user.league}</Text>
+        {/* ════ HERO DE LIGA ════ */}
+        <LinearGradient
+          colors={[league.color, league.color + 'CC']}
+          style={s.hero}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        >
+          <Text style={s.heroEmoji}>{league.emoji}</Text>
+          <Text style={s.heroTitle}>Liga {user.league}</Text>
+          {remote.available && remote.standings.length > 0 && (
+            <View style={s.livePill}>
+              <View style={s.liveDot} />
+              <Text style={s.livePillTxt}>EN VIVO</Text>
+            </View>
+          )}
           {nextLeague ? (
             <>
-              <Text style={[s.leagueSub, { color: theme.textSecondary }]}>
-                Faltan <Text style={{ color: league.color, fontWeight: '700' }}>{xpToNext} XP</Text> para {nextLeague.emoji} {nextLeague.name}
+              <Text style={s.heroSub}>
+                Faltan <Text style={{ fontWeight: '800' }}>{xpToNext} XP</Text> para {nextLeague.emoji} {nextLeague.name}
               </Text>
-              <View style={[s.promoBg, { backgroundColor: theme.bg2 }]}>
-                <View style={[s.promoFill, { width: `${promoPct * 100}%`, backgroundColor: league.color }]} />
+              <View style={s.promoBg}>
+                <View style={[s.promoFill, { width: `${promoPct * 100}%` }]} />
               </View>
             </>
           ) : (
-            <Text style={[s.leagueSub, { color: theme.textSecondary }]}>
-              Liga máxima alcanzada
-            </Text>
+            <Text style={s.heroSub}>Liga máxima alcanzada</Text>
           )}
         </LinearGradient>
 
-        {/* Ranking */}
-        <View style={s.rankingHeader}>
-          <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Clasificación semanal</Text>
-          {remote.available && remote.standings.length > 0 && (
-            <View style={[s.realBadge, { backgroundColor: theme.correct + '18' }]}>
-              <Ionicons name="cloud-done" size={11} color={theme.correct} />
-              <Text style={[s.realBadgeTxt, { color: theme.correct }]}>en vivo</Text>
-            </View>
-          )}
-        </View>
-
+        {/* Banner si no auth */}
         {!remote.available && (
-          <View style={[s.fakeBanner, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
+          <View style={[s.banner, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
             <Ionicons name="information-circle-outline" size={16} color={theme.textTertiary} />
-            <Text style={[s.fakeBannerTxt, { color: theme.textSecondary }]}>
+            <Text style={[s.bannerTxt, { color: theme.textSecondary }]}>
               Ranking simulado. Inicia sesión para competir con usuarios reales.
             </Text>
           </View>
         )}
 
-        <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          {standings.map((st, i) => (
-            <View
-              key={`st-${i}`}
-              style={[
-                s.rankRow,
-                { borderBottomColor: theme.border },
-                st.isCurrentUser && { backgroundColor: league.color + '10' },
-                i < standings.length - 1 && s.rankDivider,
-              ]}
-            >
-              <View style={s.rankPos}>{rankIcon(st.rank)}</View>
-              <AvatarView
-                color={st.avatarEmoji.startsWith('#') ? st.avatarEmoji : league.color}
-                name={st.name}
-                size={34}
-              />
-              <Text
-                style={[s.rankName, { color: st.isCurrentUser ? league.color : theme.textPrimary, fontWeight: st.isCurrentUser ? '800' : '500' }]}
-                numberOfLines={1}
-              >
-                {st.name}{st.isCurrentUser ? ' · tú' : ''}
-              </Text>
-              <Text style={[s.rankXP, { color: st.isCurrentUser ? league.color : theme.textSecondary }]}>
-                {st.xp} XP
-              </Text>
-            </View>
-          ))}
-        </View>
+        {/* ════ CLASIFICACIÓN ════ */}
+        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Clasificación semanal</Text>
 
-        {/* Friends */}
+        {showPodium && (
+          <View style={s.podium}>
+            <PodiumColumn
+              place={2}
+              standing={top3[1]}
+              theme={theme}
+              color="#A8A9AD"
+              accentColor={league.color}
+              size="small"
+            />
+            <PodiumColumn
+              place={1}
+              standing={top3[0]}
+              theme={theme}
+              color="#FFD700"
+              accentColor={league.color}
+              size="large"
+            />
+            <PodiumColumn
+              place={3}
+              standing={top3[2]}
+              theme={theme}
+              color="#CD7F32"
+              accentColor={league.color}
+              size="small"
+            />
+          </View>
+        )}
+
+        {/* Lista del puesto 4 en adelante (o todos si no hay podio) */}
+        {(showPodium ? rest : standings).length > 0 && (
+          <View style={[s.listCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            {(showPodium ? rest : standings).map((st, i, arr) => (
+              <View
+                key={`st-${st.rank}-${i}`}
+                style={[
+                  s.row,
+                  { borderBottomColor: theme.border },
+                  st.isCurrentUser && { backgroundColor: league.color + '14' },
+                  i < arr.length - 1 && s.rowDivider,
+                ]}
+              >
+                <Text style={[s.rank, { color: st.isCurrentUser ? league.color : theme.textTertiary }]}>
+                  {st.rank}
+                </Text>
+                <AvatarView
+                  color={st.avatarEmoji.startsWith('#') ? st.avatarEmoji : league.color}
+                  name={st.name}
+                  size={34}
+                />
+                <Text
+                  style={[s.rowName, {
+                    color: st.isCurrentUser ? league.color : theme.textPrimary,
+                    fontWeight: st.isCurrentUser ? '800' : '500',
+                  }]}
+                  numberOfLines={1}
+                >
+                  {st.name}{st.isCurrentUser ? ' · tú' : ''}
+                </Text>
+                <Text style={[s.rowXP, { color: st.isCurrentUser ? league.color : theme.textSecondary }]}>
+                  {st.xp} XP
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ════ AMIGOS ════ */}
         {friendsState.available ? (
           <>
-            <View style={s.rankingHeader}>
+            <View style={s.sectionHeader}>
               <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>
                 Amigos {friendsState.friends.length > 0 ? `(${friendsState.friends.length})` : ''}
               </Text>
               {friendsState.incoming.length > 0 && (
-                <View style={[s.realBadge, { backgroundColor: theme.orange + '22' }]}>
+                <View style={[s.notifPill, { backgroundColor: theme.orange + '22' }]}>
                   <Ionicons name="notifications" size={11} color={theme.orange} />
-                  <Text style={[s.realBadgeTxt, { color: theme.orange }]}>
+                  <Text style={[s.notifPillTxt, { color: theme.orange }]}>
                     {friendsState.incoming.length} pendiente{friendsState.incoming.length === 1 ? '' : 's'}
                   </Text>
                 </View>
               )}
             </View>
 
-            <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[s.listCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
               {friendsState.friends.length === 0 ? (
                 <View style={s.emptyFriends}>
                   <Ionicons name="people-outline" size={32} color={theme.textTertiary} />
@@ -158,39 +188,37 @@ export default function LeagueScreen() {
                     Busca a tus amigos por @username o comparte tu enlace.
                   </Text>
                   {friendsState.myUsername && (
-                    <View style={[s.codeChip, { backgroundColor: theme.bg2 }]}>
-                      <Text style={[s.codeChipTxt, { color: theme.textPrimary }]}>@{friendsState.myUsername}</Text>
+                    <View style={[s.handleChip, { backgroundColor: theme.bg2 }]}>
+                      <Text style={[s.handleChipTxt, { color: theme.textPrimary }]}>@{friendsState.myUsername}</Text>
                     </View>
                   )}
                 </View>
               ) : (
-                friendsState.friends.slice(0, 4).map((f, i) => {
+                friendsState.friends.slice(0, 4).map((f, i, arr) => {
                   const fi = getLeagueInfo(f.league);
                   return (
-                    <View key={f.userId} style={[s.rankRow, { borderBottomColor: theme.border }, i < Math.min(friendsState.friends.length, 4) - 1 && s.rankDivider]}>
+                    <View key={f.userId} style={[s.row, { borderBottomColor: theme.border }, i < arr.length - 1 && s.rowDivider]}>
                       <AvatarView color={f.avatarEmoji.startsWith('#') ? f.avatarEmoji : fi.color} name={f.name} size={34} />
                       <View style={{ flex: 1 }}>
-                        <Text style={[s.rankName, { color: theme.textPrimary }]} numberOfLines={1}>{f.name}</Text>
+                        <Text style={[s.rowName, { color: theme.textPrimary }]} numberOfLines={1}>{f.name}</Text>
                         <View style={s.friendMeta}>
                           <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{fi.emoji} {f.league}</Text>
                           <Ionicons name="flame" size={12} color={theme.orange} />
                           <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{f.streak}</Text>
                         </View>
                       </View>
-                      <Text style={[s.rankXP, { color: theme.textSecondary }]}>{f.weeklyXP} XP</Text>
+                      <Text style={[s.rowXP, { color: theme.textSecondary }]}>{f.weeklyXP} XP</Text>
                     </View>
                   );
                 })
               )}
               <TouchableOpacity
-                style={[s.inviteRow, { borderTopColor: theme.border }]}
+                style={[s.cardFooter, { borderTopColor: theme.border }]}
                 onPress={() => setShowFriends(true)}
                 activeOpacity={0.7}
               >
                 <Ionicons name="person-add-outline" size={16} color={theme.primary} />
-                <Text style={[s.inviteTxt, { color: theme.primary, fontWeight: '600' }]}>
-                  Gestionar amigos
-                </Text>
+                <Text style={[s.cardFooterTxt, { color: theme.primary }]}>Gestionar amigos</Text>
                 <Ionicons name="chevron-forward" size={14} color={theme.primary} />
               </TouchableOpacity>
             </View>
@@ -199,27 +227,27 @@ export default function LeagueScreen() {
           mockFriends.length > 0 && (
             <>
               <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Amigos</Text>
-              <View style={[s.rankingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                {mockFriends.slice(0, 4).map((f, i) => {
+              <View style={[s.listCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                {mockFriends.slice(0, 4).map((f, i, arr) => {
                   const fi = getLeagueInfo(f.league as LeagueType);
                   return (
-                    <View key={`fr-${i}`} style={[s.rankRow, { borderBottomColor: theme.border }, i < 3 && s.rankDivider]}>
+                    <View key={`fr-${i}`} style={[s.row, { borderBottomColor: theme.border }, i < arr.length - 1 && s.rowDivider]}>
                       <AvatarView color={f.avatarEmoji.startsWith('#') ? f.avatarEmoji : fi.color} name={f.name} size={34} />
                       <View style={{ flex: 1 }}>
-                        <Text style={[s.rankName, { color: theme.textPrimary }]}>{f.name}</Text>
+                        <Text style={[s.rowName, { color: theme.textPrimary }]}>{f.name}</Text>
                         <View style={s.friendMeta}>
                           <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{fi.emoji} {f.league}</Text>
                           <Ionicons name="flame" size={12} color={theme.orange} />
                           <Text style={[s.friendMetaTxt, { color: theme.textSecondary }]}>{f.streak}</Text>
                         </View>
                       </View>
-                      <Text style={[s.rankXP, { color: theme.textSecondary }]}>{f.xp} XP</Text>
+                      <Text style={[s.rowXP, { color: theme.textSecondary }]}>{f.xp} XP</Text>
                     </View>
                   );
                 })}
-                <View style={[s.inviteRow, { borderTopColor: theme.border }]}>
+                <View style={[s.cardFooter, { borderTopColor: theme.border }]}>
                   <Ionicons name="information-circle-outline" size={14} color={theme.textTertiary} />
-                  <Text style={[s.inviteTxt, { color: theme.textTertiary }]}>
+                  <Text style={[s.cardFooterTxt, { color: theme.textTertiary }]}>
                     Inicia sesión para añadir amigos reales
                   </Text>
                 </View>
@@ -228,7 +256,7 @@ export default function LeagueScreen() {
           )
         )}
 
-        {/* All leagues */}
+        {/* ════ TODAS LAS LIGAS ════ */}
         <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Todas las ligas</Text>
         <View style={s.leaguesGrid}>
           {LEAGUES.map((lg) => {
@@ -272,27 +300,123 @@ export default function LeagueScreen() {
   );
 }
 
+// ─── PODIO ────────────────────────────────────────────────────────────
+
+function PodiumColumn({
+  place, standing, theme, color, accentColor, size,
+}: {
+  place: 1 | 2 | 3;
+  standing: LeagueStanding;
+  theme: ReturnType<typeof useTheme>;
+  color: string;
+  accentColor: string;
+  size: 'large' | 'small';
+}) {
+  const isLarge = size === 'large';
+  const avatarSize = isLarge ? 66 : 50;
+  const pedestalHeight = isLarge ? 90 : 64;
+  const isYou = standing.isCurrentUser;
+  return (
+    <View style={[p.col, { width: isLarge ? '38%' : '31%' }]}>
+      {/* Corona (solo el 1º) */}
+      {place === 1 && (
+        <View style={p.crownBox}>
+          <Ionicons name="trophy" size={24} color={color} />
+        </View>
+      )}
+      <View style={[p.avatarWrap, { borderColor: color, borderWidth: 3 }]}>
+        <AvatarView
+          color={standing.avatarEmoji.startsWith('#') ? standing.avatarEmoji : accentColor}
+          name={standing.name}
+          size={avatarSize}
+        />
+      </View>
+      <Text
+        style={[p.name, { color: isYou ? accentColor : theme.textPrimary, fontWeight: isYou ? '800' : '700' }]}
+        numberOfLines={1}
+      >
+        {isYou ? 'Tú' : standing.name.split(' ')[0]}
+      </Text>
+      <Text style={[p.xp, { color: theme.textSecondary }]}>{standing.xp} XP</Text>
+      {/* Pedestal */}
+      <View style={[p.pedestal, { backgroundColor: color, height: pedestalHeight }]}>
+        <Text style={p.place}>{place}</Text>
+      </View>
+    </View>
+  );
+}
+
+const p = StyleSheet.create({
+  col: { alignItems: 'center', gap: 4, justifyContent: 'flex-end' },
+  crownBox: { marginBottom: 2 },
+  avatarWrap: { borderRadius: 999, padding: 2, ...SHADOWS.small },
+  name: { fontSize: 13, maxWidth: '100%' },
+  xp: { fontSize: 11, fontWeight: '600' },
+  pedestal: {
+    width: '100%',
+    borderTopLeftRadius: 14, borderTopRightRadius: 14,
+    alignItems: 'center', justifyContent: 'flex-start',
+    paddingTop: 10,
+    marginTop: 4,
+  },
+  place: { color: '#fff', fontSize: 28, fontWeight: '900' },
+});
+
 const s = StyleSheet.create({
   safe: { flex: 1 },
   content: { padding: 16, gap: 14 },
-  leagueHeader: { borderRadius: 20, padding: 24, alignItems: 'center', gap: 8 },
-  leagueEmoji: { fontSize: 54 },
-  leagueName: { fontSize: 24, fontWeight: '800' },
-  leagueSub: { fontSize: 13, textAlign: 'center' },
-  promoBg: { width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', marginTop: 4 },
-  promoFill: { height: 8, borderRadius: 4 },
+
+  hero: { borderRadius: 24, padding: 22, alignItems: 'center', gap: 8, ...SHADOWS.medium },
+  heroEmoji: { fontSize: 56 },
+  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', letterSpacing: 0.2 },
+  heroSub: { color: 'rgba(255,255,255,0.92)', fontSize: 13, textAlign: 'center' },
+  livePill: {
+    position: 'absolute', top: 14, right: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10,
+  },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
+  livePillTxt: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  promoBg: { width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.18)', marginTop: 4 },
+  promoFill: { height: 8, borderRadius: 4, backgroundColor: '#fff' },
+
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
+  bannerTxt: { flex: 1, fontSize: 12, lineHeight: 16 },
+
   sectionTitle: { fontSize: 16, fontWeight: '700' },
-  rankingCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
-  rankRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, gap: 10 },
-  rankDivider: { borderBottomWidth: 0.5 },
-  rankPos: { width: 28, alignItems: 'center' },
-  rankNum: { fontSize: 13, fontWeight: '700' },
-  rankName: { flex: 1, fontSize: 14 },
-  rankXP: { fontSize: 12, fontWeight: '700' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  notifPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  notifPillTxt: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+
+  podium: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingHorizontal: 6,
+    paddingTop: 12,
+  },
+
+  listCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, gap: 10 },
+  rowDivider: { borderBottomWidth: 0.5 },
+  rank: { width: 26, fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  rowName: { flex: 1, fontSize: 14 },
+  rowXP: { fontSize: 12, fontWeight: '700' },
+
   friendMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   friendMetaTxt: { fontSize: 11 },
-  inviteRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderTopWidth: 0.5 },
-  inviteTxt: { fontSize: 13 },
+
+  cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderTopWidth: 0.5 },
+  cardFooterTxt: { fontSize: 13, fontWeight: '600', flex: 1 },
+
+  emptyFriends: { alignItems: 'center', padding: 22, gap: 6 },
+  emptyFriendsTitle: { fontSize: 15, fontWeight: '700' },
+  emptyFriendsSub: { fontSize: 12, textAlign: 'center', marginBottom: 6 },
+  handleChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, marginTop: 4 },
+  handleChipTxt: { fontSize: 16, fontWeight: '800', letterSpacing: 1 },
+
   leaguesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   leagueTile: {
     width: '22%', borderRadius: 12, padding: 10,
@@ -300,14 +424,4 @@ const s = StyleSheet.create({
   },
   leagueTileName: { fontSize: 10, fontWeight: '700', textAlign: 'center' },
   leagueTileXP: { fontSize: 9 },
-  rankingHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  realBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  realBadgeTxt: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
-  fakeBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
-  fakeBannerTxt: { flex: 1, fontSize: 12, lineHeight: 16 },
-  emptyFriends: { alignItems: 'center', padding: 20, gap: 6 },
-  emptyFriendsTitle: { fontSize: 15, fontWeight: '700' },
-  emptyFriendsSub: { fontSize: 12, textAlign: 'center', marginBottom: 6 },
-  codeChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, marginTop: 4 },
-  codeChipTxt: { fontSize: 16, fontWeight: '800', letterSpacing: 2, fontFamily: 'Menlo' },
 });
