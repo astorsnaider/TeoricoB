@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../store/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
+import TabPager, { TabPagerHandle } from '../components/TabPager';
 
 type TutorialStep = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -24,7 +25,7 @@ const STEPS: TutorialStep[] = [
     bullets: [
       'Empieza por una lección y completa sus preguntas.',
       'Ganas XP, mantienes la racha y ves tu progreso por tema.',
-      'Las vidas solo se gastan en práctica (no en examen) y se regeneran solas cada 30 min.',
+      'Las vidas solo se gastan en práctica y se regeneran cada 30 min.',
     ],
     colorKey: 'primary',
   },
@@ -42,7 +43,7 @@ const STEPS: TutorialStep[] = [
   {
     icon: 'timer-outline',
     title: 'Haz exámenes simulados',
-    text: 'El modo examen replica el formato básico del teórico B para entrenar con presión realista.',
+    text: 'El modo examen replica el formato del teórico B para entrenar con presión realista.',
     bullets: [
       '30 preguntas seleccionadas del banco completo.',
       '30 minutos de tiempo máximo.',
@@ -67,7 +68,7 @@ const STEPS: TutorialStep[] = [
     text: 'El manual está pensado para resolver dudas antes de volver a practicar.',
     bullets: [
       'Entra desde la pestaña Manual cuando quieras repasar teoría.',
-      'Consulta señales, velocidades, prioridad, alcohol y el resto de temas.',
+      'Consulta señales, velocidades, prioridad, alcohol y el resto.',
       'Perfil guarda estadísticas, historial de exámenes y ajustes.',
     ],
     colorKey: 'blue',
@@ -75,80 +76,100 @@ const STEPS: TutorialStep[] = [
 ];
 
 export default function TutorialScreen() {
-  const [step, setStep] = useState(0);
+  const [page, setPage] = useState(0);
+  const pagerRef = useRef<TabPagerHandle>(null);
   const completeTutorial = useStore(s => s.completeTutorial);
   const theme = useTheme();
-  const current = STEPS[step];
-  const color = theme[current.colorKey];
-  const isLast = step === STEPS.length - 1;
+  const isLast = page === STEPS.length - 1;
+  const currentColor = theme[STEPS[page].colorKey];
 
   const goNext = () => {
     if (isLast) {
       completeTutorial();
       return;
     }
-    setStep(s => s + 1);
+    const next = page + 1;
+    pagerRef.current?.setPage(next);
+    setPage(next);
   };
 
-  const goBack = () => setStep(s => Math.max(0, s - 1));
+  const goBack = () => {
+    if (page === 0) return;
+    const prev = page - 1;
+    pagerRef.current?.setPage(prev);
+    setPage(prev);
+  };
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: theme.bg }]}>
-      <View style={s.container}>
-        <View style={s.topRow}>
-          {step > 0 ? (
-            <TouchableOpacity
-              onPress={goBack}
-              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-              style={s.backBtn}
-            >
-              <Ionicons name="chevron-back" size={22} color={theme.textSecondary} />
-            </TouchableOpacity>
-          ) : (
-            <View style={s.backBtn} />
-          )}
-          <View style={s.dots}>
-            {STEPS.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  s.dot,
-                  { backgroundColor: i === step ? color : theme.border },
-                  i === step && s.dotActive,
-                ]}
-              />
-            ))}
-          </View>
-          <TouchableOpacity onPress={completeTutorial} hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
-            <Text style={[s.skip, { color: theme.textSecondary }]}>Omitir</Text>
+      <View style={s.topRow}>
+        {page > 0 ? (
+          <TouchableOpacity onPress={goBack} hitSlop={12} style={s.iconBtn}>
+            <Ionicons name="chevron-back" size={22} color={theme.textSecondary} />
           </TouchableOpacity>
-        </View>
-
-        <LinearGradient colors={[color + '22', color + '04']} style={s.hero}>
-          <View style={[s.iconCircle, { backgroundColor: color + '18' }]}>
-            <Ionicons name={current.icon} size={54} color={color} />
-          </View>
-          <Text style={[s.title, { color: theme.textPrimary }]}>{current.title}</Text>
-          <Text style={[s.text, { color: theme.textSecondary }]}>{current.text}</Text>
-        </LinearGradient>
-
-        <View style={s.bulletList}>
-          {current.bullets.map((bullet, i) => (
-            <View key={i} style={[s.bulletCard, { backgroundColor: theme.card, borderColor: theme.border }, SHADOWS.small]}>
-              <View style={[s.bulletIcon, { backgroundColor: color + '16' }]}>
-                <Ionicons name="checkmark" size={16} color={color} />
-              </View>
-              <Text style={[s.bulletText, { color: theme.textPrimary }]}>{bullet}</Text>
-            </View>
+        ) : (
+          <View style={s.iconBtn} />
+        )}
+        <View style={s.dots}>
+          {STEPS.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                s.dot,
+                {
+                  backgroundColor: i === page ? currentColor : theme.border,
+                  width: i === page ? 22 : 8,
+                },
+              ]}
+            />
           ))}
         </View>
+        <TouchableOpacity onPress={completeTutorial} hitSlop={12}>
+          <Text style={[s.skip, { color: theme.textSecondary }]}>Omitir</Text>
+        </TouchableOpacity>
+      </View>
 
+      <TabPager
+        ref={pagerRef}
+        initialPage={0}
+        style={{ flex: 1 }}
+        onPageSelected={p => setPage(p)}
+      >
+        {STEPS.map((step, idx) => {
+          const color = theme[step.colorKey];
+          return (
+            <View key={idx} style={{ flex: 1 }}>
+              <ScrollView contentContainerStyle={s.pageContent} showsVerticalScrollIndicator={false}>
+                <LinearGradient colors={[color + '24', color + '04']} style={s.hero}>
+                  <View style={[s.iconCircle, { backgroundColor: color + '22' }]}>
+                    <Ionicons name={step.icon} size={58} color={color} />
+                  </View>
+                  <Text style={[s.title, { color: theme.textPrimary }]}>{step.title}</Text>
+                  <Text style={[s.text, { color: theme.textSecondary }]}>{step.text}</Text>
+                </LinearGradient>
+
+                <View style={s.bulletList}>
+                  {step.bullets.map((bullet, i) => (
+                    <View key={i} style={[s.bulletCard, { backgroundColor: theme.card, borderColor: theme.border }, SHADOWS.small]}>
+                      <View style={[s.bulletIcon, { backgroundColor: color + '20' }]}>
+                        <Ionicons name="checkmark" size={16} color={color} />
+                      </View>
+                      <Text style={[s.bulletText, { color: theme.textPrimary }]}>{bullet}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          );
+        })}
+      </TabPager>
+
+      <View style={s.footer}>
         <TouchableOpacity style={{ borderRadius: 16, overflow: 'hidden' }} onPress={goNext} activeOpacity={0.85}>
           <LinearGradient
             colors={[theme.primary, theme.primary + 'CC']}
             style={s.cta}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           >
             <Text style={s.ctaText}>{isLast ? 'Entrar a la app' : 'Siguiente'}</Text>
             <Ionicons name={isLast ? 'checkmark' : 'arrow-forward'} size={18} color="#fff" />
@@ -161,21 +182,24 @@ export default function TutorialScreen() {
 
 const s = StyleSheet.create({
   safe: { flex: 1 },
-  container: { flex: 1, padding: 20, gap: 16 },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  backBtn: { width: 28, alignItems: 'flex-start' },
-  dots: { flexDirection: 'row', gap: 8 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  dotActive: { width: 24 },
+  topRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 8, paddingBottom: 14,
+  },
+  iconBtn: { width: 28, alignItems: 'flex-start' },
+  dots: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  dot: { height: 8, borderRadius: 4 },
   skip: { fontSize: 14, fontWeight: '700' },
-  hero: { borderRadius: 20, padding: 24, alignItems: 'center', gap: 12 },
-  iconCircle: { width: 100, height: 100, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 26, fontWeight: '800', textAlign: 'center' },
+  pageContent: { padding: 20, gap: 16, paddingBottom: 32 },
+  hero: { borderRadius: 22, padding: 24, alignItems: 'center', gap: 12 },
+  iconCircle: { width: 108, height: 108, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 26, fontWeight: '900', textAlign: 'center' },
   text: { fontSize: 14, lineHeight: 21, textAlign: 'center' },
-  bulletList: { flex: 1, gap: 10, justifyContent: 'center' },
+  bulletList: { gap: 10, marginTop: 4 },
   bulletCard: { flexDirection: 'row', gap: 12, alignItems: 'center', borderRadius: 14, padding: 14, borderWidth: 1 },
   bulletIcon: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   bulletText: { flex: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
-  cta: { padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  footer: { padding: 20, paddingTop: 6 },
+  cta: { padding: 17, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   ctaText: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });
