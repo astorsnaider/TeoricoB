@@ -3,26 +3,23 @@
  *
  * Se controla con el flag `newAchievement` del store. Cuando se setea,
  * el modal hace fade+scale in, muestra el emoji grande + recompensas y
- * cierra al tap del botón "¡Genial!" o tras 5s automáticamente.
+ * cierra al tap del botón "¡Genial!" o tras AUTO_CLOSE_MS automáticamente.
  *
- * Confeti hecho con un puñado de <Animated.View> que caen desde el top
- * con offsets aleatorios — suficiente para sensación de celebración sin
- * dependencias extra (Lottie etc.).
+ * El confeti viene de <ConfettiBurst /> (react-native-confetti-cannon).
  */
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Modal, TouchableOpacity, Animated, Easing, Dimensions,
+  View, Text, StyleSheet, Modal, TouchableOpacity, Animated,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Achievement } from '../types';
 import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
+import ConfettiBurst from './ConfettiBurst';
 
-const AUTO_CLOSE_MS = 5000;
-const SCREEN_W = Dimensions.get('window').width;
-const CONFETTI_COUNT = 14;
-const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A78BFA', '#F472B6', '#FBBF24'];
+const AUTO_CLOSE_MS = 6000;
 
 export function AchievementUnlockModal({
   achievement,
@@ -36,20 +33,7 @@ export function AchievementUnlockModal({
   const scale = useRef(new Animated.Value(0.6)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Confeti generado solo cuando hay achievement nuevo (estable entre renders)
-  const confetti = useMemo(() => {
-    if (!visible) return [];
-    return Array.from({ length: CONFETTI_COUNT }).map((_, i) => ({
-      x: Math.random() * SCREEN_W,
-      delay: Math.random() * 400,
-      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      rotate: Math.random() * 360,
-      anim: new Animated.Value(0),
-    }));
-    // achievement.id triggers regeneración entre logros
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [achievement?.id]);
+  const [burst, setBurst] = useState(0);
 
   useEffect(() => {
     if (!visible) {
@@ -61,25 +45,15 @@ export function AchievementUnlockModal({
       Animated.spring(scale, { toValue: 1, friction: 6, tension: 90, useNativeDriver: true }),
       Animated.timing(opacity, { toValue: 1, duration: 220, useNativeDriver: true }),
     ]).start();
-    // Confeti
-    Animated.stagger(
-      40,
-      confetti.map(c =>
-        Animated.timing(c.anim, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.linear,
-          delay: c.delay,
-          useNativeDriver: true,
-        })
-      )
-    ).start();
+    // Disparar confeti + haptic
+    setBurst(b => b + 1);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
     // Auto-cerrar
     closeTimerRef.current = setTimeout(onClose, AUTO_CLOSE_MS);
     return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     };
-  }, [visible, achievement?.id, confetti, onClose, scale, opacity]);
+  }, [visible, achievement?.id, onClose, scale, opacity]);
 
   if (!achievement) return null;
 
@@ -89,24 +63,7 @@ export function AchievementUnlockModal({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={s.backdrop}>
-        {/* Confeti detrás del card */}
-        {confetti.map((c, i) => (
-          <Animated.View
-            key={i}
-            style={[
-              s.confetti,
-              {
-                left: c.x,
-                backgroundColor: c.color,
-                transform: [
-                  { translateY: c.anim.interpolate({ inputRange: [0, 1], outputRange: [-30, 700] }) },
-                  { rotate: `${c.rotate}deg` },
-                ],
-                opacity: c.anim.interpolate({ inputRange: [0, 0.1, 0.9, 1], outputRange: [0, 1, 1, 0] }),
-              },
-            ]}
-          />
-        ))}
+        <ConfettiBurst trigger={burst} count={200} fadeOutDuration={2500} />
         <Animated.View
           style={[
             s.card,
@@ -115,11 +72,11 @@ export function AchievementUnlockModal({
           ]}
         >
           <LinearGradient
-            colors={[theme.primary + '22', theme.primary + '04']}
+            colors={[theme.primary + '26', theme.primary + '04']}
             style={s.hero}
             start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
           >
-            <View style={[s.iconCircle, { backgroundColor: theme.primary + '18' }]}>
+            <View style={[s.iconCircle, { backgroundColor: theme.primary + '20' }]}>
               <Text style={s.emoji}>{achievement.emoji}</Text>
             </View>
             <Text style={[s.label, { color: theme.primary }]}>¡Logro desbloqueado!</Text>
@@ -167,12 +124,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  confetti: {
-    position: 'absolute',
-    width: 10,
-    height: 14,
-    borderRadius: 2,
-  },
   card: {
     width: '100%',
     maxWidth: 360,
@@ -187,16 +138,16 @@ const s = StyleSheet.create({
     gap: 8,
   },
   iconCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
-  emoji: { fontSize: 46, lineHeight: 56 },
+  emoji: { fontSize: 52, lineHeight: 62 },
   label: { fontSize: 12, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase' },
-  name: { fontSize: 22, fontWeight: '800', textAlign: 'center' },
+  name: { fontSize: 24, fontWeight: '900', textAlign: 'center' },
   desc: { fontSize: 13, lineHeight: 19, textAlign: 'center', paddingHorizontal: 4 },
   rewardRow: {
     flexDirection: 'row',
