@@ -162,6 +162,9 @@ const DEFAULT_NOTIFICATIONS: import('../types').NotificationsConfig = {
   streakDangerEnabled: true,
   heartsFullEnabled: true,
   questsEnabled: true,
+  friendRequestEnabled: true,
+  friendStreakDangerEnabled: true,
+  friendPassedEnabled: true,
 };
 
 function todayKey(): string {

@@ -161,4 +161,8 @@ export interface NotificationsConfig {
   streakDangerEnabled: boolean;
   heartsFullEnabled: boolean;
   questsEnabled: boolean;
+  // Sociales
+  friendRequestEnabled: boolean;     // alguien te envía solicitud
+  friendStreakDangerEnabled: boolean;// racha de amistad a punto de romperse
+  friendPassedEnabled: boolean;      // un amigo te supera en XP semanal
 }

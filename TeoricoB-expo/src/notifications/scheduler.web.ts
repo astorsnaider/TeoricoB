@@ -43,3 +43,11 @@ export async function syncNotifications(_opts: {
 }): Promise<void> {
   return;
 }
+
+export async function presentSocialNow(_title: string, _body: string): Promise<void> {
+  return;
+}
+
+export async function scheduleFriendStreakDangerDaily(_atRiskCount: number): Promise<void> {
+  return;
+}

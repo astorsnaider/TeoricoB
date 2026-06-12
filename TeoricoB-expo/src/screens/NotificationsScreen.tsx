@@ -109,6 +109,47 @@ export default function NotificationsScreen({ onBack }: Props) {
             </>
           )}
         </View>
+
+        {/* Sociales */}
+        {notifications.enabled && (
+          <>
+            <Text style={[s.sectionLabel, { color: theme.textSecondary }]}>Amigos</Text>
+            <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <View style={s.row}>
+                <Ionicons name="person-add-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.label, { color: theme.textPrimary }]}>Nuevas solicitudes</Text>
+                <Switch
+                  value={notifications.friendRequestEnabled}
+                  onValueChange={(friendRequestEnabled) => setNotificationsConfig({ friendRequestEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.friendRequestEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+              <View style={[s.divider, { backgroundColor: theme.border }]} />
+              <View style={s.row}>
+                <Ionicons name="flame-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.label, { color: theme.textPrimary }]}>Racha de amistad en peligro</Text>
+                <Switch
+                  value={notifications.friendStreakDangerEnabled}
+                  onValueChange={(friendStreakDangerEnabled) => setNotificationsConfig({ friendStreakDangerEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.friendStreakDangerEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+              <View style={[s.divider, { backgroundColor: theme.border }]} />
+              <View style={s.row}>
+                <Ionicons name="trending-up-outline" size={20} color={theme.textSecondary} />
+                <Text style={[s.label, { color: theme.textPrimary }]}>Un amigo te supera</Text>
+                <Switch
+                  value={notifications.friendPassedEnabled}
+                  onValueChange={(friendPassedEnabled) => setNotificationsConfig({ friendPassedEnabled })}
+                  trackColor={{ false: theme.border, true: theme.primary + '80' }}
+                  thumbColor={notifications.friendPassedEnabled ? theme.primary : theme.textTertiary}
+                />
+              </View>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -128,6 +169,7 @@ const s = StyleSheet.create({
   label: { flex: 1, fontSize: 15, fontWeight: '500' },
   sub: { fontSize: 11, marginTop: 2 },
   divider: { height: 0.5, marginHorizontal: 16 },
+  sectionLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4, marginLeft: 4 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stepBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   stepTxt: { fontSize: 15, fontWeight: '800', minWidth: 50, textAlign: 'center' },

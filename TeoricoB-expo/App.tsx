@@ -14,6 +14,7 @@ import { requestPermissions as requestNotifPermissions, syncNotifications } from
 import { AchievementUnlockModal } from './src/components/AchievementUnlockModal';
 import { AuthProvider } from './src/auth/AuthContext';
 import { useAutoSync } from './src/sync/useAutoSync';
+import { useFriendNotifications } from './src/friends/useFriendNotifications';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import TutorialScreen from './src/screens/TutorialScreen';
 import DisclaimerScreen from './src/screens/DisclaimerScreen';
@@ -54,6 +55,7 @@ export default function App() {
 
 function AppContent() {
   useAutoSync();
+  useFriendNotifications();
   const isOnboardingComplete = useStore(s => s.isOnboardingComplete);
   const tutorialSeen = useStore(s => s.tutorialSeen);
   const disclaimerAccepted = useStore(s => s.disclaimerAccepted);

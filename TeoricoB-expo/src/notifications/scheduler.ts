@@ -16,10 +16,11 @@ import type { NotificationsConfig } from '../types';
 // Mantenemos prefijo "teoricob" en runtime IDs para no invalidar las
 // notificaciones programadas en dispositivos de testers actuales.
 // En el próximo bump destructivo se migrará a "teoric.*".
-const ID_DAILY_REMINDER = 'teoricob.reminder.daily';
-const ID_STREAK_DANGER  = 'teoricob.streak.danger';
-const ID_HEARTS_FULL    = 'teoricob.hearts.full';
-const ID_NEW_QUESTS     = 'teoricob.quests.new';
+const ID_DAILY_REMINDER       = 'teoricob.reminder.daily';
+const ID_STREAK_DANGER        = 'teoricob.streak.danger';
+const ID_HEARTS_FULL          = 'teoricob.hearts.full';
+const ID_NEW_QUESTS           = 'teoricob.quests.new';
+const ID_FRIEND_STREAK_DANGER = 'teoricob.friend.streak.danger';
 
 let configured = false;
 
@@ -154,6 +155,44 @@ export async function scheduleNewQuestsDaily(): Promise<void> {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: 0,
       minute: 1,
+    },
+  });
+}
+
+/**
+ * Notificación social INMEDIATA (solicitud de amistad, amigo te supera).
+ * Sin identifier fijo → cada una se apila. Se dispara en ~1s.
+ */
+export async function presentSocialNow(title: string, body: string): Promise<void> {
+  await ensureChannel();
+  await Notifications.scheduleNotificationAsync({
+    content: { title, body, sound: 'default' },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 1,
+      repeats: false,
+    },
+  });
+}
+
+/**
+ * Aviso diario ~21:00 si alguna racha de amistad está en peligro (viva pero
+ * aún no contada hoy). `atRiskCount` = nº de amigos con racha en riesgo.
+ */
+export async function scheduleFriendStreakDangerDaily(atRiskCount: number): Promise<void> {
+  await ensureChannel();
+  await cancelOne(ID_FRIEND_STREAK_DANGER);
+  if (atRiskCount <= 0) return;
+  const body = atRiskCount === 1
+    ? 'Una de tus rachas de amistad se romperá esta noche. ¡Estudiad los dos hoy!'
+    : `${atRiskCount} rachas de amistad se romperán esta noche. ¡No las dejes caer!`;
+  await Notifications.scheduleNotificationAsync({
+    identifier: ID_FRIEND_STREAK_DANGER,
+    content: { title: '🔥 Racha de amistad en peligro', body, sound: 'default' },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour: 21,
+      minute: 0,
     },
   });
 }
