@@ -33,6 +33,10 @@ export interface FriendEntry {
   status: 'pending' | 'accepted';
   /** True si la solicitud me llegó a mí (yo debo decidir). */
   isIncoming: boolean;
+  /** Racha de amistad compartida (días seguidos en que ambos estudian). 0 si rota. */
+  friendStreak: number;
+  /** True si la racha de amistad está viva pero aún no se ha contado hoy. */
+  streakAtRisk: boolean;
 }
 
 export interface UserSearchResult {
@@ -55,6 +59,8 @@ interface RpcRow {
   league: LeagueType;
   status: 'pending' | 'accepted';
   is_incoming: boolean;
+  friend_streak?: number;
+  streak_at_risk?: boolean;
 }
 
 interface SearchRpcRow {
@@ -88,6 +94,8 @@ export interface FriendsState {
   addFriendByUsername: (username: string) => Promise<{ ok: boolean; status?: 'pending' | 'accepted'; error?: string }>;
   acceptFriend: (otherUserId: string) => Promise<{ ok: boolean; error?: string }>;
   rejectFriend: (otherUserId: string) => Promise<{ ok: boolean; error?: string }>;
+  /** Elimina una amistad aceptada o cancela una solicitud enviada. */
+  removeFriend: (otherUserId: string) => Promise<{ ok: boolean; error?: string }>;
 }
 
 const REFRESH_MS = 60_000;
@@ -161,6 +169,8 @@ export function useFriends(): FriendsState {
         league: r.league,
         status: r.status,
         isIncoming: r.is_incoming,
+        friendStreak: r.friend_streak ?? 0,
+        streakAtRisk: r.streak_at_risk ?? false,
       }));
       setRows(mapped);
     })();
@@ -230,6 +240,15 @@ export function useFriends(): FriendsState {
     return { ok: true };
   }, [refresh]);
 
+  const removeFriend = useCallback(async (otherUserId: string) => {
+    const { error: rpcError } = await callRpc<null>('remove_friendship', {
+      p_other_user_id: otherUserId,
+    });
+    if (rpcError) return { ok: false, error: friendlyError(rpcError.message) };
+    refresh();
+    return { ok: true };
+  }, [refresh]);
+
   const friends = rows.filter(r => r.status === 'accepted');
   const incoming = rows.filter(r => r.status === 'pending' && r.isIncoming);
   const outgoing = rows.filter(r => r.status === 'pending' && !r.isIncoming);
@@ -262,5 +281,6 @@ export function useFriends(): FriendsState {
     addFriendByUsername,
     acceptFriend,
     rejectFriend,
+    removeFriend,
   };
 }

@@ -27,6 +27,8 @@ import {
   getContactsPermission, requestContactsPermission,
   findFriendsInContacts, ContactMatch,
 } from '../friends/contacts';
+import SubPage from '../components/SubPage';
+import FriendProfileScreen from './FriendProfileScreen';
 
 interface Props {
   onClose: () => void;
@@ -41,8 +43,11 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
   const {
     available, loading, myUsername, usernameCooldownDays,
     friends, incoming, outgoing,
-    setUsername, searchUsers, addFriendByUsername, acceptFriend, rejectFriend, refresh,
+    setUsername, searchUsers, addFriendByUsername, acceptFriend, rejectFriend, removeFriend, refresh,
   } = useFriends();
+
+  // Amigo cuyo perfil se está viendo (overlay SubPage).
+  const [profileFriend, setProfileFriend] = useState<FriendEntry | null>(null);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -426,9 +431,11 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
         ) : (
           <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 0 }]}>
             {friends.map((entry, i) => (
-              <View
+              <TouchableOpacity
                 key={entry.userId}
                 style={[s.entryRow, { borderBottomColor: theme.border }, i < friends.length - 1 && s.entryDivider]}
+                onPress={() => setProfileFriend(entry)}
+                activeOpacity={0.6}
               >
                 <AvatarView
                   color={entry.avatarEmoji.startsWith('#') ? entry.avatarEmoji : getLeagueInfo(entry.league).color}
@@ -441,12 +448,19 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
                     <Text style={[s.entryMeta, { color: theme.textSecondary }]}>
                       {getLeagueInfo(entry.league).emoji} {entry.league}
                     </Text>
-                    <Ionicons name="flame" size={12} color={theme.orange} />
-                    <Text style={[s.entryMeta, { color: theme.textSecondary }]}>{entry.streak}</Text>
+                    {entry.friendStreak > 0 && (
+                      <>
+                        <Ionicons name="flame" size={12} color={entry.streakAtRisk ? theme.orange : theme.primary} />
+                        <Text style={[s.entryMeta, { color: entry.streakAtRisk ? theme.orange : theme.primary, fontWeight: '700' }]}>
+                          {entry.friendStreak}
+                        </Text>
+                      </>
+                    )}
                   </View>
                 </View>
                 <Text style={[s.entryXP, { color: theme.textSecondary }]}>{entry.weeklyXP} XP</Text>
-              </View>
+                <Ionicons name="chevron-forward" size={16} color={theme.textTertiary} />
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -492,6 +506,16 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
         onClose={() => setChooserOpen(false)}
         onSubmit={setUsername}
       />
+
+      {profileFriend && (
+        <SubPage onBack={() => setProfileFriend(null)}>
+          <FriendProfileScreen
+            friend={profileFriend}
+            onBack={() => setProfileFriend(null)}
+            onRemove={removeFriend}
+          />
+        </SubPage>
+      )}
     </SafeAreaView>
   );
 }

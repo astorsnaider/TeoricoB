@@ -665,6 +665,32 @@ $$;
 
 grant execute on function public.respond_friendship(uuid, boolean) to authenticated;
 
+-- ── RPC 14.2b — eliminar amistad (deshacer aceptada o cancelar enviada) ──
+create or replace function public.remove_friendship(p_other_user_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid;
+  v_lo uuid;
+  v_hi uuid;
+begin
+  v_me := auth.uid();
+  if v_me is null then raise exception 'No autenticado.'; end if;
+  if p_other_user_id = v_me then raise exception 'CANNOT_REMOVE_SELF'; end if;
+
+  if v_me < p_other_user_id then v_lo := v_me; v_hi := p_other_user_id;
+  else v_lo := p_other_user_id; v_hi := v_me; end if;
+
+  delete from public.friendships
+    where user_id_a = v_lo and user_id_b = v_hi;
+end;
+$$;
+
+grant execute on function public.remove_friendship(uuid) to authenticated;
+
 -- ── RPC 14.3 — listar mis amigos (aceptados + pendientes) ────────────
 -- Devuelve el otro usuario con sus campos públicos + el estado de la
 -- amistad. is_incoming = true si la solicitud me la enviaron a mí (yo
