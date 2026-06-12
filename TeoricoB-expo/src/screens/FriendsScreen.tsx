@@ -29,6 +29,7 @@ import {
 } from '../friends/contacts';
 import SubPage from '../components/SubPage';
 import FriendProfileScreen from './FriendProfileScreen';
+import QRFriendScreen from './QRFriendScreen';
 
 interface Props {
   onClose: () => void;
@@ -48,6 +49,8 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
 
   // Amigo cuyo perfil se está viendo (overlay SubPage).
   const [profileFriend, setProfileFriend] = useState<FriendEntry | null>(null);
+  // Pantalla QR (mi código + escanear) como overlay SubPage.
+  const [qrOpen, setQrOpen] = useState(false);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -180,10 +183,15 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
                 <Ionicons name="pencil" size={16} color={theme.textTertiary} />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={onShare} style={[s.shareBtn, { backgroundColor: theme.primary }]}>
-              <Ionicons name="share-outline" size={16} color="#fff" />
-              <Text style={s.shareBtnTxt}>Compartir enlace</Text>
-            </TouchableOpacity>
+            <View style={s.shareRow}>
+              <TouchableOpacity onPress={onShare} style={[s.shareBtn, { backgroundColor: theme.primary, flex: 1 }]}>
+                <Ionicons name="share-outline" size={16} color="#fff" />
+                <Text style={s.shareBtnTxt}>Compartir enlace</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setQrOpen(true)} style={[s.qrBtn, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
+                <Ionicons name="qr-code-outline" size={20} color={theme.textPrimary} />
+              </TouchableOpacity>
+            </View>
             <Text style={[s.cardHint, { color: theme.textTertiary }]}>
               Cualquiera con el enlace abrirá Teoric con tu solicitud lista para enviar.
             </Text>
@@ -204,6 +212,17 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
             <Ionicons name="chevron-forward" size={18} color={theme.primary} />
           </TouchableOpacity>
         )}
+
+        {/* Escanear QR (siempre disponible) */}
+        <TouchableOpacity
+          style={[s.scanQrRow, { backgroundColor: theme.card, borderColor: theme.border }]}
+          onPress={() => setQrOpen(true)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="scan-outline" size={20} color={theme.primary} />
+          <Text style={[s.scanQrTxt, { color: theme.textPrimary }]}>Escanear código QR de un amigo</Text>
+          <Ionicons name="chevron-forward" size={16} color={theme.textTertiary} />
+        </TouchableOpacity>
 
         {/* Buscador */}
         <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -516,6 +535,17 @@ export default function FriendsScreen({ onClose, prefillUsername }: Props) {
           />
         </SubPage>
       )}
+
+      {qrOpen && (
+        <SubPage onBack={() => setQrOpen(false)}>
+          <QRFriendScreen
+            onBack={() => setQrOpen(false)}
+            myUsername={myUsername}
+            onEditUsername={() => { setQrOpen(false); setChooserOpen(true); }}
+            onAddFriend={addFriendByUsername}
+          />
+        </SubPage>
+      )}
     </SafeAreaView>
   );
 }
@@ -649,8 +679,13 @@ const s = StyleSheet.create({
 
   handleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   handleBig: { flex: 1, fontSize: 22, fontWeight: '800' },
+  shareRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   shareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 11, borderRadius: 10, ...SHADOWS.small },
   shareBtnTxt: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  qrBtn: { width: 44, height: 44, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+
+  scanQrRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1, padding: 14 },
+  scanQrTxt: { flex: 1, fontSize: 14, fontWeight: '600' },
 
   bannerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1, padding: 14 },
   bannerTitle: { fontSize: 14, fontWeight: '700' },

@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["REEMPLAZA_APPLE_TEAM_ID.com.astorsnaider.teoric"],
+        "components": [
+          { "/": "/u/*", "comment": "Enlaces de invitacion de amigos" }
+        ]
+      }
+    ]
+  }
+}

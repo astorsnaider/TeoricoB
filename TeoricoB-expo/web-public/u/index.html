@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Añadir amigo en Teoric</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #E63946; color: #fff; text-align: center; padding: 24px;
+    }
+    .card { max-width: 360px; }
+    h1 { font-size: 24px; margin: 16px 0 8px; }
+    p { font-size: 15px; line-height: 1.5; opacity: 0.95; }
+    .btns { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+    a.btn {
+      display: block; background: #fff; color: #E63946; text-decoration: none;
+      font-weight: 700; padding: 14px 18px; border-radius: 14px; font-size: 16px;
+    }
+    .logo { font-size: 56px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🚗</div>
+    <h1>Te han invitado a Teoric</h1>
+    <p>Abre la app para añadir a tu amigo. Si aún no la tienes, descárgala gratis.</p>
+    <div class="btns">
+      <a class="btn" id="open">Abrir en la app</a>
+      <a class="btn" id="appstore" href="https://apps.apple.com/app/idREEMPLAZA_APP_ID">Descargar en App Store</a>
+      <a class="btn" id="playstore" href="https://play.google.com/store/apps/details?id=com.astorsnaider.teoric">Descargar en Google Play</a>
+    </div>
+  </div>
+  <script>
+    // Extrae el username del path /u/<username> y construye el deep link.
+    var m = location.pathname.match(/\/u\/([a-z0-9_]+)/i);
+    var username = m ? m[1] : '';
+    var deeplink = 'teoric://u/' + username;
+    document.getElementById('open').href = deeplink;
+
+    // Muestra el botón de store según plataforma.
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    if (isIOS) document.getElementById('playstore').style.display = 'none';
+    if (isAndroid) document.getElementById('appstore').style.display = 'none';
+
+    // Intenta abrir la app automáticamente. Si no está instalada, se queda
+    // en esta página con los botones de descarga (Universal/App Links
+    // abrirían la app directamente sin pasar por aquí cuando estén activos).
+    setTimeout(function () { window.location = deeplink; }, 300);
+  </script>
+</body>
+</html>

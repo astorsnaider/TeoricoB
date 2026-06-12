@@ -19,8 +19,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.astorsnaider.teoric",
       "buildNumber": "1",
+      "associatedDomains": ["applinks:teoric.app"],
       "infoPlist": {
-        "NSContactsUsageDescription": "Usamos tus contactos para ayudarte a encontrar amigos que ya están en Teoric. Solo procesamos los emails localmente y no guardamos tu libreta."
+        "NSContactsUsageDescription": "Usamos tus contactos para ayudarte a encontrar amigos que ya están en Teoric. Solo procesamos los emails localmente y no guardamos tu libreta.",
+        "NSCameraUsageDescription": "Usamos la cámara para escanear el código QR de tus amigos y añadirlos en Teoric.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -35,7 +38,17 @@
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.READ_CONTACTS"
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.CAMERA"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "teoric.app", "pathPrefix": "/u" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
@@ -58,6 +71,12 @@
         {
           "contactsPermission": "Usamos tus contactos para ayudarte a encontrar amigos que ya están en Teoric. Solo procesamos los emails localmente y no guardamos tu libreta."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Usamos la cámara para escanear el código QR de tus amigos y añadirlos en Teoric."
+        }
       ]
     ],
     "extra": {
@@ -65,6 +84,12 @@
         "projectId": "5fe56c79-db43-411f-b7eb-b23b5432f9bb"
       }
     },
-    "owner": "astorsnaider"
+    "owner": "astorsnaider",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5fe56c79-db43-411f-b7eb-b23b5432f9bb"
+    }
   }
 }
