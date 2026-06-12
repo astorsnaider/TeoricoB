@@ -18,6 +18,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../api/supabase';
 import { useAuth } from '../auth/AuthContext';
+import { useStore } from '../store/useStore';
 import { LeagueType } from '../types';
 
 export interface FriendEntry {
@@ -134,12 +135,16 @@ async function callRpc<T>(name: string, args: Record<string, unknown> = {}): Pro
 
 export function useFriends(): FriendsState {
   const { user, profile, refreshProfile } = useAuth();
+  const lastActiveDate = useStore(s => s.user.lastActiveDate);
   const [rows, setRows] = useState<FriendEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
   const refresh = useCallback(() => setTick(t => t + 1), []);
+
+  // ¿El usuario estuvo activo hoy? (para sincronizar rachas de amistad).
+  const activeToday = new Date(lastActiveDate).toDateString() === new Date().toDateString();
 
   useEffect(() => {
     if (!isSupabaseConfigured || !user) return;
@@ -149,6 +154,12 @@ export function useFriends(): FriendsState {
     setError(null);
 
     (async () => {
+      // Si estudié hoy, recalcular rachas de amistad antes de leer.
+      // Idempotente: no-op si ya se contó hoy o si el amigo no estudió.
+      if (activeToday) {
+        await callRpc('sync_friend_streaks');
+        if (cancelled) return;
+      }
       const { data, error: rpcError } = await callRpc<RpcRow[]>('get_my_friends');
       if (cancelled) return;
       setLoading(false);
@@ -176,7 +187,7 @@ export function useFriends(): FriendsState {
     })();
 
     return () => { cancelled = true; };
-  }, [user, tick]);
+  }, [user, tick, activeToday]);
 
   useEffect(() => {
     if (!user) return;

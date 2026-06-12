@@ -185,6 +185,10 @@ create table if not exists public.friendships (
 
 create index if not exists idx_friendships_b on public.friendships(user_id_b);
 
+-- Racha de amistad compartida (Duolingo): días seguidos en que AMBOS estudian.
+alter table public.friendships add column if not exists streak_count    int not null default 0;
+alter table public.friendships add column if not exists last_streak_date date;
+
 -- ─────────────────────────────────────────────────────────────────────
 -- 7. MIEMBROS DE AUTOESCUELA (alumnos + instructores)
 -- ─────────────────────────────────────────────────────────────────────
@@ -940,7 +944,47 @@ $$;
 
 grant execute on function public.request_friendship_by_username(text) to authenticated;
 
--- ── Actualizar get_my_friends para devolver también username ─────────
+-- ── RPC: sincronizar rachas de amistad ───────────────────────────────
+-- Se llama tras una actividad diaria (user ya con last_active_date = hoy).
+-- Para cada amistad aceptada donde AMBOS estuvieron activos hoy, incrementa
+-- o inicia la racha compartida. Incrementa al estudiar el SEGUNDO de la
+-- pareja (el primero la deja sin tocar).
+create or replace function public.sync_friend_streaks()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid;
+  v_today date := current_date;
+begin
+  v_me := auth.uid();
+  if v_me is null then raise exception 'No autenticado.'; end if;
+
+  update public.friendships f
+  set
+    streak_count = case
+      when f.last_streak_date = v_today    then f.streak_count
+      when f.last_streak_date = v_today - 1 then f.streak_count + 1
+      else 1
+    end,
+    last_streak_date = v_today
+  from public.user_progress up_me, public.user_progress up_other
+  where f.status = 'accepted'
+    and v_me in (f.user_id_a, f.user_id_b)
+    and up_me.user_id = v_me
+    and up_other.user_id = case when f.user_id_a = v_me then f.user_id_b else f.user_id_a end
+    and up_me.last_active_date = v_today
+    and up_other.last_active_date = v_today
+    and (f.last_streak_date is distinct from v_today);
+end;
+$$;
+
+grant execute on function public.sync_friend_streaks() to authenticated;
+
+-- ── Actualizar get_my_friends: + username + friend_streak + streak_at_risk ──
+drop function if exists public.get_my_friends();
 create or replace function public.get_my_friends()
 returns table (
   user_id           uuid,
@@ -953,7 +997,9 @@ returns table (
   streak            int,
   league            text,
   status            text,
-  is_incoming       boolean
+  is_incoming       boolean,
+  friend_streak     int,
+  streak_at_risk    boolean
 )
 language sql
 security definer
@@ -979,7 +1025,9 @@ as $$
     up.streak,
     up.league,
     mf.status,
-    (mf.status = 'pending' and mf.requested_by <> auth.uid()) as is_incoming
+    (mf.status = 'pending' and mf.requested_by <> auth.uid()) as is_incoming,
+    case when mf.last_streak_date >= current_date - 1 then mf.streak_count else 0 end as friend_streak,
+    (mf.streak_count > 0 and mf.last_streak_date = current_date - 1) as streak_at_risk
   from my_friendships mf
   inner join public.profiles      p  on p.id  = mf.other_id and p.deleted_at is null
   inner join public.user_progress up on up.user_id = mf.other_id
