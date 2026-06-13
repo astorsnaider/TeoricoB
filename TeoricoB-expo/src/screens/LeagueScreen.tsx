@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, Fragment } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,15 +8,24 @@ import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
 import { LeagueType, LeagueStanding } from '../types';
-import { useLeaderboard } from '../sync/useLeaderboard';
+import { useCohort } from '../sync/useCohort';
 import { useFriends } from '../friends/useFriends';
 import FriendsScreen from './FriendsScreen';
 import { useTabResetEffect } from '../components/PagerControl';
 
+function formatCountdown(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return 'cerrando…';
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
+}
+
 export default function LeagueScreen() {
   const user = useStore(s => s.user);
   const fallbackStandings = useStore(s => s.leagueStandings);
-  const remote = useLeaderboard(user.league);
+  const cohort = useCohort();
   const friendsState = useFriends();
   const [showFriends, setShowFriends] = useState(false);
   const pendingFriendUsername = useStore(s => s.pendingFriendUsername);
@@ -27,21 +36,37 @@ export default function LeagueScreen() {
     if (pendingFriendUsername) setShowFriends(true);
   }, [pendingFriendUsername]);
 
-  const standings: LeagueStanding[] =
-    remote.available && remote.standings.length > 0
-      ? remote.standings
-      : fallbackStandings;
+  // Refresca el contador cada minuto.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => forceTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Clasificación real (cohorte) o simulada (sin sesión).
+  const cohortStandings: LeagueStanding[] = cohort.members.map(m => ({
+    name: m.name, avatarEmoji: m.avatarEmoji, xp: m.score, rank: m.rank, isCurrentUser: m.isMe,
+  }));
+  const usingCohort = cohort.available && cohortStandings.length > 0;
+  const standings = usingCohort ? cohortStandings : fallbackStandings;
+  const cohortSize = standings.length;
+  const promote = cohort.promoteCount;
+  const relegate = cohort.relegateCount;
+  const countdown = cohort.weekEnd ? formatCountdown(cohort.weekEnd) : null;
 
   const league = getLeagueInfo(user.league);
-  const leagueIdx = LEAGUES.findIndex(l => l.name === user.league);
-  const nextLeague = leagueIdx < LEAGUES.length - 1 ? LEAGUES[leagueIdx + 1] : null;
-  const xpToNext = nextLeague ? Math.max(0, nextLeague.xpRequired - user.xp) : 0;
-  const promoPct = nextLeague ? Math.min(1, user.xp / nextLeague.xpRequired) : 1;
   const mockFriends = user.friends ?? [];
 
   const top3 = standings.slice(0, 3);
   const rest = standings.slice(3);
   const showPodium = top3.length === 3;
+
+  const zoneOf = (rank: number): 'promote' | 'relegate' | null => {
+    if (!usingCohort) return null;
+    if (rank <= promote) return 'promote';
+    if (rank > cohortSize - relegate && rank > promote) return 'relegate';
+    return null;
+  };
 
   const scrollRef = useRef<ScrollView>(null);
   useTabResetEffect('league', useCallback(() => {
@@ -60,32 +85,23 @@ export default function LeagueScreen() {
         >
           <Text style={s.heroEmoji}>{league.emoji}</Text>
           <Text style={s.heroTitle}>Liga {user.league}</Text>
-          {remote.available && remote.standings.length > 0 && (
+          {usingCohort && countdown && (
             <View style={s.livePill}>
-              <View style={s.liveDot} />
-              <Text style={s.livePillTxt}>EN VIVO</Text>
+              <Ionicons name="time-outline" size={11} color="#fff" />
+              <Text style={s.livePillTxt}>Termina en {countdown}</Text>
             </View>
           )}
-          {nextLeague ? (
-            <>
-              <Text style={s.heroSub}>
-                Faltan <Text style={{ fontWeight: '800' }}>{xpToNext} XP</Text> para {nextLeague.emoji} {nextLeague.name}
-              </Text>
-              <View style={s.promoBg}>
-                <View style={[s.promoFill, { width: `${promoPct * 100}%` }]} />
-              </View>
-            </>
-          ) : (
-            <Text style={s.heroSub}>Liga máxima alcanzada</Text>
-          )}
+          <Text style={s.heroSub}>
+            Top {promote} ascienden · últimos {relegate} bajan
+          </Text>
         </LinearGradient>
 
         {/* Banner si no auth */}
-        {!remote.available && (
+        {!cohort.available && (
           <View style={[s.banner, { backgroundColor: theme.bg2, borderColor: theme.border }]}>
             <Ionicons name="information-circle-outline" size={16} color={theme.textTertiary} />
             <Text style={[s.bannerTxt, { color: theme.textSecondary }]}>
-              Ranking simulado. Inicia sesión para competir con usuarios reales.
+              Clasificación simulada. Inicia sesión para competir en tu liga real.
             </Text>
           </View>
         )}
@@ -125,38 +141,57 @@ export default function LeagueScreen() {
         {/* Lista del puesto 4 en adelante (o todos si no hay podio) */}
         {(showPodium ? rest : standings).length > 0 && (
           <View style={[s.listCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            {(showPodium ? rest : standings).map((st, i, arr) => (
-              <View
-                key={`st-${st.rank}-${i}`}
-                style={[
-                  s.row,
-                  { borderBottomColor: theme.border },
-                  st.isCurrentUser && { backgroundColor: league.color + '14' },
-                  i < arr.length - 1 && s.rowDivider,
-                ]}
-              >
-                <Text style={[s.rank, { color: st.isCurrentUser ? league.color : theme.textTertiary }]}>
-                  {st.rank}
-                </Text>
-                <AvatarView
-                  color={st.avatarEmoji.startsWith('#') ? st.avatarEmoji : league.color}
-                  name={st.name}
-                  size={34}
-                />
-                <Text
-                  style={[s.rowName, {
-                    color: st.isCurrentUser ? league.color : theme.textPrimary,
-                    fontWeight: st.isCurrentUser ? '800' : '500',
-                  }]}
-                  numberOfLines={1}
-                >
-                  {st.name}{st.isCurrentUser ? ' · tú' : ''}
-                </Text>
-                <Text style={[s.rowXP, { color: st.isCurrentUser ? league.color : theme.textSecondary }]}>
-                  {st.xp} XP
-                </Text>
-              </View>
-            ))}
+            {(showPodium ? rest : standings).map((st, i, arr) => {
+              const zone = zoneOf(st.rank);
+              const accent = zone === 'promote' ? theme.correct : zone === 'relegate' ? theme.wrong : 'transparent';
+              return (
+                <Fragment key={`st-${st.rank}-${i}`}>
+                  {/* Línea de ascenso (entre el último que asciende y el siguiente) */}
+                  {usingCohort && st.rank === promote + 1 && (
+                    <View style={[s.zoneLine, { borderTopColor: theme.correct }]}>
+                      <Ionicons name="chevron-up" size={12} color={theme.correct} />
+                      <Text style={[s.zoneLineTxt, { color: theme.correct }]}>Zona de ascenso</Text>
+                    </View>
+                  )}
+                  {/* Línea de descenso (antes de la zona roja) */}
+                  {usingCohort && st.rank === cohortSize - relegate + 1 && st.rank > promote + 1 && (
+                    <View style={[s.zoneLine, { borderTopColor: theme.wrong }]}>
+                      <Ionicons name="chevron-down" size={12} color={theme.wrong} />
+                      <Text style={[s.zoneLineTxt, { color: theme.wrong }]}>Zona de descenso</Text>
+                    </View>
+                  )}
+                  <View
+                    style={[
+                      s.row,
+                      { borderBottomColor: theme.border, borderLeftWidth: 3, borderLeftColor: accent },
+                      st.isCurrentUser && { backgroundColor: league.color + '14' },
+                      i < arr.length - 1 && s.rowDivider,
+                    ]}
+                  >
+                    <Text style={[s.rank, { color: st.isCurrentUser ? league.color : theme.textTertiary }]}>
+                      {st.rank}
+                    </Text>
+                    <AvatarView
+                      color={st.avatarEmoji.startsWith('#') ? st.avatarEmoji : league.color}
+                      name={st.name}
+                      size={34}
+                    />
+                    <Text
+                      style={[s.rowName, {
+                        color: st.isCurrentUser ? league.color : theme.textPrimary,
+                        fontWeight: st.isCurrentUser ? '800' : '500',
+                      }]}
+                      numberOfLines={1}
+                    >
+                      {st.name}{st.isCurrentUser ? ' · tú' : ''}
+                    </Text>
+                    <Text style={[s.rowXP, { color: st.isCurrentUser ? league.color : theme.textSecondary }]}>
+                      {st.xp} XP
+                    </Text>
+                  </View>
+                </Fragment>
+              );
+            })}
           </View>
         )}
 
@@ -257,11 +292,12 @@ export default function LeagueScreen() {
         )}
 
         {/* ════ TODAS LAS LIGAS ════ */}
-        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Todas las ligas</Text>
+        <Text style={[s.sectionTitle, { color: theme.textPrimary }]}>Escalera de ligas</Text>
         <View style={s.leaguesGrid}>
-          {LEAGUES.map((lg) => {
+          {LEAGUES.map((lg, idx) => {
             const isCurrent = lg.name === user.league;
-            const isUnlocked = user.xp >= lg.xpRequired;
+            const currentIdx = LEAGUES.findIndex(l => l.name === user.league);
+            const isPast = idx < currentIdx;
             return (
               <View
                 key={lg.name}
@@ -269,13 +305,13 @@ export default function LeagueScreen() {
                   s.leagueTile,
                   { backgroundColor: theme.card, borderColor: isCurrent ? lg.color : theme.border },
                   isCurrent && { borderWidth: 2 },
-                  !isUnlocked && { opacity: 0.35 },
+                  !isCurrent && !isPast && { opacity: 0.5 },
                 ]}
               >
                 <Text style={{ fontSize: 24 }}>{lg.emoji}</Text>
                 <Text style={[s.leagueTileName, { color: isCurrent ? lg.color : theme.textPrimary }]}>{lg.name}</Text>
                 <Text style={[s.leagueTileXP, { color: theme.textSecondary }]}>
-                  {lg.xpRequired > 0 ? `${lg.xpRequired} XP` : 'Inicio'}
+                  {isCurrent ? 'Aquí estás' : isPast ? 'Superada' : `Nivel ${idx + 1}`}
                 </Text>
               </View>
             );
@@ -371,15 +407,11 @@ const s = StyleSheet.create({
   heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', letterSpacing: 0.2 },
   heroSub: { color: 'rgba(255,255,255,0.92)', fontSize: 13, textAlign: 'center' },
   livePill: {
-    position: 'absolute', top: 14, right: 14,
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(255,255,255,0.22)',
-    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginTop: 2,
   },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
-  livePillTxt: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-  promoBg: { width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.18)', marginTop: 4 },
-  promoFill: { height: 8, borderRadius: 4, backgroundColor: '#fff' },
+  livePillTxt: { color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
   bannerTxt: { flex: 1, fontSize: 12, lineHeight: 16 },
@@ -401,6 +433,11 @@ const s = StyleSheet.create({
   listCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, gap: 10 },
   rowDivider: { borderBottomWidth: 0.5 },
+  zoneLine: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 14, paddingVertical: 5, borderTopWidth: 2, borderStyle: 'dashed',
+  },
+  zoneLineTxt: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
   rank: { width: 26, fontSize: 13, fontWeight: '700', textAlign: 'center' },
   rowName: { flex: 1, fontSize: 14 },
   rowXP: { fontSize: 12, fontWeight: '700' },
