@@ -72,6 +72,12 @@ interface AppStore {
   clearNewAchievement: () => void;
   generateDailyChallenge: () => void;
   generateLeagueStandings: () => void;
+  /** Resetea weeklyXP si ha empezado una nueva semana (lunes). */
+  tickWeeklyReset: () => void;
+  /** Fija la liga competitiva desde el servidor (autoritativa). */
+  applyServerLeague: (league: LeagueType) => void;
+  /** Concede la recompensa de gemas por ascenso/top de una semana (una vez). */
+  claimLeagueReward: (weekStart: string, gems: number) => void;
   getExamQuestions: () => import('../types').Question[];
   progressForTopic: (topicId: string) => number;
   isLessonCompleted: (lessonId: string) => boolean;
@@ -138,6 +144,7 @@ const defaultUser: UserState = {
   totalCorrect: 0,
   totalAnswered: 0,
   weeklyXP: 0,
+  weeklyResetAt: new Date().toISOString(),
   gems: 50,
   friends: MOCK_FRIENDS,
   topicStats: {},
@@ -173,6 +180,16 @@ function todayKey(): string {
 
 function monthKey(): string {
   return new Date().toISOString().slice(0, 7);  // YYYY-MM
+}
+
+/** Fecha (YYYY-MM-DD) del lunes de la semana de `d`. Coincide con
+ *  date_trunc('week', ...) de Postgres (semana ISO, lunes). */
+function weekStartMonday(d: Date): string {
+  const x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dow = x.getUTCDay(); // 0=domingo..6=sábado
+  const diff = (dow + 6) % 7; // días desde el lunes
+  x.setUTCDate(x.getUTCDate() - diff);
+  return x.toISOString().slice(0, 10);
 }
 
 /**
@@ -243,17 +260,14 @@ export const useStore = create<AppStore>()(
       completeTutorial: () => set({ tutorialSeen: true }),
 
       addXP: (amount) => {
+        get().tickWeeklyReset();   // si empezó una nueva semana, weeklyXP=0 antes de sumar
         set(s => {
           const newXP = s.user.xp + amount;
           const newLeagueXP = s.user.leagueXP + amount;
-          let newLeague = s.user.league;
-          for (let i = LEAGUES.length - 1; i >= 0; i--) {
-            if (newXP >= LEAGUES[i].xpRequired) { newLeague = LEAGUES[i].name; break; }
-          }
+          // La liga ya NO se deriva del XP total: es competitiva (servidor).
           const newAchievements = [...s.user.achievements];
           if (newXP >= 100  && !newAchievements.includes('xp_100'))  newAchievements.push('xp_100');
           if (newXP >= 1000 && !newAchievements.includes('xp_1000')) newAchievements.push('xp_1000');
-          if (newLeague === 'Oro' && !newAchievements.includes('gold_league')) newAchievements.push('gold_league');
           const reward = rewardForNewAchievements(s.user.achievements, newAchievements);
           // Avanzar quest "Gana 30 XP hoy" si está activo y no reclamado
           const today = todayKey();
@@ -271,7 +285,6 @@ export const useStore = create<AppStore>()(
               xp: newXP + reward.xp,
               leagueXP: newLeagueXP + reward.xp,
               weeklyXP: s.user.weeklyXP + amount + reward.xp,
-              league: newLeague,
               achievements: newAchievements,
               gems: s.user.gems + reward.gems,
             },
@@ -544,6 +557,39 @@ export const useStore = create<AppStore>()(
         const sorted = [...competitors].sort((a, b) => b.xp - a.xp);
         set({ leagueStandings: sorted.map((c, i) => ({ name: c.name, avatarEmoji: c.avatarEmoji, xp: c.xp, rank: i + 1, isCurrentUser: c.isMe })) });
       },
+
+      tickWeeklyReset: () => set(s => {
+        const cur = weekStartMonday(new Date());
+        const last = weekStartMonday(new Date(s.user.weeklyResetAt));
+        if (cur === last) return {};
+        return { user: { ...s.user, weeklyXP: 0, weeklyResetAt: new Date().toISOString() } };
+      }),
+
+      applyServerLeague: (league) => set(s => {
+        if (s.user.league === league) return {};
+        const newAchievements = [...s.user.achievements];
+        const idx = LEAGUES.findIndex(l => l.name === league);
+        const goldIdx = LEAGUES.findIndex(l => l.name === 'Oro');
+        if (idx >= goldIdx && !newAchievements.includes('gold_league')) newAchievements.push('gold_league');
+        const reward = rewardForNewAchievements(s.user.achievements, newAchievements);
+        return {
+          user: {
+            ...s.user,
+            league,
+            achievements: newAchievements,
+            gems: s.user.gems + reward.gems,
+            xp: s.user.xp + reward.xp,
+          },
+          newAchievement: reward.firstNew ?? s.newAchievement,
+        };
+      }),
+
+      claimLeagueReward: (weekStart, gems) => set(s => {
+        if (s.user.lastLeagueRewardWeek === weekStart) return {};
+        return {
+          user: { ...s.user, gems: s.user.gems + gems, lastLeagueRewardWeek: weekStart },
+        };
+      }),
 
       getExamQuestions: () => {
         const all = ALL_TOPICS.flatMap(t => t.lessons.flatMap(l => l.questions));

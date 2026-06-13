@@ -1107,6 +1107,174 @@ $$;
 
 grant execute on function public.find_users_by_email_hashes(text[]) to authenticated;
 
+-- ─────────────────────────────────────────────────────────────────────
+-- 17. LIGA SEMANAL POR COHORTES (estilo Duolingo)
+-- ─────────────────────────────────────────────────────────────────────
+-- league_state: liga competitiva AUTORITATIVA por usuario (server-owned,
+--   fuera del blob de sync del cliente). league_cohorts: grupos de hasta
+--   30 por (liga, semana). league_cohort_members: pertenencia + score
+--   (snapshot del weekly_xp del miembro durante la semana).
+create table if not exists public.league_state (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  league     text not null default 'Bronce',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.league_cohorts (
+  id           uuid primary key default gen_random_uuid(),
+  league       text not null,
+  week_start   date not null,
+  finalized_at timestamptz,
+  created_at   timestamptz not null default now()
+);
+create index if not exists idx_cohorts_open
+  on public.league_cohorts(league, week_start) where finalized_at is null;
+
+create table if not exists public.league_cohort_members (
+  cohort_id uuid not null references public.league_cohorts(id) on delete cascade,
+  user_id   uuid not null references auth.users(id) on delete cascade,
+  score     int not null default 0,
+  result    text,
+  joined_at timestamptz not null default now(),
+  primary key (cohort_id, user_id)
+);
+create index if not exists idx_cohort_members_user on public.league_cohort_members(user_id);
+
+alter table public.league_state          enable row level security;
+alter table public.league_cohorts        enable row level security;
+alter table public.league_cohort_members enable row level security;
+
+create or replace function public.league_promote(p text) returns text language sql immutable as $$
+  select coalesce(
+    (array['Bronce','Plata','Oro','Zafiro','Rubí','Esmeralda','Amatista','Diamante'])[
+      array_position(array['Bronce','Plata','Oro','Zafiro','Rubí','Esmeralda','Amatista','Diamante'], p) + 1
+    ], p);
+$$;
+create or replace function public.league_relegate(p text) returns text language sql immutable as $$
+  select coalesce(
+    (array['Bronce','Plata','Oro','Zafiro','Rubí','Esmeralda','Amatista','Diamante'])[
+      greatest(array_position(array['Bronce','Plata','Oro','Zafiro','Rubí','Esmeralda','Amatista','Diamante'], p) - 1, 1)
+    ], p);
+$$;
+
+-- Finaliza una cohorte: rankea por score, marca promoted/relegated/stayed
+-- (top 7 / bottom 5) y actualiza league_state de todos sus miembros.
+create or replace function public.finalize_cohort(p_cohort_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_league text; v_size int;
+begin
+  select league into v_league from public.league_cohorts
+    where id = p_cohort_id and finalized_at is null for update;
+  if not found then return; end if;
+  select count(*) into v_size from public.league_cohort_members where cohort_id = p_cohort_id;
+  with ranked as (
+    select user_id, row_number() over (order by score desc, user_id) as rnk
+    from public.league_cohort_members where cohort_id = p_cohort_id
+  )
+  update public.league_cohort_members m
+    set result = case
+      when r.rnk <= 7                       then 'promoted'
+      when r.rnk > v_size - 5 and r.rnk > 7 then 'relegated'
+      else 'stayed' end
+    from ranked r
+    where m.cohort_id = p_cohort_id and m.user_id = r.user_id;
+  update public.league_state ls
+    set league = case m.result
+      when 'promoted'  then public.league_promote(v_league)
+      when 'relegated' then public.league_relegate(v_league)
+      else v_league end,
+      updated_at = now()
+    from public.league_cohort_members m
+    where m.cohort_id = p_cohort_id and m.user_id = ls.user_id;
+  update public.league_cohorts set finalized_at = now() where id = p_cohort_id;
+end; $$;
+
+-- Sincroniza mi liga (idempotente): finaliza la semana pasada si aplica, me
+-- asigna a una cohorte de la semana actual, snapshotea mi score y devuelve
+-- el estado completo de la cohorte como jsonb. La llama el cliente al
+-- montar, cada 60s y tras ganar XP.
+create or replace function public.sync_league()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_me      uuid := auth.uid();
+  v_week    date := date_trunc('week', now())::date;
+  v_league  text;
+  v_cohort  uuid;
+  v_last    record;
+  v_last_result jsonb := null;
+  v_result  jsonb;
+begin
+  if v_me is null then raise exception 'No autenticado.'; end if;
+  insert into public.league_state(user_id) values (v_me) on conflict do nothing;
+
+  select m.cohort_id, c.week_start, c.finalized_at into v_last
+    from public.league_cohort_members m
+    join public.league_cohorts c on c.id = m.cohort_id
+    where m.user_id = v_me
+    order by c.week_start desc limit 1;
+
+  if found and v_last.week_start = v_week then
+    update public.league_cohort_members m
+      set score = coalesce((select weekly_xp from public.user_progress where user_id = v_me), 0)
+      where m.cohort_id = v_last.cohort_id and m.user_id = v_me;
+    v_cohort := v_last.cohort_id;
+  else
+    if found and v_last.finalized_at is null then
+      perform public.finalize_cohort(v_last.cohort_id);
+    end if;
+    select league into v_league from public.league_state where user_id = v_me;
+    select c.id into v_cohort
+      from public.league_cohorts c
+      where c.league = v_league and c.week_start = v_week and c.finalized_at is null
+        and (select count(*) from public.league_cohort_members m where m.cohort_id = c.id) < 30
+      order by c.created_at asc limit 1
+      for update skip locked;
+    if v_cohort is null then
+      insert into public.league_cohorts(league, week_start) values (v_league, v_week) returning id into v_cohort;
+    end if;
+    insert into public.league_cohort_members(cohort_id, user_id, score) values (v_cohort, v_me, 0)
+      on conflict do nothing;
+    update public.league_cohort_members m
+      set score = coalesce((select weekly_xp from public.user_progress where user_id = v_me), 0)
+      where m.cohort_id = v_cohort and m.user_id = v_me;
+  end if;
+
+  select league into v_league from public.league_state where user_id = v_me;
+
+  select jsonb_build_object('result', m.result, 'week_start', c.week_start) into v_last_result
+    from public.league_cohort_members m
+    join public.league_cohorts c on c.id = m.cohort_id
+    where m.user_id = v_me and c.finalized_at is not null and m.result is not null
+    order by c.week_start desc limit 1;
+
+  v_result := jsonb_build_object(
+    'league', v_league,
+    'week_start', v_week,
+    'week_end', (v_week + 7)::timestamptz,
+    'promote', 7,
+    'relegate', 5,
+    'cohort_size', (select count(*) from public.league_cohort_members where cohort_id = v_cohort),
+    'last_result', v_last_result,
+    'members', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'user_id', x.user_id, 'name', x.name, 'avatar_emoji', x.avatar_emoji,
+        'profile_photo_url', x.profile_photo_url, 'score', x.score, 'rank', x.rnk,
+        'is_me', (x.user_id = v_me)
+      ) order by x.rnk)
+      from (
+        select m.user_id, p.display_name as name, p.avatar_emoji, p.profile_photo_url, m.score,
+               row_number() over (order by m.score desc, m.user_id) as rnk
+        from public.league_cohort_members m
+        join public.profiles p on p.id = m.user_id and p.deleted_at is null
+        where m.cohort_id = v_cohort
+      ) x
+    ), '[]'::jsonb)
+  );
+  return v_result;
+end; $$;
+
+grant execute on function public.sync_league() to authenticated;
+
 commit;
 
 -- ─────────────────────────────────────────────────────────────────────

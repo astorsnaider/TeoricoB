@@ -63,6 +63,7 @@ function AppContent() {
   const generateDailyChallenge = useStore(s => s.generateDailyChallenge);
   const generateDailyQuests = useStore(s => s.generateDailyQuests);
   const tickHeartRegen = useStore(s => s.tickHeartRegen);
+  const tickWeeklyReset = useStore(s => s.tickWeeklyReset);
   const dailyChallenge = useStore(s => s.dailyChallenge);
   const newAchievement = useStore(s => s.newAchievement);
   const clearNewAchievement = useStore(s => s.clearNewAchievement);
@@ -105,13 +106,14 @@ function AppContent() {
 
   useEffect(() => {
     if (isOnboardingComplete && disclaimerAccepted) {
+      tickWeeklyReset();   // si empezó una nueva semana, reinicia el XP semanal
       generateLeagueStandings();
       const today = new Date().toISOString().slice(0, 10);
       if (!dailyChallenge || dailyChallenge.date.slice(0, 10) !== today) generateDailyChallenge();
       generateDailyQuests();
       tickHeartRegen();
     }
-  }, [isOnboardingComplete, disclaimerAccepted, dailyChallenge, generateDailyChallenge, generateDailyQuests, generateLeagueStandings, tickHeartRegen]);
+  }, [isOnboardingComplete, disclaimerAccepted, dailyChallenge, generateDailyChallenge, generateDailyQuests, generateLeagueStandings, tickHeartRegen, tickWeeklyReset]);
 
   useEffect(() => {
     if (!isOnboardingComplete || !disclaimerAccepted) return;

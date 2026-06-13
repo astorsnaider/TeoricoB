@@ -97,7 +97,9 @@ export interface UserState {
   lastActiveDate: string;
   totalCorrect: number;
   totalAnswered: number;
-  weeklyXP: number;
+  weeklyXP: number;                        // XP de la semana actual (liga); se resetea cada lunes
+  weeklyResetAt: string;                   // ISO del último reseteo semanal (para detectar nueva semana)
+  lastLeagueRewardWeek?: string;           // 'YYYY-MM-DD' (lunes) de la última semana cuya recompensa de liga se cobró
   gems: number;
   friends: Friend[];
   topicStats: Record<string, TopicStat>;  // accuracy por categoria de pregunta
