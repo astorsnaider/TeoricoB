@@ -8,9 +8,10 @@ import { useTheme } from '../hooks/useTheme';
 import { SHADOWS } from '../theme';
 import { AvatarView } from '../components/AvatarView';
 import { LeagueType, LeagueStanding } from '../types';
-import { useCohort } from '../sync/useCohort';
+import { useCohort, CohortResult } from '../sync/useCohort';
 import { useFriends } from '../friends/useFriends';
 import FriendsScreen from './FriendsScreen';
+import LeagueResultModal from '../components/LeagueResultModal';
 import { useTabResetEffect } from '../components/PagerControl';
 
 function formatCountdown(iso: string): string {
@@ -30,11 +31,22 @@ export default function LeagueScreen() {
   const [showFriends, setShowFriends] = useState(false);
   const pendingFriendUsername = useStore(s => s.pendingFriendUsername);
   const clearPendingFriend = useStore(s => s.clearPendingFriend);
+  const claimLeagueReward = useStore(s => s.claimLeagueReward);
+  const lastRewardWeek = useStore(s => s.user.lastLeagueRewardWeek);
   const theme = useTheme();
 
   useEffect(() => {
     if (pendingFriendUsername) setShowFriends(true);
   }, [pendingFriendUsername]);
+
+  // Modal de cierre de semana: si la cohorte pasada se finalizó y aún no lo
+  // hemos mostrado (dedupe por week_start), aparece el resultado.
+  const [resultModal, setResultModal] = useState<CohortResult | null>(null);
+  useEffect(() => {
+    if (cohort.lastResult && cohort.lastResult.weekStart !== lastRewardWeek) {
+      setResultModal(cohort.lastResult);
+    }
+  }, [cohort.lastResult, lastRewardWeek]);
 
   // Refresca el contador cada minuto.
   const [, forceTick] = useState(0);
@@ -332,6 +344,17 @@ export default function LeagueScreen() {
           prefillUsername={pendingFriendUsername ?? undefined}
         />
       </Modal>
+
+      {resultModal && (
+        <LeagueResultModal
+          result={resultModal.result}
+          league={user.league}
+          onClaim={(gems) => {
+            claimLeagueReward(resultModal.weekStart, gems);
+            setResultModal(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
