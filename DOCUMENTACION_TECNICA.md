@@ -245,6 +245,26 @@ proyectos/Teorico/
 - Grid de todos los logros (desbloqueados en color, bloqueados en gris)
 - Botón de reiniciar progreso (con confirmación)
 
+#### `ProfileEditScreen.tsx` — Edición de cuenta
+Accesible desde Ajustes → Perfil. Permite editar:
+- **Foto / color de avatar**, **nombre visible** y **@username** (con cooldown
+  de 14 días, validado en el backend).
+- **Contraseña**: modal con *actual / nueva / repetir*. Se re-verifica la
+  contraseña actual con `reauthenticate()` (re-login silencioso) antes de
+  llamar a `updatePassword()` → `supabase.auth.updateUser({ password })`.
+- **Email**: modal en 2 pasos. Paso 1 = nuevo email + contraseña →
+  `reauthenticate()` + `changeEmail()` (`updateUser({ email })`, envía código
+  de 6 dígitos al nuevo correo). Paso 2 = código →
+  `verifyEmailChange()` (`verifyOtp({ type: 'email_change' })`).
+- **Teléfono**: "Próximamente" (requiere proveedor SMS de pago en Supabase).
+
+Config Supabase necesaria para el cambio de email por código: plantilla
+"Change Email Address" con `{{ .Token }}` y ajuste **"Secure email change" OFF**
+(si no, exige confirmar también el email antiguo → dos códigos).
+
+Los métodos de auth viven en `src/auth/AuthContext.tsx`:
+`reauthenticate`, `changeEmail`, `verifyEmailChange`, `updatePassword`.
+
 ### Sistema de vidas (corazones)
 
 ```

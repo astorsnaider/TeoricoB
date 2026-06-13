@@ -4,7 +4,7 @@
  * Activos: foto / color, nombre visible (display name), @username.
  * Próximamente: contraseña, email, teléfono (requieren OTP).
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Modal,
   ActivityIndicator,
@@ -30,7 +30,7 @@ export default function ProfileEditScreen({ onBack, onDeleteAccount }: Props) {
   const setProfilePhoto = useStore(s => s.setProfilePhoto);
   const setAvatarColor = useStore(s => s.setAvatarColor);
   const setName = useStore(s => s.setUserName);
-  const { user: authUser } = useAuth();
+  const { user: authUser, updatePassword, reauthenticate, changeEmail, verifyEmailChange, refreshProfile } = useAuth();
   const { myUsername, usernameCooldownDays, setUsername } = useFriends();
 
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -39,6 +39,8 @@ export default function ProfileEditScreen({ onBack, onDeleteAccount }: Props) {
   const [usernameValue, setUsernameValue] = useState(myUsername ?? '');
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameSubmitting, setUsernameSubmitting] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
 
   const pickPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -156,33 +158,50 @@ export default function ProfileEditScreen({ onBack, onDeleteAccount }: Props) {
           </View>
         </TouchableOpacity>
 
-        {/* Email (próximamente) */}
-        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: 0.7 }]}>
-          <View style={s.fieldValueRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>Correo electrónico</Text>
-              <Text style={[s.fieldValue, { color: theme.textPrimary }]}>{authUser?.email ?? '—'}</Text>
+        {/* Email */}
+        {authUser ? (
+          <TouchableOpacity
+            style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}
+            onPress={() => setEmailModalOpen(true)}
+            activeOpacity={0.85}
+          >
+            <View style={s.fieldValueRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>Correo electrónico</Text>
+                <Text style={[s.fieldValue, { color: theme.textPrimary }]} numberOfLines={1}>{authUser.email ?? '—'}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
             </View>
-            <View style={[s.soonPill, { backgroundColor: theme.bg2 }]}>
-              <Text style={[s.soonPillTxt, { color: theme.textTertiary }]}>Próximamente</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: 0.7 }]}>
+            <View style={s.fieldValueRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>Correo electrónico</Text>
+                <Text style={[s.fieldValue, { color: theme.textPrimary }]}>Inicia sesión para gestionarlo</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
 
-        {/* Contraseña (próximamente) */}
-        <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: 0.7 }]}>
-          <View style={s.fieldValueRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>Contraseña</Text>
-              <Text style={[s.fieldValue, { color: theme.textPrimary }]}>••••••••</Text>
+        {/* Contraseña */}
+        {authUser && (
+          <TouchableOpacity
+            style={[s.card, { backgroundColor: theme.card, borderColor: theme.border }]}
+            onPress={() => setPasswordModalOpen(true)}
+            activeOpacity={0.85}
+          >
+            <View style={s.fieldValueRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>Contraseña</Text>
+                <Text style={[s.fieldValue, { color: theme.textPrimary }]}>••••••••</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
             </View>
-            <View style={[s.soonPill, { backgroundColor: theme.bg2 }]}>
-              <Text style={[s.soonPillTxt, { color: theme.textTertiary }]}>Próximamente</Text>
-            </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        )}
 
-        {/* Teléfono (próximamente) */}
+        {/* Teléfono (próximamente — requiere proveedor SMS) */}
         <View style={[s.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: 0.7 }]}>
           <View style={s.fieldValueRow}>
             <View style={{ flex: 1 }}>
@@ -291,7 +310,260 @@ export default function ProfileEditScreen({ onBack, onDeleteAccount }: Props) {
           </View>
         </View>
       </Modal>
+
+      <PasswordChangeModal
+        visible={passwordModalOpen}
+        theme={theme}
+        onClose={() => setPasswordModalOpen(false)}
+        reauthenticate={reauthenticate}
+        updatePassword={updatePassword}
+      />
+
+      <EmailChangeModal
+        visible={emailModalOpen}
+        theme={theme}
+        currentEmail={authUser?.email ?? ''}
+        onClose={() => setEmailModalOpen(false)}
+        reauthenticate={reauthenticate}
+        changeEmail={changeEmail}
+        verifyEmailChange={verifyEmailChange}
+        refreshProfile={refreshProfile}
+      />
     </SafeAreaView>
+  );
+}
+
+type AuthResult = { ok: boolean; error?: string };
+
+function PasswordChangeModal({
+  visible, theme, onClose, reauthenticate, updatePassword,
+}: {
+  visible: boolean;
+  theme: ReturnType<typeof useTheme>;
+  onClose: () => void;
+  reauthenticate: (p: string) => Promise<AuthResult>;
+  updatePassword: (p: string) => Promise<AuthResult>;
+}) {
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [repeat, setRepeat] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (visible) { setCurrent(''); setNext(''); setRepeat(''); setError(null); }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const valid = current.length >= 1 && next.length >= 8 && next === repeat;
+
+  const onSubmit = async () => {
+    if (next.length < 8) { setError('La nueva contraseña debe tener al menos 8 caracteres.'); return; }
+    if (next !== repeat) { setError('Las contraseñas no coinciden.'); return; }
+    setSubmitting(true);
+    setError(null);
+    const re = await reauthenticate(current);
+    if (!re.ok) { setSubmitting(false); setError(re.error ?? 'Contraseña actual incorrecta.'); return; }
+    const up = await updatePassword(next);
+    setSubmitting(false);
+    if (up.ok) { Alert.alert('Listo', 'Tu contraseña se ha cambiado.'); onClose(); }
+    else setError(up.error ?? 'No se pudo cambiar la contraseña.');
+  };
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <View style={s.modalBackdrop}>
+        <View style={[s.modalCard, { backgroundColor: theme.card, borderColor: theme.border, gap: 12 }]}>
+          <Text style={[s.modalTitle, { color: theme.textPrimary }]}>Cambiar contraseña</Text>
+          <PwInput value={current} onChange={t => { setCurrent(t); setError(null); }} placeholder="Contraseña actual" theme={theme} autoFocus />
+          <PwInput value={next} onChange={t => { setNext(t); setError(null); }} placeholder="Nueva contraseña (mín. 8)" theme={theme} />
+          <PwInput value={repeat} onChange={t => { setRepeat(t); setError(null); }} placeholder="Repite la nueva" theme={theme} />
+          {error && (
+            <View style={s.errorRow}>
+              <Ionicons name="alert-circle" size={14} color={theme.wrong} />
+              <Text style={[s.errorTxt, { color: theme.wrong }]}>{error}</Text>
+            </View>
+          )}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[s.modalClose, { borderColor: theme.border, flex: 1 }]} onPress={onClose}>
+              <Text style={[s.modalCloseTxt, { color: theme.textSecondary }]}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.modalSave, { backgroundColor: valid && !submitting ? theme.primary : theme.border, flex: 1 }]}
+              disabled={!valid || submitting}
+              onPress={onSubmit}
+            >
+              {submitting ? <ActivityIndicator color="#fff" /> : <Text style={s.modalSaveTxt}>Guardar</Text>}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function EmailChangeModal({
+  visible, theme, currentEmail, onClose, reauthenticate, changeEmail, verifyEmailChange, refreshProfile,
+}: {
+  visible: boolean;
+  theme: ReturnType<typeof useTheme>;
+  currentEmail: string;
+  onClose: () => void;
+  reauthenticate: (p: string) => Promise<AuthResult>;
+  changeEmail: (e: string) => Promise<AuthResult>;
+  verifyEmailChange: (e: string, t: string) => Promise<AuthResult>;
+  refreshProfile: () => Promise<void>;
+}) {
+  const [step, setStep] = useState<'request' | 'verify'>('request');
+  const [newEmail, setNewEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (visible) { setStep('request'); setNewEmail(''); setPassword(''); setCode(''); setError(null); }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const onRequest = async () => {
+    setSubmitting(true);
+    setError(null);
+    const re = await reauthenticate(password);
+    if (!re.ok) { setSubmitting(false); setError(re.error ?? 'Contraseña incorrecta.'); return; }
+    const ch = await changeEmail(newEmail);
+    setSubmitting(false);
+    if (ch.ok) setStep('verify');
+    else setError(ch.error ?? 'No se pudo iniciar el cambio.');
+  };
+
+  const onVerify = async () => {
+    setSubmitting(true);
+    setError(null);
+    const v = await verifyEmailChange(newEmail, code);
+    setSubmitting(false);
+    if (v.ok) {
+      await refreshProfile();
+      Alert.alert('Email actualizado', `Tu correo ahora es ${newEmail.trim().toLowerCase()}.`);
+      onClose();
+    } else {
+      setError(v.error ?? 'Código incorrecto.');
+    }
+  };
+
+  const requestValid = newEmail.includes('@') && password.length >= 1;
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <View style={s.modalBackdrop}>
+        <View style={[s.modalCard, { backgroundColor: theme.card, borderColor: theme.border, gap: 12 }]}>
+          <Text style={[s.modalTitle, { color: theme.textPrimary }]}>Cambiar email</Text>
+
+          {step === 'request' ? (
+            <>
+              <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>
+                Actual: {currentEmail || '—'}. Te enviaremos un código al nuevo correo.
+              </Text>
+              <View style={[s.inputWrap, { borderColor: theme.border, backgroundColor: theme.bg2 }]}>
+                <TextInput
+                  style={[s.input2, { color: theme.textPrimary }]}
+                  value={newEmail}
+                  onChangeText={t => { setNewEmail(t); setError(null); }}
+                  placeholder="nuevo@email.com"
+                  placeholderTextColor={theme.textTertiary}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  autoFocus
+                />
+              </View>
+              <PwInput value={password} onChange={t => { setPassword(t); setError(null); }} placeholder="Tu contraseña" theme={theme} />
+            </>
+          ) : (
+            <>
+              <Text style={[s.fieldLabel, { color: theme.textSecondary }]}>
+                Introduce el código de 6 dígitos que enviamos a {newEmail.trim().toLowerCase()}.
+              </Text>
+              <View style={[s.inputWrap, { borderColor: theme.border, backgroundColor: theme.bg2 }]}>
+                <TextInput
+                  style={[s.input2, { color: theme.textPrimary, letterSpacing: 6, textAlign: 'center' }]}
+                  value={code}
+                  onChangeText={t => { setCode(t.replace(/\D/g, '').slice(0, 6)); setError(null); }}
+                  placeholder="000000"
+                  placeholderTextColor={theme.textTertiary}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus
+                />
+              </View>
+              <TouchableOpacity onPress={onRequest} hitSlop={6}>
+                <Text style={[s.resendTxt, { color: theme.primary }]}>Reenviar código</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {error && (
+            <View style={s.errorRow}>
+              <Ionicons name="alert-circle" size={14} color={theme.wrong} />
+              <Text style={[s.errorTxt, { color: theme.wrong }]}>{error}</Text>
+            </View>
+          )}
+
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[s.modalClose, { borderColor: theme.border, flex: 1 }]} onPress={onClose}>
+              <Text style={[s.modalCloseTxt, { color: theme.textSecondary }]}>Cancelar</Text>
+            </TouchableOpacity>
+            {step === 'request' ? (
+              <TouchableOpacity
+                style={[s.modalSave, { backgroundColor: requestValid && !submitting ? theme.primary : theme.border, flex: 1 }]}
+                disabled={!requestValid || submitting}
+                onPress={onRequest}
+              >
+                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={s.modalSaveTxt}>Enviar código</Text>}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[s.modalSave, { backgroundColor: code.length === 6 && !submitting ? theme.primary : theme.border, flex: 1 }]}
+                disabled={code.length !== 6 || submitting}
+                onPress={onVerify}
+              >
+                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={s.modalSaveTxt}>Confirmar</Text>}
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function PwInput({ value, onChange, placeholder, theme, autoFocus }: {
+  value: string;
+  onChange: (t: string) => void;
+  placeholder: string;
+  theme: ReturnType<typeof useTheme>;
+  autoFocus?: boolean;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <View style={[s.inputWrap, { borderColor: theme.border, backgroundColor: theme.bg2 }]}>
+      <TextInput
+        style={[s.input2, { color: theme.textPrimary }]}
+        value={value}
+        onChangeText={onChange}
+        placeholder={placeholder}
+        placeholderTextColor={theme.textTertiary}
+        secureTextEntry={!show}
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoFocus={autoFocus}
+      />
+      <TouchableOpacity onPress={() => setShow(v => !v)} hitSlop={8}>
+        <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.textTertiary} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -342,4 +614,5 @@ const s = StyleSheet.create({
   errorTxt: { fontSize: 12 },
   cooldownBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, borderWidth: 1, padding: 10 },
   cooldownBannerTxt: { fontSize: 12, flex: 1 },
+  resendTxt: { fontSize: 13, fontWeight: '700', alignSelf: 'flex-start' },
 });

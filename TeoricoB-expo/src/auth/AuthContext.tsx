@@ -78,6 +78,18 @@ interface AuthContextValue {
   verifyPasswordResetCode: (email: string, token: string) => Promise<AuthResult>;
   /** Actualiza la contraseña del usuario actualmente autenticado. */
   updatePassword: (newPassword: string) => Promise<AuthResult>;
+  /**
+   * Re-verifica la contraseña actual del usuario (re-login silencioso).
+   * Se usa antes de operaciones sensibles (cambiar contraseña/email).
+   */
+  reauthenticate: (currentPassword: string) => Promise<AuthResult>;
+  /**
+   * Inicia el cambio de email: Supabase envía un código de 6 dígitos al
+   * NUEVO email. Se confirma con `verifyEmailChange()`.
+   */
+  changeEmail: (newEmail: string) => Promise<AuthResult>;
+  /** Verifica el código enviado al nuevo email para confirmar el cambio. */
+  verifyEmailChange: (newEmail: string, token: string) => Promise<AuthResult>;
   /** Sign-in con Apple (stub hasta cuenta dev Apple). */
   signInWithApple: () => Promise<AuthResult>;
   /** Sign-in con Google (stub hasta config Google OAuth). */
@@ -309,6 +321,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { ok: true };
   }, []);
 
+  const reauthenticate = useCallback(async (currentPassword: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) return { ok: false, error: 'Supabase no configurado' };
+    const email = session?.user?.email;
+    if (!email) return { ok: false, error: 'No hay sesión activa.' };
+    const { error } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes('invalid login credentials')) {
+        return { ok: false, error: 'La contraseña actual no es correcta.' };
+      }
+      return { ok: false, error: friendlyAuthError(error.message) };
+    }
+    return { ok: true };
+  }, [session?.user?.email]);
+
+  const changeEmail = useCallback(async (newEmail: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) return { ok: false, error: 'Supabase no configurado' };
+    const clean = newEmail.trim().toLowerCase();
+    if (!clean.includes('@')) return { ok: false, error: 'El email no parece válido.' };
+    if (clean === session?.user?.email?.toLowerCase()) {
+      return { ok: false, error: 'Ese ya es tu email actual.' };
+    }
+    const { error } = await supabase.auth.updateUser({ email: clean });
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    return { ok: true };
+  }, [session?.user?.email]);
+
+  const verifyEmailChange = useCallback(async (newEmail: string, token: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) return { ok: false, error: 'Supabase no configurado' };
+    const cleanToken = token.replace(/\s+/g, '').trim();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: newEmail.trim().toLowerCase(),
+      token: cleanToken,
+      type: 'email_change',
+    });
+    if (error) return { ok: false, error: friendlyAuthError(error.message) };
+    if (data?.session) setSession(data.session);
+    return { ok: true };
+  }, []);
+
   const signInWithApple = useCallback(async (): Promise<AuthResult> => {
     return { ok: false, error: 'Apple Sign-In no implementado todavía' };
   }, []);
@@ -363,6 +415,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     requestPasswordReset,
     verifyPasswordResetCode,
     updatePassword,
+    reauthenticate,
+    changeEmail,
+    verifyEmailChange,
     signInWithApple,
     signInWithGoogle,
     signOut,
