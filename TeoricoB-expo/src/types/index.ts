@@ -95,6 +95,7 @@ export interface UserState {
   completedTopics: string[];
   achievements: string[];
   lastActiveDate: string;
+  examDate?: string | null;                // 'YYYY-MM-DD' de tu examen DGT (plan de estudio)
   totalCorrect: number;
   totalAnswered: number;
   weeklyXP: number;                        // XP de la semana actual (liga); se resetea cada lunes

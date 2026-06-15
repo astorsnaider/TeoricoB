@@ -14,6 +14,8 @@ import QuizModal from '../components/QuizModal';
 import { useSoundEffect } from '../audio/useSoundEffect';
 import { Modal } from 'react-native';
 import ExamListScreen from './ExamListScreen';
+import StudyPlanScreen from './StudyPlanScreen';
+import SubPage from '../components/SubPage';
 
 export default function HomeScreen() {
   const user = useStore(s => s.user);
@@ -41,7 +43,17 @@ export default function HomeScreen() {
   const [practiceQs, setPracticeQs] = useState<any[]>([]);
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickQs, setQuickQs] = useState<any[]>([]);
+  const [planOpen, setPlanOpen] = useState(false);
   const [activeRecLesson, setActiveRecLesson] = useState<{ topic: Topic; lesson: Lesson } | null>(null);
+
+  // Días que faltan para el examen (null si no hay fecha fijada).
+  const examDays: number | null = useMemo(() => {
+    if (!user.examDate) return null;
+    const [y, m, d] = user.examDate.split('-').map(Number);
+    const target = new Date(y, m - 1, d); target.setHours(0, 0, 0, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  }, [user.examDate]);
 
   const startReview = () => {
     const qs = getMistakeQuestions(10);
@@ -188,6 +200,26 @@ export default function HomeScreen() {
             </View>
           ))}
         </View>
+
+        {/* Plan de estudio */}
+        <TouchableOpacity
+          style={[s.planCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+          onPress={() => { playSound('tap'); setPlanOpen(true); }}
+          activeOpacity={0.85}
+        >
+          <View style={[s.planIcon, { backgroundColor: theme.primary + '18' }]}>
+            <Ionicons name="calendar" size={24} color={theme.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.planTitle, { color: theme.textPrimary }]}>
+              {examDays === null ? 'Plan de estudio' : examDays > 0 ? `Faltan ${examDays} día${examDays === 1 ? '' : 's'} para tu examen` : examDays === 0 ? '¡Hoy es tu examen!' : 'Plan de estudio'}
+            </Text>
+            <Text style={[s.planSub, { color: theme.textSecondary }]} numberOfLines={1}>
+              {examDays === null ? 'Pon tu fecha y te organizo el estudio' : 'Mira tu plan de hoy'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+        </TouchableOpacity>
 
         {/* Daily challenge */}
         {dailyChallenge && (
@@ -436,6 +468,11 @@ export default function HomeScreen() {
           }}
         />
       )}
+      {planOpen && (
+        <SubPage onBack={() => setPlanOpen(false)}>
+          <StudyPlanScreen onBack={() => setPlanOpen(false)} />
+        </SubPage>
+      )}
     </SafeAreaView>
   );
 }
@@ -484,6 +521,10 @@ const s = StyleSheet.create({
   utilityIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   utilityTitle: { fontSize: 13, fontWeight: '800' },
   utilitySub: { fontSize: 11, lineHeight: 15 },
+  planCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14, ...SHADOWS.small },
+  planIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  planTitle: { fontSize: 14, fontWeight: '800' },
+  planSub: { fontSize: 12, marginTop: 2 },
   reviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
   reviewIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   reviewTitle: { fontSize: 15, fontWeight: '800' },

@@ -93,6 +93,7 @@ interface AppStore {
   setProfilePhoto: (uri: string | undefined) => void;
   setAvatarColor: (color: string) => void;
   setUserName: (name: string) => void;
+  setExamDate: (isoDate: string | null) => void;
   requestedManualChapter: string | null;
   requestManualChapter: (chapterId: string) => void;
   clearRequestedManualChapter: () => void;
@@ -141,6 +142,7 @@ const defaultUser: UserState = {
   completedTopics: [],
   achievements: [],
   lastActiveDate: new Date().toISOString(),
+  examDate: null,
   totalCorrect: 0,
   totalAnswered: 0,
   weeklyXP: 0,
@@ -236,6 +238,7 @@ export const useStore = create<AppStore>()(
       setProfilePhoto: (uri) => set(s => ({ user: { ...s.user, profilePhotoUri: uri } })),
       setAvatarColor: (color) => set(s => ({ user: { ...s.user, avatarEmoji: color, profilePhotoUri: undefined } })),
       setUserName: (name) => set(s => ({ user: { ...s.user, name: name.trim().slice(0, 32) } })),
+      setExamDate: (isoDate) => set(s => ({ user: { ...s.user, examDate: isoDate } })),
       requestedManualChapter: null,
       requestManualChapter: (chapterId) => set({ requestedManualChapter: chapterId }),
       clearRequestedManualChapter: () => set({ requestedManualChapter: null }),
