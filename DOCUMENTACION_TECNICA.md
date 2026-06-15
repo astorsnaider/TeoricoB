@@ -1,10 +1,15 @@
-# Documentación Técnica — TeoricoB
+# Documentación Técnica — Teoric (antes TeoricoB)
 > App para estudiar el permiso de conducción B en España
 
-**Última actualización:** 31 mayo 2026  
-**Versión app:** 0.6.0  
-**Repositorio:** https://github.com/astorsnaider/TeoricoB  
+**Última actualización:** 13 junio 2026  
+**Versión app:** 0.6.0 (en desarrollo activo hacia 1.0)  
+**Repositorio:** https://github.com/astorsnaider/TeoricoB (slug histórico)  
 **Autor:** Astor Snaider
+
+> **Nota de naming:** el producto se renombró de **TeoricoB** a **Teoric**
+> (4 jun 2026) para poder cubrir en el futuro varios permisos DGT. El permiso
+> B se perfecciona primero. El repositorio y algunos identificadores internos
+> conservan el nombre antiguo.
 
 ---
 
@@ -29,22 +34,27 @@
 
 ## 1. Visión general del proyecto
 
-### ¿Qué es TeoricoB?
+### ¿Qué es Teoric?
 
-**TeoricoB** es una aplicación móvil para ayudar a los jóvenes a preparar el examen teórico del permiso de conducción tipo B en España. Está inspirada en el modelo pedagógico de Duolingo: aprendizaje por lecciones cortas, gamificación progresiva y feedback inmediato.
+**Teoric** es una aplicación móvil para preparar el examen teórico del permiso de conducción tipo B en España. Está inspirada en el modelo pedagógico de Duolingo: aprendizaje por lecciones cortas, gamificación progresiva y feedback inmediato.
 
 ### Objetivos pedagógicos
 
 - Cubrir **todos los bloques temáticos** del examen DGT de conducción tipo B
 - Ofrecer **explicaciones razonadas** de por qué cada respuesta es correcta o incorrecta
-- Usar **gamificación** (XP, vidas, racha, ligas) para mantener la motivación diaria
-- Simular el **examen real DGT** (30 preguntas, máximo 3 errores)
+- Usar **gamificación** (XP, vidas, racha, liga semanal, logros) para mantener la motivación diaria
+- Simular el **examen real DGT** (30 preguntas, máximo 3 errores, 30 min)
 
-### Lo que NO hace la app
+### Modelo local-first con backend opcional
 
-- No se conecta a ningún servidor externo (aplicación 100% offline)
-- No reproduce las preguntas oficiales con copyright de la DGT (las preguntas son de elaboración propia, correctas en contenido pero redactadas de forma original)
-- No almacena datos personales fuera del dispositivo
+- La app **funciona sin cuenta** (local-only): el progreso se guarda en el
+  dispositivo con AsyncStorage. Crear cuenta es **opcional pero promovido**.
+- Si el usuario **inicia sesión** (email + contraseña, verificado por código),
+  su progreso se **sincroniza con Supabase** y se desbloquean las funciones
+  sociales: **liga semanal real por cohortes, amigos, racha de amistad,
+  clasificación en vivo**.
+- Las preguntas son de **elaboración propia** (no reproducen el banco oficial
+  DGT, protegido por copyright), pero fieles a la normativa vigente.
 
 ---
 
@@ -53,89 +63,100 @@
 ```
 ┌─────────────────────────────────────────────────────┐
 │                   DISPOSITIVO DEL USUARIO            │
-│                                                     │
 │  ┌─────────────────────────────────────────────┐   │
 │  │           APP REACT NATIVE (Expo)            │   │
-│  │                                             │   │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  │   │
 │  │  │  Screens │  │Components│  │  Store   │  │   │
 │  │  │ (vistas) │◄─┤(UI reus.)│  │(Zustand) │  │   │
 │  │  └────┬─────┘  └──────────┘  └────┬─────┘  │   │
-│  │       │                           │         │   │
 │  │       ▼                           ▼         │   │
-│  │  ┌─────────────────────────────────────┐   │   │
-│  │  │         AsyncStorage (SQLite)        │   │   │
-│  │  │    Persistencia local en dispositivo │   │   │
-│  │  └─────────────────────────────────────┘   │   │
-│  │                                             │   │
-│  │  ┌─────────────────────────────────────┐   │   │
-│  │  │      questions.ts (hardcoded)        │   │   │
-│  │  │    Base de datos de preguntas DGT    │   │   │
-│  │  └─────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────┘   │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-
-              ↕ Solo para CI/CD
-
+│  │  ┌─────────────────────┐  ┌──────────────┐ │   │
+│  │  │  AsyncStorage local │  │ questions.ts │ │   │
+│  │  │  (progreso offline) │  │  (banco DGT) │ │   │
+│  │  └─────────────────────┘  └──────────────┘ │   │
+│  │            │  ▲  (syncEngine, last-write-wins)│   │
+│  └────────────┼──┼─────────────────────────────┘   │
+└───────────────┼──┼─────────────────────────────────┘
+                ▼  │   HTTPS (solo si hay sesión)
 ┌─────────────────────────────────────────────────────┐
-│              GITHUB / GITHUB ACTIONS                 │
-│  - Control de versiones (git)                        │
-│  - Build automático en macOS (verificación)          │
-│  - NO hay backend, NO hay base de datos remota       │
+│                 SUPABASE (backend)                  │
+│  - Auth (email+contraseña, OTP por código)           │
+│  - Postgres con RLS: profiles, user_progress,        │
+│    friendships, league_cohorts/members/state, …      │
+│  - RPCs SECURITY DEFINER (amigos, liga, leaderboard) │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Decisión de diseño: sin backend
+### Decisión de diseño: local-first + backend opcional
 
-La app es deliberadamente **offline-first** y **sin backend** por las siguientes razones:
+La app arranca **offline-first** (funciona sin cuenta) y añade un **backend
+en Supabase** que solo entra en juego cuando el usuario inicia sesión:
 
-| Razón | Explicación |
-|-------|-------------|
-| **Simplicidad** | No se necesita autenticación, servidores, ni base de datos remota |
-| **Privacidad** | El progreso del usuario nunca sale del dispositivo |
-| **Coste** | Elimina costes de infraestructura (servidores, BBDD en la nube) |
-| **Fiabilidad** | Funciona sin conexión a internet |
-| **GDPR** | Al no haber datos personales en servidores, el cumplimiento es trivial |
+| Aspecto | Cómo se resuelve |
+|---|---|
+| **Sin cuenta** | Todo el progreso vive en AsyncStorage; la app es 100% usable offline. |
+| **Con cuenta** | El blob del store se sincroniza a `user_progress` (last-write-wins); se activan liga real por cohortes, amigos y racha de amistad. |
+| **Autoridad** | Datos personales/competitivos sensibles (liga competitiva, amistades) son **server-owned** vía RPCs con RLS, no editables por el cliente. |
+| **Privacidad** | Sin sesión no sale nada del dispositivo; con sesión aplica la política de privacidad y el borrado RGPD (`delete_my_account`). |
 
-Los datos de "amigos" y "ligas" son actualmente **simulados localmente** con datos de ejemplo. En una futura versión con backend se gestionarían de forma real.
+Las "ligas" y "amigos" **ya NO son simulados**: son reales contra Supabase
+(con un fallback simulado solo cuando no hay sesión).
 
 ---
 
 ## 3. Stack tecnológico
 
-### App principal — React Native + Expo
+### App principal — React Native + Expo (SDK 54)
 
 | Tecnología | Versión | Propósito |
 |-----------|---------|-----------|
 | **Expo SDK** | ~54.0 | Framework de desarrollo multiplataforma |
-| **React Native** | 0.76.x | UI nativa para iOS y Android |
-| **TypeScript** | 5.x | Tipado estático para mayor seguridad |
-| **Zustand** | ^5.x | Gestión del estado global (ligero, sin boilerplate) |
-| **AsyncStorage** | 2.2.0 | Persistencia local (equivalente a localStorage en web) |
-| **expo-haptics** | ~15.0 | Vibración táctil en respuestas correctas/incorrectas |
-| **expo-linear-gradient** | ~15.0 | Gradientes visuales en cabeceras y botones |
-| **react-native-svg** | 15.12.1 | Iconos SVG vectoriales de señales de tráfico |
+| **React Native** | 0.81.5 | UI nativa para iOS y Android |
+| **React** | 19.1 | — |
+| **TypeScript** | ~5.9 | Tipado estático |
+| **Zustand** | ^4.4 | Estado global (ligero) + middleware `persist` |
+| **AsyncStorage** | ^2.2 | Persistencia local |
+| **@supabase/supabase-js** | ^2.107 | Cliente del backend (auth, Postgres, RPCs) |
+| **expo-notifications** | ~0.32 | Notificaciones locales (recordatorios, racha, sociales) |
+| **expo-camera** | ~17.0 | Escáner de QR para añadir amigos |
+| **react-native-qrcode-svg** | ^6.3 | Generación del QR propio |
+| **expo-contacts** | ~15.0 | Buscar amigos por contactos (hash de email) |
+| **expo-crypto** | ~15.0 | SHA-256 del email para el matching de contactos |
+| **expo-image-picker** | ~17.0 | Foto de perfil |
+| **react-native-pager-view** | 6.9 | Swipe horizontal entre tabs y carouseles |
+| **react-native-gesture-handler** | ~2.28 | Swipe-back desde el borde (estilo iOS) |
+| **react-native-confetti-cannon** | ^1.5 | Confeti en logros / resultados / cierre de liga |
+| **expo-haptics** | ~15.0 | Vibración táctil |
+| **expo-linear-gradient** | ~15.0 | Gradientes |
+| **react-native-svg** | ^15.12 | Iconos SVG de señales |
+| **expo-updates** | ~29.0 | OTA updates (canal preview/production con EAS) |
+| **expo-audio** | ~1.1 | Efectos de sonido |
 
-### App iOS nativa (paralela) — SwiftUI
+### Backend — Supabase
 
-| Tecnología | Versión | Propósito |
-|-----------|---------|-----------|
-| **Swift** | 5.9+ | Lenguaje de programación |
-| **SwiftUI** | 5.0 | Framework de UI declarativa |
-| **Combine** | — | Programación reactiva (timers, estado) |
-| **UserDefaults** | — | Persistencia local |
-| **iOS mínimo** | 17.0 | Target de plataforma |
+| Componente | Propósito |
+|---|---|
+| **Supabase Auth** | Cuentas email+contraseña, verificación por código OTP, reset y cambio de email/contraseña |
+| **Postgres + RLS** | Tablas con Row-Level Security: `profiles`, `user_progress`, `friendships`, `league_state/cohorts/members`, … |
+| **RPCs (SECURITY DEFINER)** | Operaciones controladas: amigos, racha de amistad, liga por cohortes, leaderboard, borrado RGPD |
+| **EAS** | Build/submit a tiendas (perfiles dev/preview/production en `eas.json`) |
+
+### App iOS nativa (legacy) — SwiftUI
+
+Existe una implementación SwiftUI antigua en `TeoricoB.swiftpm` que **ya no se
+mantiene** (quedó congelada antes de añadir backend, amigos y liga real). La
+app activa es la de React Native/Expo.
 
 ### Herramientas de desarrollo
 
 | Herramienta | Propósito |
 |------------|---------|
-| **Git + GitHub** | Control de versiones y repositorio |
-| **GitHub Actions** | CI/CD: build automático en macOS para verificar que compila |
-| **Expo Go** | Testing en dispositivo real (iPhone/Android) sin compilar |
-| **Node.js 24** | Runtime para las herramientas de desarrollo |
-| **npm 11** | Gestión de dependencias |
+| **Git + GitHub** | Control de versiones |
+| **Supabase MCP** | Aplicar migraciones SQL al proyecto desde el entorno de desarrollo |
+| **EAS CLI** | Builds en la nube (iOS/Android) y OTA updates |
+| **`npx tsc --noEmit`** | Verificación de tipos antes de cada commit |
+| **`npx expo export --platform web`** | Verificación de que el bundle compila |
+| **Expo Go** | Testing rápido (limitado: sin cámara/notifs nativas) |
 
 ### ¿Por qué Zustand y no Redux?
 
@@ -153,40 +174,37 @@ Redux añade mucho boilerplate para un proyecto de este tamaño. Zustand ofrece:
 proyectos/Teorico/
 │
 ├── DOCUMENTACION_TECNICA.md        ← Este documento
-├── .github/
-│   └── workflows/
-│       └── build.yml               ← CI/CD: build iOS en macOS
+├── AUDITORIA_PREGUNTAS.md          ← Informe de auditoría del banco
 │
 ├── TeoricoB-expo/                  ← App React Native (principal)
-│   ├── App.tsx                     ← Punto de entrada, navegación por tabs
-│   ├── src/
-│   │   ├── types/
-│   │   │   └── index.ts            ← Tipos TypeScript (Question, User, etc.)
-│   │   ├── theme.ts                ← Colores y sombras globales
-│   │   ├── data/
-│   │   │   └── questions.ts        ← 250+ preguntas DGT hardcoded
-│   │   ├── store/
-│   │   │   └── useStore.ts         ← Estado global (Zustand + AsyncStorage)
-│   │   ├── components/
-│   │   │   ├── QuizModal.tsx       ← Modal del quiz (pregunta + opciones + feedback)
-│   │   │   └── TopicIcon.tsx       ← Iconos SVG de señales de tráfico
-│   │   └── screens/
-│   │       ├── OnboardingScreen.tsx← Pantallas de bienvenida y creación de perfil
-│   │       ├── HomeScreen.tsx      ← Dashboard: racha, XP, reto diario, examen
-│   │       ├── LearnScreen.tsx     ← Lista de temas y lecciones
-│   │       ├── LeagueScreen.tsx    ← Clasificación y ligas
-│   │       └── ProfileScreen.tsx   ← Perfil, estadísticas y logros
-│   └── package.json
+│   ├── App.tsx                     ← Entry point: 5 tabs (PagerView), gestos, deep links
+│   ├── app.json                    ← Config Expo: scheme teoric://, permisos, plugins
+│   ├── eas.json                    ← Perfiles de build EAS (dev/preview/production)
+│   ├── .env.local                  ← EXPO_PUBLIC_SUPABASE_URL / _ANON_KEY (gitignored)
+│   ├── supabase/
+│   │   └── schema.sql              ← Esquema completo (tablas, RLS, RPCs) versionado
+│   ├── scripts/
+│   │   └── audit_question_bias.py  ← Detector de sesgos de forma en el banco
+│   └── src/
+│       ├── api/        supabase.ts            ← Cliente Supabase + isSupabaseConfigured
+│       ├── auth/       AuthContext.tsx, AuthScreen.tsx  ← Sesión, signup/login/OTP, cambio email/pass
+│       ├── sync/       syncEngine.ts, useAutoSync.ts, useCohort.ts, useLeaderboard.ts, useSyncStatus.ts
+│       ├── friends/    useFriends.ts, contacts.ts       ← Amigos, racha de amistad, contactos
+│       ├── notifications/ scheduler.ts                  ← Notificaciones locales (recordatorio, racha, sociales)
+│       ├── store/      useStore.ts             ← Estado global (Zustand + persist)
+│       ├── data/       questions.ts (320), manualContent.ts, signCatalog.ts, examTemplates.ts
+│       ├── legal/      config.ts, legalTexts.ts, manualLinks.ts
+│       ├── hooks/      useTheme.ts
+│       ├── audio/      useSoundEffect.ts
+│       ├── theme.ts    types/index.ts  types/database.ts  utils/
+│       ├── components/ QuizModal, ExamRunModal, ManualChapterModal, SubPage, TabPager(.web),
+│       │               PagerControl, ConfettiBurst, AchievementUnlockModal, LeagueResultModal,
+│       │               AvatarView, TrafficSign, TrafficScene, RoadScenario, TopicIcon
+│       └── screens/    Onboarding, Tutorial, Disclaimer, Home, Learn, Manual, League, Profile,
+│                       ProfileEdit, Settings, Preferences, Notifications, Privacy, Legal,
+│                       Stats, Friends, FriendProfile, QRFriend, ExamList, ComingSoon
 │
-└── TeoricoB.swiftpm/               ← App SwiftUI (versión iOS nativa)
-    ├── Package.swift
-    └── Sources/TeoricoB/
-        ├── TeoricoBApp.swift
-        ├── AppViewModel.swift
-        ├── QuizViewModel.swift
-        ├── QuestionsDatabase.swift
-        ├── [Views...]
-        └── [Models...]
+└── TeoricoB.swiftpm/               ← App SwiftUI (legacy, congelada)
 ```
 
 ---
@@ -196,15 +214,20 @@ proyectos/Teorico/
 ### Pantallas y responsabilidades
 
 #### `App.tsx` — Orquestador principal
-- Comprueba si el onboarding está completo
-- Renderiza `OnboardingScreen` o el sistema de tabs
-- Contiene la barra de navegación inferior (4 tabs)
-- Muestra el toast de logros desbloqueados
+- Gatekeeping de arranque: Disclaimer → Onboarding → Tutorial → app.
+- **5 tabs** (Inicio, Aprender, Manual, Liga, Perfil) con **swipe horizontal**
+  vía `react-native-pager-view` (`TabPager`), envuelto en `GestureHandlerRootView`.
+- Barra inferior que se **oculta** al entrar en subpáginas (`PagerControl`).
+- Maneja **deep links** `teoric://u/<username>` (añadir amigo) y la apertura
+  del Manual desde otras pantallas.
+- Programa notificaciones locales y reproduce sonidos según cambios del store.
+- Muestra el modal animado de logro desbloqueado (`AchievementUnlockModal`).
 
-#### `OnboardingScreen.tsx` — Primer uso
-- 3 pasos: bienvenida → nombre → avatar
-- Guarda el perfil en el store al terminar
-- Genera el reto diario inicial y los standings de la liga
+#### `OnboardingScreen.tsx` / `TutorialScreen.tsx` — Primer uso
+- Carrusel (PagerView) theme-aware. Onboarding: bienvenida → nombre → color →
+  cuenta (crear/entrar o saltar). Tutorial: 5 slides explicando lecciones,
+  fallos, exámenes, liga y manual.
+- `DisclaimerScreen` muestra el aviso legal obligatorio antes de usar la app.
 
 #### `HomeScreen.tsx` — Dashboard
 - Saludo personalizado con nombre y emoji del usuario
@@ -231,11 +254,33 @@ proyectos/Teorico/
 - Pantalla de resultados con estadísticas: correctas, fallos, %, nota y XP ganados
 - Modo examen: permite hasta 3 fallos (criterio DGT real), no bloquea por vidas
 
-#### `LeagueScreen.tsx` — Ligas y competición
-- Cabecera con la liga actual del usuario y progreso hacia la siguiente
-- Clasificación semanal de 10 jugadores (usuario + 9 simulados)
-- Sección de amigos (4 amigos de ejemplo) con liga y racha
-- Mapa visual de todas las ligas (Bronce → Diamante) con estado desbloqueado/bloqueado
+#### `ManualScreen.tsx` — Manual del conductor
+- 18 capítulos de teoría + catálogo de señales (`signCatalog.ts`) y escenarios.
+- Navegación interna a capítulo/grupo de señales como `SubPage` (slide-in +
+  swipe-back). Se puede abrir un capítulo concreto desde el quiz al fallar
+  (`ManualChapterModal` flotante, sin perder la pregunta).
+
+#### `LeagueScreen.tsx` — Liga semanal por cohortes
+- Hero con la liga actual y **contador "Termina en Xd Yh"**.
+- **Cohorte de ~30** (de `useCohort`): podio top 3 + lista con **zona de
+  ascenso** (verde, top 7) y **zona de descenso** (roja, últimos 5); tu fila
+  resaltada. Fallback simulado si no hay sesión.
+- Sección **Amigos** (reales) con XP semanal; botón a `FriendsScreen`.
+- `LeagueResultModal` al cerrar la semana (asciendes/te mantienes/desciendes).
+- Grid de todas las ligas (Bronce → Diamante).
+
+#### `FriendsScreen.tsx` / `FriendProfileScreen.tsx` — Amigos
+- Mi `@username` + compartir enlace, **buscador** por username, **importar
+  contactos** (matching por hash de email), **QR** (`QRFriendScreen`).
+- Solicitudes recibidas/enviadas (aceptar/rechazar/cancelar), lista de amigos
+  con **racha de amistad** (🔥 compartida). Tocar un amigo abre su perfil con
+  stats y botón **eliminar**.
+
+#### `SettingsScreen` + sub-pantallas — Ajustes
+- Hub con: **Perfil** (`ProfileEditScreen`: foto, nombre, @username, contraseña,
+  email con verificación, borrar cuenta), **Preferencias** (modo oscuro,
+  sonidos), **Notificaciones**, **Privacidad**, **Estadísticas** (`StatsScreen`),
+  **Legal** y secciones "Próximamente" (`ComingSoonScreen`).
 
 #### `ProfileScreen.tsx` — Perfil del usuario
 - Avatar y nombre del usuario
@@ -278,32 +323,40 @@ Compra:            10 gemas → +1 vida (si gems >= 10)
 
 El tiempo de regeneración se calcula en el cliente comparando `lastHeartRegenTime` (guardado en AsyncStorage) con la hora actual.
 
-### Sistema de XP y niveles
+### Sistema de XP, niveles y techo por lección
 
 ```
-Por respuesta correcta:    +10 XP
-Bonus lección perfecta:    +20 XP  (0 fallos)
-Bonus velocidad:           +10 XP  (media < 8 s/pregunta)
-Reto diario completado:    +50 XP fijo
+Nivel = Math.floor(XP_total / 100) + 1   (permanente, nunca baja)
 
-Nivel = Math.floor(XP_total / 100) + 1
-XP en nivel actual = XP_total % 100
+XP de una lección = (nº_preguntas − fallos) × 10
+  · Solo se otorga al TERMINAR la lección.
+  · Cada lección tiene un techo: rehacerla solo da el delta de mejora
+    (user.lessonStats[lessonId] = { bestWrong, xpClaimed }). No se puede
+    farmear repitiendo.
+Reto diario:  +50 XP fijo.
+Repaso de fallos:  XP reducido.
 ```
 
-### Sistema de ligas
+El mismo XP suma a la vez al **XP total** (nivel) y al **XP semanal** (liga).
 
-| Liga | XP requerido |
-|------|-------------|
-| Bronce | 0 |
-| Plata | 500 |
-| Oro | 1.500 |
-| Zafiro | 3.000 |
-| Rubí | 5.500 |
-| Esmeralda | 9.000 |
-| Amatista | 14.000 |
-| Diamante | 20.000 |
+### Liga semanal por cohortes (estilo Duolingo)
 
-Las ligas se actualizan automáticamente al ganar XP, sin necesidad de acción del usuario.
+La liga **ya no** es un escalón permanente por XP total. Es una competición
+**semanal** server-owned (Supabase):
+
+- Estás en una **cohorte de ~30** personas de tu mismo nivel de liga.
+- El `weekly_xp` se **resetea cada lunes** (lo hace el cliente al detectar
+  semana nueva; el servidor toma snapshot del `score`).
+- Al cerrar la semana: **top 7 ascienden**, **últimos 5 descienden** (Bronce no
+  baja, Diamante no sube). Ascender y el top 3 dan gemas.
+- Tablas: `league_state` (liga actual autoritativa), `league_cohorts`,
+  `league_cohort_members`. RPCs: `sync_league()`, `get_my_cohort()`.
+
+| Niveles de liga (de menor a mayor) |
+|---|
+| Bronce · Plata · Oro · Zafiro · Rubí · Esmeralda · Amatista · Diamante |
+
+> Los umbrales de XP de versiones anteriores ya **no** determinan la liga.
 
 ### Iconos SVG de señales
 
@@ -330,47 +383,38 @@ Cada tema tiene su propio icono SVG dibujado con `react-native-svg`, imitando se
 
 Todo el estado de la app vive en un único store de Zustand con persistencia automática en AsyncStorage.
 
-#### Estado persistido (guardado en el dispositivo):
+#### Estado persistido del usuario (campos principales):
 
 ```typescript
 interface UserState {
-  name: string               // Nombre del usuario
-  avatarEmoji: string        // Emoji seleccionado en onboarding
-  xp: number                 // XP total acumulado
-  streak: number             // Días consecutivos de uso
-  hearts: number             // Vidas actuales (0-5)
-  maxHearts: number          // Máximo de vidas (siempre 5)
-  lastHeartRegenTime: string // Timestamp de última regeneración
-  league: LeagueType         // Liga actual
-  leagueXP: number           // XP acumulado para la liga
-  completedLessons: string[] // IDs de lecciones completadas
-  completedTopics: string[]  // IDs de temas completados
-  achievements: string[]     // IDs de logros desbloqueados
-  lastActiveDate: string     // Fecha del último uso (para racha)
-  totalCorrect: number       // Total de respuestas correctas
-  totalAnswered: number      // Total de respuestas dadas
-  weeklyXP: number           // XP de la semana actual
-  gems: number               // Gemas (moneda para comprar vidas)
-  friends: Friend[]          // Lista de amigos (simulados)
+  name, avatarEmoji, profilePhotoUri      // identidad local
+  xp, streak, hearts, maxHearts, gems     // progreso y economía
+  lastHeartRegenTime, lastActiveDate
+  league: LeagueType                       // liga (cache de display; autoritativa en backend)
+  weeklyXP, weeklyResetAt                  // XP de la liga semanal + marca de reset
+  completedLessons[], completedTopics[]
+  lessonStats: Record<lessonId, { bestWrong, xpClaimed, completedAt }>  // techo de XP por lección
+  achievements[], totalCorrect, totalAnswered
+  topicStats, examHistory, examTemplateStats, mistakes   // analítica y repaso
+  streakFreeze* , dailyQuestStreak
+  lastLeagueRewardWeek                     // dedupe del premio semanal de liga
+  // friends[] solo se usa como fallback simulado sin sesión
 }
 ```
 
+> El **@username**, la foto en la nube y la liga competitiva **no** viven en
+> este blob: están en `profiles` / `league_state` (Supabase), gestionados por
+> RPCs. El cliente los lee, no los "empuja".
+
 #### Estado no persistido (regenerado en cada sesión):
+`topics`, `leagueStandings` (fallback simulado), `dailyChallenge`,
+`dailyQuests`, `newAchievement`, flags de UI / deep-link
+(`requestedManualChapter`, `pendingFriendUsername`).
 
-```typescript
-topics: Topic[]              // Los temas con preguntas (de questions.ts)
-leagueStandings: LeagueStanding[]  // Clasificación de la liga (generada dinámicamente)
-dailyChallenge: DailyChallenge     // Reto del día (10 preguntas aleatorias)
-newAchievement: Achievement | null // Logro recién desbloqueado (para el toast)
-```
+#### Clave de persistencia en AsyncStorage: `'teoricob-v2'`
 
-#### Clave de persistencia en AsyncStorage:
-
-```
-'teoricob-v2'
-```
-
-> **Nota:** La clave tiene versión para evitar conflictos con datos de versiones anteriores. Al cambiar la estructura del estado, se incrementa el número de versión y se usa la función `merge` del middleware `persist` para fusionar datos guardados con el esquema nuevo, usando `defaultUser` como base.
+> La clave está versionada; la función `merge` del middleware `persist` fusiona
+> datos guardados con `defaultUser` para no perder progreso al añadir campos.
 
 ---
 
@@ -404,10 +448,18 @@ interface Question {
   correctIndex: number // Índice (0-3) de la opción correcta
   explanation: string  // Explicación detallada de por qué es correcta
   category: string    // Categoría para estadísticas
+  legalRef?: string   // Artículo legal (ej. "Art. 132 RGC")
+  signId?: string     // Señal SVG a mostrar
+  sceneId?: string    // Escenario cenital a mostrar
 }
 ```
 
-### Distribución de preguntas por tema (v0.6.0)
+> **Banco actual: 320 preguntas.** Tras la auditoría de v0.6 se hizo además una
+> pasada **anti-sesgos de forma** (que la opción correcta no se delate por ser
+> más larga, tener paréntesis, etc.): `scripts/audit_question_bias.py` reporta
+> **0% de sesgos delatadores** en las 320 preguntas.
+
+### Distribución de preguntas por tema (referencia v0.6.0; total actual: 320)
 
 | Tema | Lecciones | Preguntas | Con imagen |
 |------|-----------|-----------|-----------|
@@ -458,9 +510,27 @@ Dónde:   Almacenamiento interno del dispositivo (no iCloud, no Google Drive)
 - Estado del reto diario
 
 #### Lo que NO se guarda (se regenera en cada inicio):
-- Clasificación de la liga (se recalcula con los datos del usuario)
+- Clasificación de la liga (cohorte real desde Supabase, o fallback simulado)
 - Nuevos logros pendientes de mostrar
 - Los temas y preguntas (están hardcoded en `questions.ts`)
+
+### Sincronización con la nube (solo con sesión)
+
+Cuando hay sesión Supabase, `src/sync/` mantiene el progreso en la nube:
+
+- **`syncEngine.ts`** — `pushProgress()` hace `upsert` del blob completo del
+  store en `user_progress` (columnas extraídas: `xp`, `weekly_xp`, `streak`,
+  `league`, `last_active_date`, … + `state_blob` JSONB). Estrategia
+  **last-write-wins** por el cliente. `pullProgress()` descarga el blob remoto.
+- **`useAutoSync.ts`** — al iniciar sesión hace un pull y resuelve conflicto por
+  "más XP gana"; luego empuja con **debounce de 5 s** ante cualquier cambio
+  persistido; hace flush al cerrar sesión.
+- **`useCohort.ts` / `useLeaderboard.ts`** — leen la liga semanal real.
+- **`useSyncStatus.ts`** — estado de sync para el indicador del perfil.
+
+> El `weekly_xp` y el `streak` son client-owned (viajan en el blob); la liga
+> competitiva y las amistades son server-owned (RPCs), para que no sean
+> trampeables.
 
 ### Migración de datos entre versiones
 
@@ -480,48 +550,59 @@ Esto garantiza que si añadimos nuevos campos al estado (como `lastHeartRegenTim
 
 ## 9. Seguridad
 
-### Consideraciones de seguridad para esta app
+### Modelo de seguridad (con backend)
 
-Al ser una app **sin backend, sin autenticación y sin datos sensibles**, el riesgo de seguridad es mínimo. Las consideraciones aplicables son:
+La app **sin sesión** sigue siendo offline (sin datos en la nube). **Con
+sesión** entran auth real, datos personales y permisos del sistema. Las
+consideraciones:
 
-#### 9.1 Datos del usuario
+#### 9.1 Autenticación
 
-| Dato | ¿Se guarda? | ¿Dónde? | ¿Riesgo? |
-|------|-------------|---------|---------|
-| Nombre | Sí | AsyncStorage local | Ninguno (no es dato personal sensible; no sale del dispositivo) |
-| Progreso | Sí | AsyncStorage local | Ninguno |
-| Email | ❌ No se pide | — | Ninguno |
-| Contraseña | ❌ No hay auth | — | Ninguno |
-| Ubicación | ❌ No se accede | — | Ninguno |
-| Contactos | ❌ No se accede | — | Ninguno |
+- **Email + contraseña** vía Supabase Auth. El registro exige verificación por
+  **código OTP de 6 dígitos** enviado al correo (no link, para que funcione
+  igual en iOS/Android/Web).
+- **Reset** y **cambio de contraseña/email** soportados; el cambio sensible
+  re-verifica la contraseña actual (`reauthenticate`).
+- Las claves del proyecto se leen de `.env.local`
+  (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`); en builds EAS
+  se inyectan como variables de entorno. La **anon key** es pública por diseño;
+  la seguridad real la da **RLS**.
 
-#### 9.2 Permisos de la app
+#### 9.2 Row-Level Security y RPCs
 
-La app **no solicita ningún permiso del sistema**:
-- ❌ No accede a la cámara
-- ❌ No accede al micrófono
-- ❌ No accede a la ubicación
-- ❌ No accede a los contactos
-- ❌ No envía notificaciones push (todavía)
-- ✅ Solo usa vibración háptica (no requiere permiso)
+- Todas las tablas con datos de usuario tienen **RLS**: cada uno solo ve/edita
+  lo suyo (`profiles`, `user_progress`, `friendships`, …).
+- Las operaciones que cruzan usuarios (ver leaderboard, gestionar amistades,
+  calcular liga) usan **funciones `SECURITY DEFINER`** que exponen solo los
+  campos públicos mínimos y validan `auth.uid()`.
+- Los datos competitivos (liga, amistades) son **server-owned**: el cliente no
+  puede falsificarlos por mucho que manipule su store local.
 
-#### 9.3 Red
+#### 9.3 Permisos del sistema (solo cuando se usan)
 
-La app **no realiza ninguna llamada de red** durante el uso normal. La única comunicación externa ocurre:
-- Durante la instalación de Expo Go (tienda de apps)
-- Al iniciar `npx expo start` durante el desarrollo (Metro Bundler)
+| Permiso | Cuándo | Para qué |
+|---|---|---|
+| **Notificaciones** | al activarlas | recordatorio diario, racha, vidas, sociales |
+| **Cámara** | al escanear QR de un amigo | añadir por QR (`expo-camera`) |
+| **Contactos** | al pulsar "importar contactos" | encontrar amigos (solo se envían **hashes SHA-256** de emails, nunca el email en claro) |
+| **Galería** | al cambiar la foto de perfil | `expo-image-picker` |
+| **Háptica** | siempre | vibración (no requiere permiso) |
 
-#### 9.4 Dependencias
+#### 9.4 Privacidad de contactos
 
-Las dependencias de producción son todas de fuentes reconocidas (Expo, React Native, Zustand). No hay dependencias de terceros desconocidos.
+El matching de contactos **nunca** sube emails ni la libreta: se calcula
+`sha256('teoric_v1:'+email)` en el dispositivo y solo se envían los hashes a la
+RPC `find_users_by_email_hashes`. No se almacena nada de la libreta.
 
-#### 9.5 GDPR / LOPD
+#### 9.5 RGPD / LOPD
 
-Al no recoger, almacenar ni transmitir datos personales identificables fuera del dispositivo, la app cumple de forma natural con:
-- **GDPR** (Reglamento General de Protección de Datos europeo)
-- **LOPD** (Ley Orgánica de Protección de Datos española)
-
-No se requiere política de privacidad para la versión actual. Si en el futuro se añade backend o autenticación, deberá redactarse una política de privacidad completa.
+Con backend **sí** se tratan datos personales (email, progreso en la nube), por
+lo que aplica:
+- **Política de privacidad** y aviso legal (en `src/legal/`, accesibles desde
+  Ajustes y obligatorios en el `DisclaimerScreen` de arranque).
+- **Derecho de supresión (Art. 17)**: la RPC `delete_my_account` borra los datos
+  del usuario; el registro de `auth.users` se purga después.
+- Datos mínimos: solo email + lo necesario para el producto.
 
 ---
 
@@ -572,13 +653,30 @@ Estas áreas de la normativa han sufrido cambios recientes y se revisan con espe
 
 ## 11. Testing y CI/CD
 
-### Testing manual (principal método actual)
+### Verificación por cambio (obligatoria antes de commit)
+
+| Comando | Qué verifica |
+|--------|----------------|
+| `npx tsc --noEmit` | Que no hay errores de tipos en toda la app |
+| `npx expo export --platform web` | Que el bundle compila (detecta imports nativos rotos en web) |
+
+### Testing manual
 
 | Método | Herramienta | Qué se verifica |
 |--------|------------|----------------|
-| Testing en dispositivo | Expo Go (iPhone) | UI, flujo completo, gestos, hápticos |
-| Testing en dispositivo | Expo Go (Android) | Compatibilidad multiplataforma |
-| Testing en web | Expo Web (navegador) | Compatibilidad básica |
+| Dispositivo (JS) | Expo Go | UI, flujo, gestos, hápticos, sync básico |
+| Build nativa | EAS preview (.ipa/.apk) | Cámara (QR), notificaciones, contactos, deep links |
+| Web | Expo Web | Compatibilidad básica (cámara/QR/notifs caen a fallback) |
+
+> Las funciones que dependen de permisos nativos (cámara, contactos,
+> notificaciones) **no** se pueden probar del todo en Expo Go ni en web:
+> requieren una **build EAS** (perfil `preview`).
+
+### Migraciones de base de datos
+
+El esquema vive versionado en `TeoricoB-expo/supabase/schema.sql`. Los cambios
+se aplican al proyecto Supabase (`putsyjnzqqbptqrlcdrd`) con el **MCP de
+Supabase** (`apply_migration`) y se reflejan en ese archivo para tener historia.
 
 ### CI/CD — GitHub Actions
 
@@ -695,13 +793,64 @@ open .  # Abre en Xcode automáticamente
 
 ### Variables de entorno
 
-No hay variables de entorno. La app no requiere claves de API ni configuración externa.
+La app funciona offline sin configuración, pero para activar el backend
+(cuenta, liga real, amigos) hace falta un archivo **`.env.local`** en
+`TeoricoB-expo/` (gitignored):
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key del proyecto>
+```
+
+Sin estas variables, `isSupabaseConfigured` es `false` y la app cae a modo
+local + datos simulados. En builds EAS se suben como variables de entorno del
+perfil (`eas env:create`).
 
 ---
 
 ## 14. Registro de cambios
 
-### v0.6.0 — Mayo 2026 (actual)
+### En curso — Junio 2026 (post v0.6): backend, social y liga real
+
+Gran bloque de trabajo que convierte la app de offline-only a **local-first con
+backend Supabase**:
+
+**Backend y cuentas**
+- Supabase: auth email+contraseña con verificación por **código OTP**; tablas
+  con RLS (`profiles`, `user_progress`, `friendships`, liga); RPCs
+  `SECURITY DEFINER`; sync del store (last-write-wins) con `useAutoSync`.
+- **Edición de cuenta**: cambiar contraseña y **email con verificación**
+  (re-login para confirmar la actual). Teléfono "Próximamente" (necesita SMS).
+- Borrado de cuenta RGPD (`delete_my_account`), indicador de sync, disclaimer.
+
+**Social**
+- **Amigos reales**: `@username` (único, cooldown 14 días), buscador, importar
+  **contactos** (matching por hash de email, sin subir emails), **QR**
+  (generar + escanear), compartir enlace `teoric://u/<username>` (deep link).
+- Gestor de amigos: ver perfil, eliminar; solicitudes recibidas/enviadas.
+- **Racha de amistad** compartida (estilo Duolingo) entre cada pareja.
+- **Notificaciones sociales**: nueva solicitud, racha de amistad en peligro,
+  un amigo te supera en XP.
+
+**Liga semanal por cohortes**
+- Reemplaza el ranking global por escalón de XP. Cohortes de ~30, **reseteo
+  semanal** del XP, **ascensos/descensos** (top 7 / últimos 5), premios en
+  gemas, modal de cierre de semana. Tablas `league_state/cohorts/members`.
+
+**Pedagogía y UX**
+- Banco a **320 preguntas** con auditoría **anti-sesgos de forma** (0%).
+- Lecciones con **techo de XP** (no farmeable) y tracking de fallos por lección.
+- Manual accesible como **modal flotante** desde el quiz al fallar.
+- **Movimiento iOS**: swipe entre tabs (PagerView), swipe-back desde el borde,
+  subpáginas con slide-in, tab bar que se oculta.
+- Rediseño estilo Duolingo de **Perfil** (+ hub de Ajustes), **Liga**,
+  **Onboarding/Tutorial** (carrusel), **resultados de quiz** y **logros** (con
+  confeti). Recomendaciones de lecciones en Inicio.
+- Rebranding **TeoricoB → Teoric**; bundle IDs e config EAS.
+
+---
+
+### v0.6.0 — Mayo 2026
 
 **Auditoría completa y reescritura del banco de preguntas:**
 
