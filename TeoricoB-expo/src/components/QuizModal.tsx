@@ -24,19 +24,27 @@ interface Props {
   title: string;
   isExam?: boolean;
   isPractice?: boolean;
+  /** Límite de tiempo del examen en segundos (def. 30 min). */
+  examTimeLimitSec?: number;
+  /** Máximo de fallos para aprobar el examen (def. 3). */
+  examMaxErrors?: number;
+  /** Si false, el resultado del examen NO se guarda en el historial (def. true). */
+  recordExamResult?: boolean;
   onClose: () => void;
   onComplete: (xpEarned: number, perfect: boolean, bestCombo?: number, wrongCount?: number) => void;
 }
 
 type AnswerState = 'idle' | 'correct' | 'wrong' | 'dimmed';
 
-const EXAM_TIME_LIMIT_SEC = 30 * 60; // 30 minutos (formato DGT)
-const EXAM_MAX_ERRORS = 3;
+const DEFAULT_EXAM_TIME_LIMIT_SEC = 30 * 60; // 30 minutos (formato DGT)
+const DEFAULT_EXAM_MAX_ERRORS = 3;
 const NORMAL_XP_PER_CORRECT = 10;
 const PRACTICE_XP_PER_CORRECT = 5;
 type AnswerRecord = { qIndex: number; selectedIndex: number; isCorrect: boolean };
 
-export default function QuizModal({ visible, questions, title, isExam, isPractice, onClose, onComplete }: Props) {
+export default function QuizModal({ visible, questions, title, isExam, isPractice, examTimeLimitSec, examMaxErrors, recordExamResult, onClose, onComplete }: Props) {
+  const EXAM_TIME_LIMIT_SEC = examTimeLimitSec ?? DEFAULT_EXAM_TIME_LIMIT_SEC;
+  const EXAM_MAX_ERRORS = examMaxErrors ?? DEFAULT_EXAM_MAX_ERRORS;
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -250,7 +258,7 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
   const xpPerCorrect = isPractice ? PRACTICE_XP_PER_CORRECT : NORMAL_XP_PER_CORRECT;
   const xpEarned = correctCount * xpPerCorrect + (isPractice ? 0 : (wrongCount === 0 ? 20 : 0) + (elapsed < questions.length * 8 ? 10 : 0));
   const perfect = wrongCount === 0 && index === questions.length - 1;
-  const examPassed = isExam ? wrongCount <= 3 : null;
+  const examPassed = isExam ? wrongCount <= EXAM_MAX_ERRORS : null;
   const noHeartsEarly = !isExam && !isPractice && currentHearts <= 0 && index < questions.length - 1;
 
   const answerState = (idx: number): AnswerState => {
@@ -278,14 +286,18 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
     // Guardar examen en historial una sola vez
     if (isExam && !savedExamRef.current) {
       savedExamRef.current = true;
-      saveExamResult({
-        date: new Date().toISOString(),
-        totalQuestions: questions.length,
-        correctCount,
-        wrongCount,
-        timeElapsed: elapsed,
-        passed: !!examPassed,
-      });
+      // El examen rápido (recordExamResult=false) no se guarda en el historial
+      // para no contaminar las estadísticas de simulacros de 30 preguntas.
+      if (recordExamResult !== false) {
+        saveExamResult({
+          date: new Date().toISOString(),
+          totalQuestions: questions.length,
+          correctCount,
+          wrongCount,
+          timeElapsed: elapsed,
+          passed: !!examPassed,
+        });
+      }
       playSound(examPassed ? 'examPass' : 'examFail');
     }
 

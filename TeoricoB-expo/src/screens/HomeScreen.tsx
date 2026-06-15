@@ -39,7 +39,23 @@ export default function HomeScreen() {
   const [examListOpen, setExamListOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [practiceQs, setPracticeQs] = useState<any[]>([]);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickQs, setQuickQs] = useState<any[]>([]);
   const [activeRecLesson, setActiveRecLesson] = useState<{ topic: Topic; lesson: Lesson } | null>(null);
+
+  const startReview = () => {
+    const qs = getMistakeQuestions(10);
+    if (qs.length === 0) return;
+    playSound('tap');
+    setPracticeQs(qs);
+    setPracticeOpen(true);
+  };
+
+  const startQuickExam = () => {
+    playSound('tap');
+    setQuickQs(getExamQuestions(10));
+    setQuickOpen(true);
+  };
   // Seed que cambia cada vez que se entra al tab Inicio para que las
   // recomendaciones se rebajeren al volver.
   const [recSeed, setRecSeed] = useState(() => Math.random());
@@ -249,24 +265,42 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <View style={s.utilityGrid}>
+        {/* Tarjeta destacada de fallos por repasar */}
+        {mistakesTotal > 0 && (
           <TouchableOpacity
-            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }, mistakesTotal === 0 && { opacity: 0.65 }]}
-            onPress={() => {
-              const qs = getMistakeQuestions(10);
-              if (qs.length === 0) return;
-              playSound('tap');
-              setPracticeQs(qs);
-              setPracticeOpen(true);
-            }}
+            style={[s.reviewCard, { backgroundColor: theme.wrong + '14', borderColor: theme.wrong + '40' }]}
+            onPress={startReview}
             activeOpacity={0.85}
           >
-            <View style={[s.utilityIcon, { backgroundColor: theme.wrong + '18' }]}>
-              <Ionicons name="refresh-circle" size={24} color={theme.wrong} />
+            <View style={[s.reviewIcon, { backgroundColor: theme.wrong + '22' }]}>
+              <Ionicons name="refresh-circle" size={26} color={theme.wrong} />
             </View>
-            <Text style={[s.utilityTitle, { color: theme.textPrimary }]}>Repasar fallos</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.reviewTitle, { color: theme.textPrimary }]}>
+                Tienes {mistakesTotal} fallo{mistakesTotal === 1 ? '' : 's'} por repasar
+              </Text>
+              <Text style={[s.reviewSub, { color: theme.textSecondary }]}>
+                Repásalos para que no se te vuelvan a escapar.
+              </Text>
+            </View>
+            <View style={[s.reviewBtn, { backgroundColor: theme.wrong }]}>
+              <Text style={s.reviewBtnTxt}>Repasar</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        <View style={s.utilityGrid}>
+          <TouchableOpacity
+            style={[s.utilityCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+            onPress={startQuickExam}
+            activeOpacity={0.85}
+          >
+            <View style={[s.utilityIcon, { backgroundColor: theme.primary + '18' }]}>
+              <Ionicons name="timer-outline" size={24} color={theme.primary} />
+            </View>
+            <Text style={[s.utilityTitle, { color: theme.textPrimary }]}>Examen rápido</Text>
             <Text style={[s.utilitySub, { color: theme.textSecondary }]}>
-              {mistakesTotal > 0 ? `${mistakesTotal} pendiente${mistakesTotal === 1 ? '' : 's'}` : 'Sin fallos'}
+              10 preguntas · 5 min
             </Text>
           </TouchableOpacity>
 
@@ -373,6 +407,17 @@ export default function HomeScreen() {
         onClose={() => setPracticeOpen(false)}
         onComplete={(xp) => { addXP(xp); setPracticeOpen(false); }}
       />
+      <QuizModal
+        visible={quickOpen}
+        questions={quickQs}
+        title="Examen rápido"
+        isExam
+        examTimeLimitSec={5 * 60}
+        examMaxErrors={1}
+        recordExamResult={false}
+        onClose={() => setQuickOpen(false)}
+        onComplete={() => setQuickOpen(false)}
+      />
       {activeRecLesson && (
         <QuizModal
           visible
@@ -439,6 +484,12 @@ const s = StyleSheet.create({
   utilityIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   utilityTitle: { fontSize: 13, fontWeight: '800' },
   utilitySub: { fontSize: 11, lineHeight: 15 },
+  reviewCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
+  reviewIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  reviewTitle: { fontSize: 15, fontWeight: '800' },
+  reviewSub: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+  reviewBtn: { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
+  reviewBtnTxt: { color: '#fff', fontSize: 13, fontWeight: '800' },
   sectionTitle: { fontSize: 16, fontWeight: '700' },
   topicsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   topicCard: { width: '47%', borderRadius: 14, padding: 14, gap: 6 },

@@ -78,7 +78,7 @@ interface AppStore {
   applyServerLeague: (league: LeagueType) => void;
   /** Concede la recompensa de gemas por ascenso/top de una semana (una vez). */
   claimLeagueReward: (weekStart: string, gems: number) => void;
-  getExamQuestions: () => import('../types').Question[];
+  getExamQuestions: (count?: number) => import('../types').Question[];
   progressForTopic: (topicId: string) => number;
   isLessonCompleted: (lessonId: string) => boolean;
   isTopicCompleted: (topicId: string) => boolean;
@@ -591,9 +591,9 @@ export const useStore = create<AppStore>()(
         };
       }),
 
-      getExamQuestions: () => {
+      getExamQuestions: (count = 30) => {
         const all = ALL_TOPICS.flatMap(t => t.lessons.flatMap(l => l.questions));
-        return [...all].sort(() => Math.random() - 0.5).slice(0, 30);
+        return [...all].sort(() => Math.random() - 0.5).slice(0, count);
       },
 
       progressForTopic: (topicId) => {
