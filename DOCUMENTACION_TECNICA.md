@@ -245,7 +245,7 @@ proyectos/Teorico/
 - Al pulsar una lección → `QuizModal`
 
 #### `QuizModal.tsx` — El corazón de la app
-- Muestra una pregunta a la vez con 4 opciones (A/B/C/D)
+- Muestra una pregunta a la vez con **3 opciones (A/B/C)**, como el examen real DGT
 - Bloqueo por vidas: si el usuario tiene 0 vidas, muestra la pantalla "Sin vidas 💔"
 - Al seleccionar respuesta: feedback visual inmediato (verde/rojo), vibración háptica
 - Explicación de la respuesta correcta siempre visible tras responder
@@ -444,7 +444,7 @@ Las preguntas de la app son de **elaboración propia**, basadas en:
 interface Question {
   id: string          // Identificador único, ej: 's1q1'
   text: string        // Enunciado de la pregunta
-  options: string[]   // Siempre exactamente 4 opciones
+  options: string[]   // Siempre exactamente 3 opciones (formato DGT: A, B, C)
   correctIndex: number // Índice (0-3) de la opción correcta
   explanation: string  // Explicación detallada de por qué es correcta
   category: string    // Categoría para estadísticas

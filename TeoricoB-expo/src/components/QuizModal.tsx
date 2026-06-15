@@ -260,7 +260,7 @@ export default function QuizModal({ visible, questions, title, isExam, isPractic
     return 'dimmed';
   };
 
-  const LETTERS = ['A', 'B', 'C', 'D'];
+  const LETTERS = ['A', 'B', 'C'];
 
   // ── Result screen ──────────────────────────────────────────────
   if (done) {
